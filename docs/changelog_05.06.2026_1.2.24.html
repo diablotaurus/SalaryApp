@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Полировка desktop-интерфейса - версия 1.2.24</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.1em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 20px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .removed { background-color: #f8d7da; color: #721c24; }
+        .refactored { background-color: #e3f2fd; color: #0d47a1; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .highlight { background-color: #fffacd; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; }
+        .result-box { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .version-display { font-size: 1.8em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 ChangeLog: Полировка desktop-интерфейса - версия 1.2.24</h1>
+            <p class="subtitle">Окно «О программе», единый стиль диалогов и переработка блока «История заработной платы»</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.24</p>
+            <p><strong>Дата:</strong> 5 июня 2026 г.</p>
+            <p><strong>Этап:</strong> UX/UI-полировка desktop-приложения</p>
+            <p><strong>Область изменений:</strong> desktop/views (main, settings, dialogs), desktop/controllers, desktop/views/constants</p>
+            <p><strong>Тип изменений:</strong> Новая функциональность, улучшение UI, рефакторинг, чистка</p>
+            <p><strong>Статус:</strong> ✅ Завершено и протестировано (74/74)</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.24 current</div>
+
+        <div class="section">
+            <h2>🆕 Окно «О программе»</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span>Добавлено модальное окно «О программе» (<span class="highlight">desktop/views/dialogs/about_dialog.py</span>): название, версия, описание, автор, лицензия (Apache-2.0) и кликабельная ссылка на GitHub.</li>
+                <li><span class="change-type added">NEW</span>Кнопка «О программе» размещена на вкладке «Главная» в панели «Действия» — справа, отдельно от кнопок работы с данными.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🎨 Единый стиль диалоговых окон</h2>
+            <ul>
+                <li><span class="change-type changed">UI</span>Окна «Ввод зарплаты» и «Экспорт» переведены на авто-размер (без «магических» фиксированных размеров): убраны пустоты/теснота, добавлены отступы и заголовки-шапки.</li>
+                <li><span class="change-type changed">UI</span>В «Ввод зарплаты» подписи дат укорочены, формат вынесен в подсказку под формой.</li>
+                <li><span class="change-type fixed">FIXED</span>Устранён скрытый баг в окне «Экспорт»: фокус ставился на несуществующий виджет (<span class="highlight">format_combobox</span>) — теперь на первую радиокнопку.</li>
+                <li><span class="change-type changed">UI</span>Единые кнопки действий во всех всплывающих окнах: одинаковая ширина (<span class="highlight">BUTTON_DIALOG_WIDTH=16</span>) и расположение по центру (О программе, Ввод зарплаты, Экспорт, Резервные копии).</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>📋 Блок «История заработной платы» (вкладка «Главная»)</h2>
+            <ul>
+                <li><span class="change-type changed">UI</span>Меньше «коробочности»: рамка карточки года <span class="highlight">groove/2px → solid/1px</span>, убран второй разделитель.</li>
+                <li><span class="change-type changed">UI</span>Меньше плотности в ячейке месяца: убрана повторяющаяся строка-шапка «Дата | Сумма», увеличены отступы; «Итого» по-прежнему выровнено (зона выплат фиксированной высоты).</li>
+                <li><span class="change-type changed">UI</span>Размеры шрифта в ячейке месяца по умолчанию увеличены: название/итого/данные <span class="highlight">9/9/8 → 10/10/9</span> (влияет на свежие установки и сброс настроек).</li>
+                <li><span class="change-type refactored">REFACTOR</span>Длинные методы разбиты по SRP: <span class="highlight">_create_card_header</span>, <span class="highlight">_create_year_stats</span>, <span class="highlight">_create_months_grid</span>, <span class="highlight">_create_payments_table</span>, <span class="highlight">_add_payment_row</span>.</li>
+                <li><span class="change-type refactored">DRY</span>Шрифты и ширина кнопок карточки вынесены в константы (<span class="highlight">numbers.py</span>).</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🧹 Чистка</h2>
+            <ul>
+                <li><span class="change-type removed">REMOVED</span>Удалён мёртвый метод <span class="highlight">MainView.update_statistics</span> (пустая заглушка) и его вызов в <span class="highlight">MainTabController.refresh_history</span> (с ненужным запросом статистики). Кнопка «Обновить историю» сохранена.</li>
+                <li><span class="change-type changed">TEST</span>Обновлён тест <span class="highlight">test_main_tab_controller_refresh_history</span> под новое поведение.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🗂️ Затронутые файлы</h2>
+            <div class="file">desktop/views/dialogs/about_dialog.py (новый)</div>
+            <div class="file">desktop/views/main/main_view.py</div>
+            <div class="file">desktop/views/settings/settings_view.py</div>
+            <div class="file">desktop/views/dialogs/salary_dialog.py, export_dialog.py, backup_dialog.py</div>
+            <div class="file">desktop/controllers/main_tab_controller.py</div>
+            <div class="file">desktop/views/constants/texts.py, numbers.py</div>
+            <div class="file">tests/unit/desktop/controllers/test_tab_controllers.py</div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Desktop-интерфейс стал чище и единообразнее: появилось окно «О программе», диалоги выглядят аккуратно и одинаково, блок истории менее «коробочный» и читабельнее. Код стал проще в поддержке. Тесты 74/74, кодировка UTF-8 без BOM.
+            </div>
+        </div>
+
+        <footer>
+            <p>🆕 Окно «О программе» с ссылкой на репозиторий</p>
+            <p>🎨 Единый стиль и авто-размер диалоговых окон</p>
+            <p>📋 Чище и читабельнее блок «История заработной платы»</p>
+        </footer>
+    </div>
+</body>
+</html>

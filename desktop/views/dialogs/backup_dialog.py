@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 from typing import List, Dict, Any
 from desktop.widgets.dialogs import BaseDialog
+from desktop.views.constants import BUTTON_DIALOG_WIDTH, PADX_DEFAULT
 
 
 class BackupDialog(BaseDialog):
@@ -90,27 +91,32 @@ class BackupDialog(BaseDialog):
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        # Панель действий
+        # Панель действий (по центру)
         action_frame = ttk.Frame(main_frame)
         action_frame.pack(fill=tk.X, pady=(10, 0))
-        
+
+        action_buttons = ttk.Frame(action_frame)
+        action_buttons.pack(anchor=tk.CENTER)
+
         # Кнопка Восстановить
         self.restore_button = ttk.Button(
-            action_frame,
+            action_buttons,
             text="Восстановить",
             command=self._restore_backup,
             state=tk.DISABLED,
-            style="Success.TButton"
+            style="Success.TButton",
+            width=BUTTON_DIALOG_WIDTH
         )
-        self.restore_button.pack(side=tk.LEFT, padx=(0, 10))
-        
+        self.restore_button.pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
+
         # Кнопка Удалить
         self.delete_button = ttk.Button(
-            action_frame,
+            action_buttons,
             text="Удалить",
             command=self._delete_backup,
             state=tk.DISABLED,
-            style="Danger.TButton"
+            style="Danger.TButton",
+            width=BUTTON_DIALOG_WIDTH
         )
         self.delete_button.pack(side=tk.LEFT)
         
@@ -214,15 +220,20 @@ class BackupDialog(BaseDialog):
         
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill=tk.X)
-        
+
+        buttons_container = ttk.Frame(button_frame)
+        buttons_container.pack(anchor=tk.CENTER)
+
         def create():
             comment = comment_text.get("1.0", tk.END).strip()
             if self.controller.create_backup(comment):
                 comment_dialog.destroy()
                 self._load_backups()
-        
-        ttk.Button(button_frame, text="Создать", command=create).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(button_frame, text="Отмена", command=comment_dialog.destroy).pack(side=tk.LEFT)
+
+        ttk.Button(buttons_container, text="Создать", command=create,
+                   width=BUTTON_DIALOG_WIDTH).pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
+        ttk.Button(buttons_container, text="Отмена", command=comment_dialog.destroy,
+                   width=BUTTON_DIALOG_WIDTH).pack(side=tk.LEFT)
         
         comment_text.focus_set()
     

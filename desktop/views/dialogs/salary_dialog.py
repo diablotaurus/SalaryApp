@@ -8,13 +8,13 @@ from desktop.widgets.dialogs import BaseDialog
 from desktop.views.constants import (
     DIALOG_SALARY_TITLE, TEXT_SELECT_YEAR, TEXT_SELECT_MONTH,
     TEXT_ADVANCE, TEXT_SALARY, TEXT_RUBLES,
+    TEXT_ADVANCE_DATE, TEXT_SALARY_DATE, TEXT_DATE_HINT,
     TEXT_SAVE, TEXT_CLEAR, TEXT_CLOSE,
     DIALOG_TITLE_ERROR, ERROR_NO_YEAR_MONTH, ERROR_NEGATIVE_AMOUNTS,
     ERROR_INVALID_FORMAT, ERROR_SAVE_FAILED,
     SUCCESS_TITLE, SUCCESS_SAVE_DATA, SUCCESS_CLEAR_DATA,
     CONFIRM_TITLE, CONFIRM_CLEAR_MONTH_DATA,
-    PADX_DEFAULT, PADY_DEFAULT, ENTRY_WIDTH, COMBOBOX_WIDTH,
-    WINDOW_SALARY_DIALOG_SIZE
+    PADX_DEFAULT, PADY_DEFAULT, ENTRY_WIDTH, COMBOBOX_WIDTH, BUTTON_DIALOG_WIDTH
 )
 
 
@@ -27,21 +27,22 @@ class SalaryDialog(BaseDialog):
         
         self.controller = controller
         self.parent = parent
-        
-        # Настройка окна
-        self.geometry(WINDOW_SALARY_DIALOG_SIZE)
+
+        # Настройка окна (размер подгоняется под содержимое автоматически)
         self.resizable(False, False)
-        self._center_on_parent()
-        
+
         # Инициализация переменных
         self._init_variables(year, month)
-        
+
         # Создаем интерфейс
         self._create_widgets()
-        
+
         # Загружаем существующие данные
         self._load_existing_data()
-        
+
+        # Центрируем после построения содержимого (размер уже известен)
+        self._center_on_parent()
+
         # Фокус на первом поле
         self.year_combobox.focus_set()
     
@@ -74,8 +75,15 @@ class SalaryDialog(BaseDialog):
     def _create_widgets(self):
         """Создать виджеты"""
         # Основной контейнер
-        main_frame = ttk.Frame(self, padding=20)
+        main_frame = ttk.Frame(self, padding=24)
         main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Заголовок-шапка
+        ttk.Label(
+            main_frame,
+            text=DIALOG_SALARY_TITLE,
+            font=('Segoe UI', 12, 'bold')
+        ).pack(pady=(0, 15))
 
         form_frame = ttk.Frame(main_frame)
         form_frame.pack(fill=tk.X, pady=(0, PADY_DEFAULT))
@@ -84,7 +92,7 @@ class SalaryDialog(BaseDialog):
         form_frame.columnconfigure(1, weight=0)
         form_frame.columnconfigure(2, weight=0)
 
-        label_width = 26
+        label_width = 20
         row = 0
 
         # Поле года
@@ -134,7 +142,7 @@ class SalaryDialog(BaseDialog):
 
         # Поле даты аванса
         row += 1
-        ttk.Label(form_frame, text="Дата аванса (ДД.ММ.ГГГГ):", width=label_width, anchor=tk.W).grid(
+        ttk.Label(form_frame, text=TEXT_ADVANCE_DATE, width=label_width, anchor=tk.W).grid(
             row=row, column=0, sticky=tk.W, padx=(0, PADX_DEFAULT), pady=(0, PADY_DEFAULT)
         )
         self.advance_date_entry = ttk.Entry(
@@ -161,7 +169,7 @@ class SalaryDialog(BaseDialog):
 
         # Поле даты зарплаты
         row += 1
-        ttk.Label(form_frame, text="Дата зарплаты (ДД.ММ.ГГГГ):", width=label_width, anchor=tk.W).grid(
+        ttk.Label(form_frame, text=TEXT_SALARY_DATE, width=label_width, anchor=tk.W).grid(
             row=row, column=0, sticky=tk.W, padx=(0, PADX_DEFAULT), pady=(0, 10)
         )
         self.salary_date_entry = ttk.Entry(
@@ -170,6 +178,14 @@ class SalaryDialog(BaseDialog):
             width=ENTRY_WIDTH
         )
         self.salary_date_entry.grid(row=row, column=1, sticky=tk.W, pady=(0, 10))
+
+        # Подсказка по формату дат
+        ttk.Label(
+            main_frame,
+            text=TEXT_DATE_HINT,
+            font=('Segoe UI', 8),
+            foreground="#666666"
+        ).pack(anchor=tk.W, pady=(0, PADY_DEFAULT))
 
         # Панель кнопок
         button_frame = ttk.Frame(main_frame)
@@ -183,23 +199,26 @@ class SalaryDialog(BaseDialog):
             buttons_container,
             text=TEXT_SAVE,
             command=self._save_data,
-            style="Success.TButton"
+            style="Success.TButton",
+            width=BUTTON_DIALOG_WIDTH
         )
         save_button.pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
-        
+
         # Кнопка Очистить
         clear_button = ttk.Button(
             buttons_container,
             text=TEXT_CLEAR,
-            command=self._clear_fields
+            command=self._clear_fields,
+            width=BUTTON_DIALOG_WIDTH
         )
         clear_button.pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
-        
+
         # Кнопка Закрыть
         close_button = ttk.Button(
             buttons_container,
             text=TEXT_CLOSE,
-            command=self.destroy
+            command=self.destroy,
+            width=BUTTON_DIALOG_WIDTH
         )
         close_button.pack(side=tk.LEFT)
         

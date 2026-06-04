@@ -55,6 +55,9 @@ TEXT_SELECT_MONTH = "Выберите месяц:"
 TEXT_ADVANCE = "Аванс:"
 TEXT_SALARY = "Зарплата:"
 TEXT_RUBLES = "руб."
+TEXT_ADVANCE_DATE = "Дата аванса:"
+TEXT_SALARY_DATE = "Дата зарплаты:"
+TEXT_DATE_HINT = "Формат даты: ДД.ММ.ГГГГ (можно оставить пустым)"
 
 # Сообщения об ошибках
 ERROR_NO_YEAR_MONTH = "Пожалуйста, выберите год и месяц"
@@ -180,10 +183,24 @@ DEFAULT_TOTAL_COLOR = "#dc3545"
 DEFAULT_SHOW_BEST_YEAR_ALWAYS = True
 DEFAULT_HISTORY_LAYOUT_MODE = "standard"
 DEFAULT_MAIN_STATS_LAYOUT_MODE = "row"
-DEFAULT_MONTH_TITLE_FONT_SIZE = 9
-DEFAULT_MONTH_TOTAL_FONT_SIZE = 9
-DEFAULT_MONTH_DATA_FONT_SIZE = 8
+DEFAULT_MONTH_TITLE_FONT_SIZE = 10
+DEFAULT_MONTH_TOTAL_FONT_SIZE = 10
+DEFAULT_MONTH_DATA_FONT_SIZE = 9
 # --- Диалоговые окна ---
 DIALOG_TITLE_ERROR = "Ошибка"
 DIALOG_TITLE_CONFIRM = "Подтверждение"
 DIALOG_TITLE_SUCCESS = "Успех"
+
+# --- Тексты для вкладки "О программе" ---
+ABOUT_FRAME_TITLE = "О программе"
+ABOUT_DESCRIPTION = (
+    "Учёт личной заработной платы: помесячный учёт аванса и зарплаты, "
+    "аналитика и отчёты. Три интерфейса на едином ядре: desktop, веб и Telegram-бот."
+)
+ABOUT_VERSION_LABEL = "Версия:"
+ABOUT_AUTHOR_LABEL = "Автор:"
+ABOUT_AUTHOR = "diablotaurus"
+ABOUT_LICENSE_LABEL = "Лицензия:"
+ABOUT_LICENSE = "Apache-2.0"
+ABOUT_GITHUB_LABEL = "Репозиторий:"
+ABOUT_GITHUB_URL = "https://github.com/diablotaurus/SalaryApp"

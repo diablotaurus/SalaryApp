@@ -67,9 +67,6 @@ class MainTabController:
             response = SalaryAPI.get_all_grouped_by_year()
             if response["success"]:
                 self.app.main_view.display_years(response["data"])
-                stats_response = SalaryAPI.get_statistics()
-                if stats_response["success"]:
-                    self.app.main_view.update_statistics(stats_response["data"])
             else:
                 self.navigation.show_message("Ошибка", response["message"], "error")
         except RECOVERABLE_EXCEPTIONS as exc:

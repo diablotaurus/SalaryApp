@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.23</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.24</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -29,32 +29,35 @@
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.23</h1>
-            <p class="subtitle">Краткий отчет: CI (GitHub Actions) и бейджи в README</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.24</h1>
+            <p class="subtitle">Краткий отчет: полировка desktop-интерфейса (окно «О программе», единые диалоги, блок истории)</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.23</p>
-            <p><strong>Дата:</strong> 4 июня 2026 г.</p>
-            <p><strong>Статус:</strong> ✅ Настроено</p>
-            <p><strong>Подробный отчет:</strong> <a href="changelog_04.06.2026_1.2.23.html">docs/changelog_04.06.2026_1.2.23.html</a></p>
+            <p><strong>Версия:</strong> v.1.2.24</p>
+            <p><strong>Дата:</strong> 5 июня 2026 г.</p>
+            <p><strong>Статус:</strong> ✅ Завершено и протестировано (74/74)</p>
+            <p><strong>Подробный отчет:</strong> <a href="changelog_05.06.2026_1.2.24.html">docs/changelog_05.06.2026_1.2.24.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.23 current</div>
+        <div class="version-display">SalaryApp v.1.2.24 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type added">CI</span>Добавлен workflow <span class="highlight">.github/workflows/ci.yml</span>: автоматический прогон тестов на каждый push/PR (windows-latest, Python 3.11 и 3.12).</li>
-                <li><span class="change-type added">NEW</span>В <span class="highlight">README.md</span> добавлены бейджи: статус CI, лицензия (Apache-2.0), версия Python.</li>
-                <li><span class="change-type changed">CHANGED</span>Линтеры в CI не подключались (чтобы не «краснить» сборку); существующий <span class="highlight">encoding-check.yml</span> не изменялся.</li>
+                <li><span class="change-type added">NEW</span>Окно «О программе» (<span class="highlight">about_dialog.py</span>) + кнопка на вкладке «Главная» справа.</li>
+                <li><span class="change-type changed">UI</span>Единый стиль диалогов: авто-размер «Ввод зарплаты»/«Экспорт», одинаковые кнопки по центру во всех окнах; исправлен баг фокуса в «Экспорт».</li>
+                <li><span class="change-type changed">UI</span>Блок «История заработной платы» чище: тоньше рамки, меньше плотность ячеек, дефолт шрифтов 10/10/9.</li>
+                <li><span class="change-type refactored">REFACTOR</span>Декомпозиция длинных методов карточки + вынос шрифтов/ширин в константы.</li>
+                <li><span class="change-type removed">REMOVED</span>Удалён мёртвый <span class="highlight">update_statistics</span>. Тесты 74/74, UTF-8 без BOM.</li>
             </ul>
-            <div class="file">.github/workflows/ci.yml, README.md, version.txt, docs/changelog_04.06.2026_1.2.23.html, docs/changelog.html</div>
+            <div class="file">about_dialog.py (новый), main_view.py, settings_view.py, salary_dialog.py, export_dialog.py, backup_dialog.py, main_tab_controller.py, texts.py, numbers.py, test_tab_controllers.py, version.txt, docs/changelog_05.06.2026_1.2.24.html, docs/changelog.html</div>
         </div>
 
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_05.06.2026_1.2.24.html">05-06-2026</a> — v.1.2.24 — полировка desktop-интерфейса: окно «О программе», единые диалоги, блок истории (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.23.html">04-06-2026</a> — v.1.2.23 — CI (GitHub Actions) и бейджи в README (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.22.html">04-06-2026</a> — v.1.2.22 — подготовка к публикации на GitHub (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.21.html">04-06-2026</a> — v.1.2.21 — защита деплоя через prod.marker (подробный отчет)</li>

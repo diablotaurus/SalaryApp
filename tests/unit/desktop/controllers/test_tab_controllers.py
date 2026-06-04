@@ -76,15 +76,11 @@ def test_main_tab_controller_refresh_history(monkeypatch):
         "api.salary_api.SalaryAPI.get_all_grouped_by_year",
         lambda: {"success": True, "data": [{"year": 2026}]},
     )
-    monkeypatch.setattr(
-        "api.salary_api.SalaryAPI.get_statistics",
-        lambda year=None: {"success": True, "data": {"total": 1}},
-    )
 
     controller.refresh_history()
 
+    # refresh_history теперь только обновляет историю; статистика на главной не показывается.
     assert nav.app.main_view.years == [{"year": 2026}]
-    assert nav.app.main_view.stats == {"total": 1}
 
 
 def test_report_tab_controller_refresh_reports(monkeypatch):
