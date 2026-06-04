@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Учет заработной платы - версия v.1.0.0</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.1em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 30px 0; padding: 20px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .improved { background-color: #e8f5e9; color: #2e7d32; }
+        .refactored { background-color: #e3f2fd; color: #0d47a1; }
+        .ui { background-color: #e2d9f3; color: #4a235a; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .summary { display: flex; flex-wrap: wrap; gap: 15px; margin: 20px 0; }
+        .summary-item { flex: 1; min-width: 200px; padding: 15px; border-radius: 8px; text-align: center; }
+        .summary-ui { background: #e2d9f3; border: 1px solid #d6c7f5; }
+        .summary-api { background: #e8f5e9; border: 1px solid #d4edda; }
+        .summary-fix { background: #d1ecf1; border: 1px solid #bee5eb; }
+        .summary-arch { background: #fff3cd; border: 1px solid #ffc107; }
+        .version-display { font-size: 2em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        .files-list { columns: 2; column-gap: 30px; }
+        @media (max-width: 768px) { .summary { flex-direction: column; } .files-list { columns: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📦 ChangeLog: SalaryApp — версия v.1.0.0</h1>
+            <p class="subtitle">Крупный релиз: стабильная web-версия, обновленная desktop-версия, единая кодировка и инфраструктура</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.0.0</p>
+            <p><strong>Дата:</strong> 2 февраля 2026 г.</p>
+            <p><strong>Статус:</strong> ✅ Готово к использованию</p>
+            <p><strong>Фокус:</strong> Web + Desktop + Data + UX + Infrastructure</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item summary-ui">
+                <h3>🖥️ Desktop</h3>
+                <p>Цветовые настройки<br>Даты аванса/зарплаты<br>Улучшения карточек</p>
+            </div>
+            <div class="summary-item summary-api">
+                <h3>🌐 Web</h3>
+                <p>Blueprints и MVC<br>Автозаполнение форм<br>Расширенная аналитика</p>
+            </div>
+            <div class="summary-item summary-fix">
+                <h3>🔧 Data</h3>
+                <p>Новые поля дат<br>Валидация формата<br>Экспорт обновлен</p>
+            </div>
+            <div class="summary-item summary-arch">
+                <h3>🏗️ Инфраструктура</h3>
+                <p>Единое логирование<br>Кодировка UTF-8<br>CI и pre-commit</p>
+            </div>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.0.0</div>
+
+        <div class="section">
+            <h2>🌐 Web-версия (MVC + UX)</h2>
+            <ul>
+                <li><span class="change-type refactored">MVC</span> роуты вынесены в Blueprints</li>
+                <li><span class="change-type improved">UX</span> автоподстановка аванса/зарплаты по выбранному периоду</li>
+                <li><span class="change-type improved">UX</span> статистика считает выбранный год или все годы</li>
+                <li><span class="change-type fixed">FIX</span> починены графики аналитики и карточки «лучший месяц/год»</li>
+                <li><span class="change-type improved">DATA</span> даты аванса/зарплаты добавлены в таблицу и экспорт</li>
+            </ul>
+            <div class="file">web/app.py, web/routes/*, web/templates/*, web/static/js/common.js</div>
+        </div>
+
+        <div class="section">
+            <h2>🖥️ Desktop-версия</h2>
+            <ul>
+                <li><span class="change-type ui">UI</span> цветовая дифференциация аванса/зарплаты/итого</li>
+                <li><span class="change-type added">NEW</span> настройки цветов в разделе «Настройки»</li>
+                <li><span class="change-type improved">UX</span> отображение дат аванса и зарплаты в карточках</li>
+            </ul>
+            <div class="file">desktop/views/main/main_view.py, desktop/views/settings/settings_view.py</div>
+        </div>
+
+        <div class="section">
+            <h2>🧩 Данные и валидация</h2>
+            <ul>
+                <li><span class="change-type added">DB</span> новые поля advance_date и salary_date</li>
+                <li><span class="change-type improved">API</span> валидация формата дат (DD.MM.YYYY)</li>
+                <li><span class="change-type improved">EXPORT</span> даты включены в CSV и Excel</li>
+            </ul>
+            <div class="file">core/database/migrations.py, core/services/*, core/repositories/*, api/*</div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Инструменты и инфраструктура</h2>
+            <ul>
+                <li><span class="change-type improved">LOG</span> единая конфигурация логирования</li>
+                <li><span class="change-type improved">ENCODING</span> единый UTF-8 без BOM</li>
+                <li><span class="change-type added">CI</span> проверка кодировки + pre-commit</li>
+            </ul>
+            <div class="file">desktop/startup_logging.py, scripts/check_encoding.ps1, scripts/fix_encoding.ps1, .github/workflows/encoding-check.yml, .pre-commit-config.yaml</div>
+        </div>
+
+        <div class="section">
+            <h2>📁 Детальный список измененных файлов</h2>
+            <div class="files-list">
+                <ul>
+                    <li>StartSalary.pyw</li>
+                    <li>desktop/main.py</li>
+                    <li>desktop/startup_logging.py</li>
+                    <li>desktop/views/main/main_view.py</li>
+                    <li>desktop/views/settings/settings_view.py</li>
+                    <li>desktop/views/constants/texts.py</li>
+                    <li>desktop/controllers/navigation_controller.py</li>
+                    <li>web/app.py</li>
+                    <li>web/bootstrap.py</li>
+                    <li>web/routes/pages.py</li>
+                    <li>web/routes/salaries.py</li>
+                    <li>web/routes/settings.py</li>
+                    <li>web/routes/errors.py</li>
+                    <li>web/templates/base.html</li>
+                    <li>web/templates/index.html</li>
+                    <li>web/templates/reports.html</li>
+                    <li>web/templates/settings.html</li>
+                    <li>web/templates/404.html</li>
+                    <li>web/templates/500.html</li>
+                    <li>web/static/js/common.js</li>
+                    <li>run_web.py</li>
+                    <li>core/config/settings.py</li>
+                    <li>core/database/migrations.py</li>
+                    <li>core/models/salary.py</li>
+                    <li>core/repositories/salary_repository.py</li>
+                    <li>core/services/salary_service.py</li>
+                    <li>core/services/statistics_service.py</li>
+                    <li>core/services/export_service.py</li>
+                    <li>api/salary_api.py</li>
+                    <li>api/settings_api.py</li>
+                    <li>bot/main.py</li>
+                    <li>scripts/check_encoding.ps1</li>
+                    <li>scripts/fix_encoding.ps1</li>
+                    <li>.github/workflows/encoding-check.yml</li>
+                    <li>.pre-commit-config.yaml</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>✅ Релиз v.1.0.0 готов: web и desktop синхронизированы, данные валидируются, UX улучшен.</p>
+            <p>💡 Следующий шаг: UI-полировка и расширенные отчеты.</p>
+        </footer>
+    </div>
+</body>
+</html>

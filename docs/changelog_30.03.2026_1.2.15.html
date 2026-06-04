@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Нормализация EOL и правила кодировки - версия 1.2.15</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .meta p {
+            margin: 5px 0;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section h3 {
+            color: #2980b9;
+            margin: 15px 0 10px 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .added {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .changed {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .fixed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .improved {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .summary-item {
+            flex: 1;
+            min-width: 220px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-rules {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+        }
+
+        .summary-git {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+        }
+
+        .summary-utf8 {
+            background: #fff3e0;
+            border: 1px solid #ffe0b2;
+        }
+
+        .summary-safe {
+            background: #f3e5f5;
+            border: 1px solid #e1bee7;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .comparison {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-item {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .before {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+
+        .after {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+
+        .comparison-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .version-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 180px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                flex-direction: column;
+            }
+
+            .summary {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ChangeLog: Нормализация EOL и правила кодировки - версия 1.2.15</h1>
+            <p class="subtitle">Добавлены репозиторные правила для UTF-8 и переводов строк, чтобы стабилизировать поведение Git на Windows</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.15</p>
+            <p><strong>Дата:</strong> <span>30 марта 2026 г.</span></p>
+            <p><strong>Этап:</strong> Инфраструктурная стабилизация репозитория</p>
+            <p><strong>Область изменений:</strong> .gitattributes, .editorconfig, docs/changelog_30.03.2026_1.2.15.html, docs/changelog.html, version.txt</p>
+            <p><strong>Тип изменений:</strong> Настройка Git, стандартизация кодировки и EOL, обновление документации релиза</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и проверено</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item summary-rules">
+                <h3>Правила</h3>
+                <p>Добавлены явные правила для LF/CRLF на уровне репозитория</p>
+            </div>
+            <div class="summary-item summary-git">
+                <h3>Git</h3>
+                <p>Поведение Git на Windows теперь определяется проектом, а не случайной локальной средой</p>
+            </div>
+            <div class="summary-item summary-utf8">
+                <h3>UTF-8</h3>
+                <p>Редакторы получают явную инструкцию сохранять файлы в UTF-8</p>
+            </div>
+            <div class="summary-item summary-safe">
+                <h3>Безопасность</h3>
+                <p>Без массового rewrite логики и без изменения бизнес-кода приложения</p>
+            </div>
+        </div>
+
+        <div class="version-display">
+            SalaryApp v.1.2.15
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-item" style="background: #e8f5e9;">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Новых инфраструктурных файла</div>
+            </div>
+            <div class="stat-item" style="background: #e3f2fd;">
+                <div class="stat-number">1</div>
+                <div class="stat-label">Репозиторная политика EOL</div>
+            </div>
+            <div class="stat-item" style="background: #fff3e0;">
+                <div class="stat-number">1</div>
+                <div class="stat-label">Редакторная политика UTF-8</div>
+            </div>
+            <div class="stat-item" style="background: #f3e5f5;">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Изменений бизнес-логики</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Проблема и причина</h2>
+
+            <div class="note">
+                <strong>Проблема:</strong> на Windows Git выдавал предупреждения вида <span class="highlight">LF will be replaced by CRLF</span>, потому что в проекте не было явных репозиторных правил для переводов строк, а локальная настройка <span class="highlight">core.autocrlf=true</span> вносила собственное поведение в рабочую копию.
+            </div>
+
+            <div class="comparison">
+                <div class="comparison-item before">
+                    <div class="comparison-title">До изменений</div>
+                    <ul>
+                        <li>В проекте отсутствовал <span class="highlight">.gitattributes</span>.</li>
+                        <li>В проекте отсутствовал <span class="highlight">.editorconfig</span>.</li>
+                        <li>Git опирался на локальную Windows-настройку и местами конвертировал строки в <span class="highlight">CRLF</span>.</li>
+                        <li>Редакторы не имели единой инструкции по <span class="highlight">UTF-8</span> и окончаниям строк.</li>
+                    </ul>
+                </div>
+                <div class="comparison-item after">
+                    <div class="comparison-title">После изменений</div>
+                    <ul>
+                        <li>Добавлен <span class="highlight">.gitattributes</span> с явными правилами по типам файлов.</li>
+                        <li>Добавлен <span class="highlight">.editorconfig</span> для UTF-8, LF и базовой гигиены файлов.</li>
+                        <li><span class="highlight">*.py</span>, <span class="highlight">*.html</span>, <span class="highlight">*.js</span>, <span class="highlight">*.css</span>, <span class="highlight">*.md</span>, <span class="highlight">*.txt</span> и другие текстовые файлы закреплены за <span class="highlight">LF</span>.</li>
+                        <li><span class="highlight">*.bat</span> и <span class="highlight">*.url</span> оставлены в <span class="highlight">CRLF</span>, что безопасно для Windows.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Что именно добавлено</h2>
+
+            <div class="file">
+                <span class="change-type added">ДОБАВЛЕН</span> .gitattributes
+            </div>
+            <ul>
+                <li>Включено общее правило <span class="highlight">* text=auto</span>.</li>
+                <li>Для исходников и документации зафиксирован <span class="highlight">eol=lf</span>.</li>
+                <li>Для Windows-специфичных файлов <span class="highlight">*.bat</span> и <span class="highlight">*.url</span> оставлен <span class="highlight">eol=crlf</span>.</li>
+                <li>Файл <span class="highlight">salary_icon.ico</span> объявлен бинарным.</li>
+            </ul>
+
+            <div class="file">
+                <span class="change-type added">ДОБАВЛЕН</span> .editorconfig
+            </div>
+            <ul>
+                <li>Установлен <span class="highlight">charset = utf-8</span>.</li>
+                <li>Для большинства файлов задан <span class="highlight">end_of_line = lf</span>.</li>
+                <li>Включены <span class="highlight">insert_final_newline = true</span> и <span class="highlight">trim_trailing_whitespace = true</span>.</li>
+                <li>Для <span class="highlight">*.bat</span> и <span class="highlight">*.url</span> отдельно задан <span class="highlight">crlf</span>.</li>
+            </ul>
+
+            <div class="result-box">
+                <strong>Результат:</strong> теперь правила формата файлов описаны прямо в репозитории, а не зависят от того, на какой машине и с какими глобальными git-настройками работает разработчик.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Что показала попытка полной renormalize</h2>
+
+            <h3>Фактический результат</h3>
+            <ul>
+                <li>Команда <span class="highlight">git add --renormalize .</span> не дала массовых staged-изменений.</li>
+                <li>Это означает, что в истории Git большая часть текстовых файлов уже хранится в нормализованном виде.</li>
+                <li>Проблема находилась не в коммитах репозитория, а в поведении рабочей копии на Windows.</li>
+            </ul>
+
+            <h3>Почему это важно</h3>
+            <ul>
+                <li>Не понадобился шумный коммит на десятки файлов только ради замены EOL.</li>
+                <li>Удалось решить проблему инфраструктурно и безопасно.</li>
+                <li>Бизнес-логика, UI и данные проекта не затронуты.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Проверка</h2>
+
+            <ul>
+                <li>Выполнен анализ текущего состояния через <span class="highlight">git ls-files --eol</span>.</li>
+                <li>Проверено, что массовый <span class="highlight">renormalize</span> не создаёт лишних commit-изменений.</li>
+                <li>Прогнан проектный скрипт <span class="highlight">scripts/check_encoding.ps1</span>.</li>
+                <li>Локальная настройка репозитория была выровнена под новые правила, чтобы снизить вероятность повторных предупреждений на этой машине.</li>
+            </ul>
+
+            <div class="note">
+                <strong>Важно:</strong> часть старых файлов в конкретной рабочей копии может по-прежнему отображаться Git как имеющая Windows-формат строк до их повторного checkout/редактирования, но теперь у проекта есть корректные правила, которые предотвращают расползание этой проблемы дальше.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Детальный список изменений</h2>
+
+            <div class="file">
+                <span class="change-type added">ДОБАВЛЕН</span> .gitattributes
+            </div>
+            <ul>
+                <li>Зафиксированы правила EOL по типам файлов.</li>
+                <li>Убрана неопределённость для Git на Windows.</li>
+            </ul>
+
+            <div class="file">
+                <span class="change-type added">ДОБАВЛЕН</span> .editorconfig
+            </div>
+            <ul>
+                <li>Зафиксированы правила UTF-8 и LF для редакторов.</li>
+                <li>Добавлены базовые настройки гигиены текстовых файлов.</li>
+            </ul>
+
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> version.txt
+            </div>
+            <ul>
+                <li>Версия проекта повышена до <span class="highlight">1.2.15 current</span> перед коммитом.</li>
+            </ul>
+
+            <div class="file">
+                <span class="change-type added">ДОБАВЛЕН</span> docs/changelog_30.03.2026_1.2.15.html
+            </div>
+            <ul>
+                <li>Подготовлен подробный HTML-отчет по инфраструктурной нормализации форматов файлов.</li>
+            </ul>
+
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> docs/changelog.html
+            </div>
+            <ul>
+                <li>Добавлена новая запись о версии 1.2.15 и ссылка на подробный отчет.</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>Версия 1.2.15 закрепляет правила EOL и UTF-8 на уровне репозитория.</p>
+            <p>Это уменьшает шум от CRLF/LF на Windows и делает поведение проекта предсказуемым.</p>
+            <p>Изменения не затрагивают бизнес-логику и безопасны для текущего функционала приложения.</p>
+        </footer>
+    </div>
+</body>
+</html>

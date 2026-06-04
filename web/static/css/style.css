@@ -1,0 +1,107 @@
+/* web/static/css/style.css */
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0,0,0,.1);
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.footer {
+    border-top: 1px solid #dee2e6;
+}
+
+.table-responsive {
+    max-height: 400px;
+}
+
+.month-badge {
+    font-size: 0.8em;
+}
+
+.year-select {
+    max-width: 200px;
+}
+
+.stat-card {
+    border-left: 4px solid #0d6efd;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #e2e8f0;
+    border-top: 5px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    display: none;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+.status.success {
+    background: #48bb78;
+}
+
+.status.error {
+    background: #f56565;
+}
+
+.status.warning {
+    background: #ed8936;
+}
+
+.status.info {
+    background: #4299e1;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

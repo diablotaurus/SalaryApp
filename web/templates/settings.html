@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки - Учет заработной платы{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Настройки приложения</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="mb-3"><i class="bi bi-database me-2"></i>Управление данными</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-outline-primary" id="createBackupBtn">
+                            <i class="bi bi-file-earmark-zip me-2"></i>Создать резервную копию
+                        </button>
+                        <button class="btn btn-outline-secondary" id="listBackupsBtn">
+                            <i class="bi bi-folder me-2"></i>Показать резервные копии
+                        </button>
+                        <button class="btn btn-outline-success" id="exportExcelBtn">
+                            <i class="bi bi-file-excel me-2"></i>Экспорт в Excel
+                        </button>
+                        <button class="btn btn-outline-info" id="exportCsvBtn">
+                            <i class="bi bi-file-text me-2"></i>Экспорт в CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="mb-3"><i class="bi bi-shield me-2"></i>Безопасность</h6>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Внимание!</strong> Резервные копии хранятся локально в папке db/backup/
+                    </div>
+                </div>
+
+                <div id="backupList" class="mb-4" style="display: none;">
+                    <h6 class="mb-3"><i class="bi bi-archive me-2"></i>Доступные резервные копии</h6>
+                    <div class="list-group" id="backupItems">
+                        <!-- Резервные копии будут загружены здесь -->
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="mb-3"><i class="bi bi-info-circle me-2"></i>Информация о системе</h6>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Версия приложения:</small>
+                                    <p class="mb-2">1.0.0</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">База данных:</small>
+                                    <p class="mb-2">SQLite (файловая)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

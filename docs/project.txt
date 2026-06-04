@@ -1,0 +1,144 @@
+SalaryApp/  # project structure v.1.2.1 (current)
+- api/
+  - __init__.py
+  - salary_api.py
+  - settings_api.py
+- bot/
+  - handlers/
+    - __init__.py
+  - keyboards/
+    - __init__.py
+  - bot_config.py
+  - main.py
+  - states.py
+- core/
+  - config/
+    - __init__.py
+    - settings.py
+  - database/
+    - __init__.py
+    - connection.py
+    - migrations.py
+  - models/
+    - __init__.py
+    - report.py
+    - salary.py
+    - year.py
+  - repositories/
+    - __init__.py
+    - salary_repository.py
+    - settings_repository.py
+    - year_repository.py
+  - services/
+    - __init__.py
+    - backup_service.py
+    - export_service.py
+    - salary_service.py
+    - statistics_service.py
+  - utils/
+    - __init__.py
+    - dates.py
+    - files.py
+    - money.py
+  - __init__.py
+  - exceptions.py
+- db/
+  - backup/
+    - salary_backup_20260118_020851.zip
+  - salary.db
+- desktop/
+  - controllers/
+    - __init__.py
+    - navigation_controller.py
+    - salary_controller.py
+  - presenters/
+    - __init__.py
+    - chart_presenter.py
+  - views/
+    - constants/
+      - __init__.py
+      - numbers.py
+      - texts.py
+    - dialogs/
+      - __init__.py
+      - backup_dialog.py
+      - export_dialog.py
+      - salary_dialog.py
+    - main/
+      - __init__.py
+      - main_view.py
+    - report/
+      - __init__.py
+      - chart_constants.py
+      - report_view.py
+    - settings/
+      - __init__.py
+      - settings_view.py
+    - __init__.py
+    - base_view.py
+  - widgets/
+    - __init__.py
+    - dialogs.py
+    - tables.py
+  - __init__.py
+  - app.py
+  - main.py
+  - startup_logging.py
+- docs/
+  - changelog.html
+  - changelog_02.02.2026.html
+  - changelog_03.02.2026.html
+  - changelog_03.02.2026_1.html
+  - changelog_03.02.2026_2.html
+  - changelog_19.01.2026_1.html
+  - changelog_19.01.2026_2.html
+  - changelog_20.01.2026_1.html
+  - changelog_20.01.2026_2.html
+  - changelog_21.01.2026.html
+  - changelog_22.01.2026.html
+  - changelog_23.01.2026.html
+  - changelog_25.01.2026.html
+  - changelog_30.01.2026.html
+  - project.txt
+- exports/
+- logs/
+  - bot.log
+  - startup.log
+- scripts/
+  - check_encoding.ps1
+  - fix_encoding.ps1
+- web/
+  - routes/
+    - __init__.py
+    - errors.py
+    - pages.py
+    - salaries.py
+    - settings.py
+  - static/
+    - css/
+      - style.css
+    - js/
+      - common.js
+      - index.js
+      - reports.js
+      - settings.js
+  - templates/
+    - 404.html
+    - 500.html
+    - base.html
+    - index.html
+    - reports.html
+    - settings.html
+  - __init__.py
+  - app.py
+  - bootstrap.py
+- requirements.txt
+- requirements-dev.txt
+- run_bot.bat
+- run_bot.py
+- run_web.bat
+- run_web.py
+- Salary Web App.url
+- salary_icon.ico
+- StartSalary.pyw
+- version.txt

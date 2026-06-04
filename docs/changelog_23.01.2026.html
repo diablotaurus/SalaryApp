@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Система безопасного обновления и защита рабочей базы данных - версия 0.1.3</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .meta p {
+            margin: 5px 0;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .section h3 {
+            color: #2980b9;
+            margin: 15px 0 10px 0;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .added {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .changed {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .fixed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .improved {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .refactored {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        
+        .security {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .backup {
+            background-color: #e2d9f3;
+            color: #4a235a;
+        }
+        
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+        
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .security-section {
+            background: linear-gradient(to right, #f8d7da, #f5c6cb);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .backup-section {
+            background: linear-gradient(to right, #e2d9f3, #d6c7f5);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #d6c7f5;
+        }
+        
+        .script-section {
+            background: linear-gradient(to right, #d1ecf1, #bee5eb);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #bee5eb;
+        }
+        
+        .config-section {
+            background: linear-gradient(to right, #e8f5e9, #d4edda);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #d4edda;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .summary-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .summary-security {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .summary-backup {
+            background: #e2d9f3;
+            border: 1px solid #d6c7f5;
+        }
+        
+        .summary-script {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+        }
+        
+        .summary-config {
+            background: #e8f5e9;
+            border: 1px solid #d4edda;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .comparison {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison-item {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .before {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        
+        .after {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        .comparison-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .stat-item {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .benefits-list {
+            columns: 2;
+            column-gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .benefits-list {
+                columns: 1;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .stat-box {
+                flex-wrap: wrap;
+            }
+            
+            .summary {
+                flex-direction: column;
+            }
+        }
+        
+        .problem-solution {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .problem, .solution {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .problem {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        
+        .solution {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        .version-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+        
+        .structure-visual {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .tree-structure {
+            display: inline-block;
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .tree-item {
+            margin: 5px 0;
+        }
+        
+        .tree-folder {
+            color: #2980b9;
+            font-weight: bold;
+        }
+        
+        .tree-file {
+            color: #2c3e50;
+        }
+        
+        .tree-package {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .files-changed {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .file-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+        
+        .file-stat {
+            text-align: center;
+        }
+        
+        .file-stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .file-stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .code-snippet {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #4a6fa5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .const-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .const-table th {
+            background: #4a6fa5;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .const-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .const-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .const-value {
+            font-family: 'Courier New', monospace;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .import-example {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .import-keyword {
+            color: #66d9ef;
+        }
+        
+        .import-module {
+            color: #a6e22e;
+        }
+        
+        .import-from {
+            color: #f92672;
+        }
+        
+        .workflow-diagram {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .workflow-step {
+            display: inline-block;
+            width: 120px;
+            margin: 0 10px;
+            text-align: center;
+            vertical-align: top;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            line-height: 40px;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+        
+        .step-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .arrow {
+            display: inline-block;
+            margin: 15px 5px 0;
+            color: #3498db;
+            font-size: 1.5em;
+            vertical-align: top;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .warning-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .environment-box {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .env-current, .env-prod {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .env-current {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+        
+        .env-prod {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        
+        .env-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .db-visual {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #ddd;
+        }
+        
+        .db-box {
+            display: inline-block;
+            width: 200px;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            vertical-align: top;
+        }
+        
+        .db-test {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+        }
+        
+        .db-prod {
+            background: #f8d7da;
+            border: 2px solid #f44336;
+        }
+        
+        .db-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 ChangeLog: Система безопасного обновления и защита рабочей базы данных - версия 0.1.3</h1>
+            <p class="subtitle">Защита от случайного удаления рабочей базы, автоматическое резервное копирование, маркер production окружения</p>
+        </header>
+        
+        <div class="meta">
+            <p><strong>Версия:</strong> v.0.1.3</p>
+            <p><strong>Дата:</strong> <span>23 января 2026 г.</span></p>
+            <p><strong>Этап:</strong> Безопасность и автоматизация обновлений</p>
+            <p><strong>Область изменений:</strong> core/config/settings.py, db_scripts/, desktop/app.py, автоматизация</p>
+            <p><strong>Тип изменений:</strong> Безопасность, автоматизация, резервное копирование</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и протестировано</p>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-item summary-security">
+                <h3>🔐 Безопасность базы</h3>
+                <p>Разделение тестовой/рабочей БД<br>Защита от случайной перезаписи<br>Маркер production окружения</p>
+            </div>
+            <div class="summary-item summary-backup">
+                <h3>💾 Резервное копирование</h3>
+                <p>Автоматические бэкапы перед обновлением<br>Сохранение версий в .backup/<br>Возможность отката</p>
+            </div>
+            <div class="summary-item summary-script">
+                <h3>🚀 Python скрипт</h3>
+                <p>Надежное обновление на Python<br>Исключения через update_exclude.txt<br>Подробное логирование</p>
+            </div>
+            <div class="summary-item summary-config">
+                <h3>⚙️ Конфигурация</h3>
+                <p>Динамическое определение окружения<br>Визуальное предупреждение в заголовке<br>Автоматическое переименование БД</p>
+            </div>
+        </div>
+        
+        <div class="version-display">
+            Учет заработной платы v.0.1.3
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-item" style="background: #f8d7da;">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Защита рабочей БД</div>
+            </div>
+            <div class="stat-item" style="background: #e2d9f3;">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Новых скрипта</div>
+            </div>
+            <div class="stat-item" style="background: #d1ecf1;">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Обновленных файла</div>
+            </div>
+            <div class="stat-item" style="background: #e8f5e9;">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Этапа обновления</div>
+            </div>
+        </div>
+        
+        <div class="security-section">
+            <h2>🔒 Защита рабочей базы данных от случайного удаления</h2>
+            
+            <div class="warning-box">
+                <div class="warning-title">⚠️ КРИТИЧЕСКАЯ ПРОБЛЕМА РЕШЕНА:</div>
+                <p>При копировании кода из папки <strong>current</strong> в папку <strong>prod</strong> существовал риск случайной перезаписи рабочей базы данных. Теперь эта проблема полностью решена!</p>
+            </div>
+            
+            <div class="environment-box">
+                <div class="env-current">
+                    <div class="env-title">🛠️ CURRENT (разработка)</div>
+                    <ul>
+                        <li>База данных: <strong>db/salary.db</strong></li>
+                        <li>Файл <strong>prod.marker</strong>: ОТСУТСТВУЕТ</li>
+                        <li>Заголовок приложения: "Учет заработной платы v.X.X.X"</li>
+                        <li>Назначение: Тестирование новых функций</li>
+                    </ul>
+                </div>
+                <div class="env-prod">
+                    <div class="env-title">🚀 PRODUCTION (рабочая версия)</div>
+                    <ul>
+                        <li>База данных: <strong>db/prod_salary.db</strong></li>
+                        <li>Файл <strong>prod.marker</strong>: ПРИСУТСТВУЕТ</li>
+                        <li>Заголовок приложения: "Учет заработной платы v.X.X.X - РЕАЛЬНАЯ БАЗА!"</li>
+                        <li>Назначение: Рабочая эксплуатация</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="db-visual">
+                <h3>🎯 Разделение баз данных:</h3>
+                <div class="db-box db-test">
+                    <div class="db-title">ТЕСТОВАЯ БАЗА</div>
+                    <p><strong>current/db/salary.db</strong></p>
+                    <p>Используется для разработки и тестирования</p>
+                    <p>Можно безопасно удалять и изменять</p>
+                </div>
+                <div class="db-box db-prod">
+                    <div class="db-title">РАБОЧАЯ БАЗА</div>
+                    <p><strong>prod/db/prod_salary.db</strong></p>
+                    <p>Содержит реальные данные пользователя</p>
+                    <p><strong>ЗАЩИЩЕНА от перезаписи!</strong></p>
+                </div>
+            </div>
+            
+            <div class="problem-solution">
+                <div class="problem">
+                    <h3>❌ ДО версии 0.1.3:</h3>
+                    <ul>
+                        <li><strong>Одинаковые пути:</strong> И current и prod использовали db/salary.db</li>
+                        <li><strong>Риск перезаписи:</strong> При копировании рабочая БД могла быть затерта</li>
+                        <li><strong>Нет визуальных отличий:</strong> Непонятно, с какой БД работаешь</li>
+                        <li><strong>Нет защиты:</strong> Случайная ошибка могла уничтожить данные</li>
+                        <li><strong>Ручное переименование:</strong> Приходилось вручную переименовывать БД</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <h3>✅ ПОСЛЕ версии 0.1.3:</h3>
+                    <ul>
+                        <li><strong>Разные пути:</strong> current: salary.db, prod: prod_salary.db</li>
+                        <li><strong>Защита от перезаписи:</strong> Рабочая БД никогда не затирается</li>
+                        <li><strong>Визуальное предупреждение:</strong> Заголовок показывает "РЕАЛЬНАЯ БАЗА!"</li>
+                        <li><strong>Автоматическое определение:</strong> По наличию файла prod.marker</li>
+                        <li><strong>Автоматическое переименование:</strong> Старая БД автоматически переименовывается</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Рабочая база данных теперь полностью защищена от случайного удаления или перезаписи при обновлении кода. Приложение автоматически определяет окружение и использует соответствующую базу данных с визуальным предупреждением.
+            </div>
+        </div>
+        
+        <div class="config-section">
+            <h2>⚙️ Обновление конфигурации приложения</h2>
+            
+            <div class="note">
+                <strong>Изменения в core/config/settings.py:</strong> Добавлена логика автоматического определения окружения и выбора соответствующей базы данных.
+            </div>
+            
+            <div class="files-changed">
+                <h3>Новый код определения окружения:</h3>
+                
+                <div class="file">
+                    <span class="change-type changed">ОБНОВЛЕН</span> core/config/settings.py
+                </div>
+                
+                <div class="code-block">
+@dataclass
+class DatabaseConfig:
+    """Конфигурация базы данных"""
+    path: str = None  # Будет определяться динамически
+    
+    def __post_init__(self):
+        """Динамически определяем путь к БД в зависимости от окружения"""
+        if self.path is None:
+            # Определяем корневую директорию проекта
+            root_dir = Path(__file__).parent.parent.parent
+            
+            # Проверяем наличие маркера production
+            prod_marker = root_dir / "prod.marker"
+            is_production = prod_marker.exists()
+            
+            if is_production:
+                # Production окружение - используем отдельную базу
+                self.path = "db/prod_salary.db"
+                print(f"[CONFIG] Окружение: PRODUCTION")
+                print(f"[CONFIG] Используется база данных: {self.path}")
+                print(f"[CONFIG] ВНИМАНИЕ: Работа с реальными данными!")
+            else:
+                # Development/Current окружение - используем тестовую базу
+                self.path = "db/salary.db"
+                print(f"[CONFIG] Окружение: DEVELOPMENT/TESTING")
+                print(f"[CONFIG] Используется база данных: {self.path}")
+        
+        # Создаем директорию для базы данных, если её нет
+        db_path = Path(self.path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+                </div>
+                
+                <div class="code-block">
+def get_environment_info() -> tuple[bool, str]:
+    """
+    Определяет окружение и читает информацию из маркера.
+    
+    Returns:
+        tuple[bool, str]: (is_production, marker_text)
+    """
+    root_dir = Path(__file__).parent.parent.parent
+    prod_marker = root_dir / "prod.marker"
+    
+    if prod_marker.exists():
+        try:
+            # Читаем текст из маркера
+            marker_text = prod_marker.read_text(encoding='utf-8').strip()
+            if not marker_text:
+                marker_text = "РЕАЛЬНАЯ БАЗА ДАННЫХ"
+            return True, marker_text
+        except Exception as e:
+            print(f"[CONFIG] Ошибка чтения prod.marker: {e}")
+            return True, "РЕАЛЬНАЯ БАЗА ДАННЫХ"
+    return False, ""
+                </div>
+                
+                <div class="code-block">
+@property
+def display_name_with_version(self) -> str:
+    """Возвращает название приложения с версией и предупреждением для production"""
+    base_name = f"{self.display_name} v.{self.version}"
+    
+    if self.is_production:
+        if self.production_warning:
+            return f"{base_name} - {self.production_warning}"
+        else:
+            return f"{base_name} [PRODUCTION]"
+    else:
+        return base_name
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Приложение теперь автоматически определяет, в каком окружении оно запущено, и использует соответствующую базу данных. В production окружении в заголовке окна отображается предупреждающий текст из файла prod.marker.
+            </div>
+        </div>
+        
+        <div class="script-section">
+            <h2>🚀 Python скрипт для безопасного обновления</h2>
+            
+            <div class="note">
+                <strong>Новый скрипт update_prod.py:</strong> Вместо ненадежных bat-файлов создан полноценный Python скрипт с обработкой ошибок, логированием и резервным копированием.
+            </div>
+            
+            <div class="workflow-diagram">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-description">Проверка закрытия приложения</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-description">Создание резервной копии</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-description">Очистка папки prod</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-description">Копирование из current</div>
+                </div>
+            </div>
+            
+            <div class="files-changed">
+                <h3>Созданные скрипты:</h3>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ ФАЙЛ</span> db_scripts/update_prod.py
+                </div>
+                <p>Основной скрипт обновления production версии (320 строк):</p>
+                <ul>
+                    <li><span class="change-type security">Безопасность</span> - Проверяет закрыто ли приложение</li>
+                    <li><span class="change-type backup">Резервное копирование</span> - Создает бэкап перед обновлением</li>
+                    <li><span class="change-type improved">Очистка</span> - Удаляет старые файлы (кроме .backup, db, prod.marker)</li>
+                    <li><span class="change-type added">Копирование</span> - Копирует файлы с исключениями</li>
+                    <li><span class="change-type improved">Проверка</span> - Проверяет результат копирования</li>
+                </ul>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ ФАЙЛ</span> db_scripts/update_exclude.txt
+                </div>
+                <p>Файл исключений для копирования (поддерживает комментарии!):</p>
+                <div class="code-snippet">
+# Файл исключений для обновления production версии
+# Python поддерживает комментарии!
+
+# База данных и резервные копии
+db
+db/*
+db/backup/*
+*.db
+*.bak
+*.backup
+
+# Маркер production окружения
+prod.marker
+
+# Временные файлы и логи
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+*.log
+logs/*
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Файлы IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Файлы разработки
+requirements-dev.txt
+test_*
+*_test.py
+.gitignore
+
+# Папка резервных копий (создается автоматически)
+.backup
+.backup/*
+                </div>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ ФАЙЛ</span> db_scripts/first_setup.py
+                </div>
+                <p>Скрипт первоначальной настройки production (90 строк):</p>
+                <ul>
+                    <li>Создает папку prod если её нет</li>
+                    <li>Создает структуру подпапок (db, exports, logs)</li>
+                    <li>Создает файл prod.marker с предупреждением</li>
+                    <li>Дает инструкции по переносу рабочей БД</li>
+                </ul>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Создана надежная система обновления production версии на Python. Скрипт автоматически создает резервные копии, очищает папку prod и копирует только необходимые файлы, исключая базу данных и маркер production.
+            </div>
+        </div>
+        
+        <div class="backup-section">
+            <h2>💾 Система автоматического резервного копирования</h2>
+            
+            <div class="note">
+                <strong>Инновационная функция:</strong> Перед каждым обновлением скрипт автоматически создает резервную копию текущей версии с сохранением номера версии и даты.
+            </div>
+            
+            <div class="files-changed">
+                <h3>Логика резервного копирования:</h3>
+                
+                <div class="file">
+                    <span class="change-type added">НОВАЯ ФУНКЦИЯ</span> create_backup_before_update()
+                </div>
+                <p>Функция в update_prod.py, которая:</p>
+                <ul>
+                    <li><span class="highlight">Создает папку .backup</span> если её нет</li>
+                    <li><span class="highlight">Читает версию</span> из version.txt</li>
+                    <li><span class="highlight">Создает папку</span> .backup/{версия}_{дата_время}/</li>
+                    <li><span class="highlight">Копирует все файлы</span> из prod кроме .backup, db, prod.marker</li>
+                    <li><span class="highlight">Создает файл _backup_info.txt</span> с информацией о резервной копии</li>
+                </ul>
+                
+                <div class="structure-visual">
+                    <div class="tree-structure">
+                        <div class="tree-item tree-folder">prod/</div>
+                        <div class="tree-item tree-folder">├── .backup/</div>
+                        <div class="tree-item tree-folder">│   ├── 0.1.2_20250122_143045/</div>
+                        <div class="tree-item tree-file">│   │   ├── _backup_info.txt</div>
+                        <div class="tree-item tree-folder">│   │   ├── desktop/</div>
+                        <div class="tree-item tree-folder">│   │   ├── core/</div>
+                        <div class="tree-item tree-file">│   │   ├── requirements.txt</div>
+                        <div class="tree-item tree-file">│   │   └── ... все файлы версии 0.1.2</div>
+                        <div class="tree-item tree-folder">│   ├── 0.1.3_20250122_150012/</div>
+                        <div class="tree-item tree-file">│   └── ...</div>
+                        <div class="tree-item tree-folder">├── db/</div>
+                        <div class="tree-item tree-file">│   └── prod_salary.db</div>
+                        <div class="tree-item tree-file">├── prod.marker</div>
+                        <div class="tree-item tree-folder">├── desktop/</div>
+                        <div class="tree-item tree-folder">├── core/</div>
+                        <div class="tree-item tree-file">└── version.txt</div>
+                    </div>
+                </div>
+                
+                <div class="file">
+                    <span class="change-type added">НОВАЯ ФУНКЦИЯ</span> clean_prod_directory()
+                </div>
+                <p>Функция очистки папки prod перед копированием новых файлов:</p>
+                <ul>
+                    <li><span class="highlight">Сохраняет:</span> .backup/, db/, prod.marker</li>
+                    <li><span class="highlight">Удаляет:</span> Все остальные файлы и папки</li>
+                    <li><span class="highlight">Логирует:</span> Количество удаленных и сохраненных файлов</li>
+                    <li><span class="highlight">Обрабатывает ошибки:</span> Продолжает работу при ошибках удаления</li>
+                </ul>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Теперь перед каждым обновлением автоматически создается резервная копия текущей версии. В случае проблем с новым обновлением можно легко откатиться к предыдущей версии из папки .backup/. Это обеспечивает максимальную безопасность при обновлении production версии.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📁 Детальный список изменений</h2>
+            
+            <h3>Созданные файлы и скрипты:</h3>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ СКРИПТ</span> db_scripts/update_prod.py
+            </div>
+            <ul>
+                <li><span class="highlight">320 строк</span> кода на Python</li>
+                <li>Полная обработка ошибок и исключений</li>
+                <li>Подробное логирование каждого этапа</li>
+                <li>Автоматическое резервное копирование</li>
+                <li>Интеллектуальная очистка папки prod</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ ФАЙЛ</span> db_scripts/update_exclude.txt
+            </div>
+            <ul>
+                <li><span class="highlight">30 строк</span> с исключениями</li>
+                <li>Поддерживает комментарии (не как bat-файл!)</li>
+                <li>Гибкая настройка исключений</li>
+                <li>Легко добавлять новые исключения</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ СКРИПТ</span> db_scripts/first_setup.py
+            </div>
+            <ul>
+                <li><span class="highlight">90 строк</span> кода на Python</li>
+                <li>Первоначальная настройка production окружения</li>
+                <li>Создание структуры папок</li>
+                <li>Создание prod.marker с предупреждением</li>
+            </ul>
+            
+            <h3>Обновленные файлы:</h3>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> core/config/settings.py
+            </div>
+            <ul>
+                <li>Добавлена логика определения окружения</li>
+                <li>Динамический выбор базы данных</li>
+                <li>Чтение текста из prod.marker для заголовка</li>
+                <li>Визуальное предупреждение в production</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> core/database/connection.py
+            </div>
+            <ul>
+                <li>Добавлено логирование подключения к БД</li>
+                <li>Предупреждение при работе с реальной БД</li>
+                <li>Поддержка нового пути prod_salary.db</li>
+            </ul>
+            
+            <h3>Созданные bat-файлы (для удобства):</h3>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ ФАЙЛ</span> db_scripts/update_prod.bat
+            </div>
+            <ul>
+                <li>Запускает update_prod.py</li>
+                <li>Проверяет наличие Python</li>
+                <li>Показывает результат выполнения</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ ФАЙЛ</span> db_scripts/first_setup.bat
+            </div>
+            <ul>
+                <li>Запускает first_setup.py</li>
+                <li>Первоначальная настройка production</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Достигнутые цели и преимущества</h2>
+            
+            <h3>Безопасность и надежность:</h3>
+            <div class="benefits-list">
+                <ul>
+                    <li><strong>100% защита рабочей БД:</strong> Невозможно случайно удалить или перезаписать</li>
+                    <li><strong>Автоматические резервные копии:</strong> Перед каждым обновлением</li>
+                    <li><strong>Визуальное предупреждение:</strong> Заголовок показывает работу с реальной БД</li>
+                    <li><strong>Простота отката:</strong> Легко восстановить предыдущую версию</li>
+                    <li><strong>Надежный скрипт на Python:</strong> Вместо ненадежных bat-файлов</li>
+                    <li><strong>Обработка ошибок:</strong> Продолжает работу даже при ошибках</li>
+                </ul>
+            </div>
+            
+            <h3>Удобство и автоматизация:</h3>
+            <ul>
+                <li><strong>Автоматическое определение окружения:</strong> По наличию prod.marker</li>
+                    <li><strong>Автоматическое переименование БД:</strong> Старая salary.db → prod_salary.db</li>
+                    <li><strong>Чистый процесс обновления:</strong> 4 четких этапа</li>
+                    <li><strong>Подробное логирование:</strong> Видно, что происходит на каждом этапе</li>
+                    <li><strong>Гибкие исключения:</strong> Легко настраивать, что копировать</li>
+                    <li><strong>Кроссплатформенность:</strong> Python скрипт работает везде</li>
+                </ul>
+                
+                <h3>Тестирование после изменений:</h3>
+                <ul>
+                    <li><strong>✅ Запуск в current:</strong> Использует salary.db, нет предупреждения</li>
+                    <li><strong>✅ Запуск в prod:</strong> Использует prod_salary.db, показывает предупреждение</li>
+                    <li><strong>✅ Обновление через скрипт:</strong> Создает резервную копию, копирует файлы</li>
+                    <li><strong>✅ Сохранение рабочей БД:</strong> prod_salary.db не перезаписывается</li>
+                    <li><strong>✅ Сохранение маркера:</strong> prod.marker не удаляется</li>
+                    <li><strong>✅ Резервные копии:</strong> Создаются в .backup/ с версией и датой</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>⚠️ Инструкция по использованию новой системы</h2>
+                
+                <div class="note">
+                    <strong>Для новых проектов:</strong> Используйте first_setup.py для первоначальной настройки production окружения.
+                </div>
+                
+                <h3>Первоначальная настройка:</h3>
+                <ol>
+                    <li><strong>Запустите first_setup.bat</strong> или first_setup.py</li>
+                    <li><strong>Скопируйте рабочую базу данных</strong> в prod/db/</li>
+                    <li><strong>Переименуйте базу</strong> в prod_salary.db (или оставьте как salary.db - скрипт переименует автоматически)</li>
+                    <li><strong>Проверьте наличие файла</strong> prod.marker в корне prod</li>
+                </ol>
+                
+                <h3>Процесс обновления:</h3>
+                <ol>
+                    <li><strong>Закройте приложение SalaryApp</strong> если оно открыто</li>
+                    <li><strong>Запустите update_prod.bat</strong> или update_prod.py</li>
+                    <li><strong>Следуйте инструкциям</strong> на экране</li>
+                    <li><strong>Проверьте результат:</strong> Резервная копия создана в .backup/, файлы обновлены</li>
+                    <li><strong>Запустите приложение</strong> из папки prod и проверьте работу</li>
+                </ol>
+                
+                <h3>Восстановление из резервной копии:</h3>
+                <ol>
+                    <li><strong>Найдите нужную версию</strong> в prod/.backup/{версия}_{дата}/</li>
+                    <li><strong>Скопируйте файлы</strong> из резервной копии в корень prod</li>
+                    <li><strong>Не копируйте:</strong> .backup/, db/, prod.marker (если не хотите их перезаписать)</li>
+                </ol>
+                
+                <div class="result-box">
+                    <strong>Итог версии 0.1.3:</strong> Создана комплексная система безопасного обновления production версии. Рабочая база данных теперь полностью защищена от случайного удаления, перед каждым обновлением создаются резервные копии, а приложение визуально предупреждает о работе с реальными данными. Все это значительно повышает надежность и безопасность эксплуатации приложения.
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🚀 Будущие улучшения на основе новой системы</h2>
+                
+                <div class="benefits-list">
+                    <ul>
+                        <li><strong>Автоматические обновления:</strong> Планировщик задач для регулярных бэкапов</li>
+                        <li><strong>Версионность базы данных:</strong> Миграции схемы БД при обновлении</li>
+                        <li><strong>Удаленные резервные копии:</strong> Автоматическая выгрузка бэкапов в облако</li>
+                        <li><strong>Интеграция с Git:</strong> Автоматическое определение изменений между версиями</li>
+                        <li><strong>Графический интерфейс:</strong> GUI для управления обновлениями и бэкапами</li>
+                        <li><strong>Уведомления:</strong> Email или Telegram уведомления об успешных обновлениях</li>
+                        <li><strong>Статистика обновлений:</strong> История всех обновлений с комментариями</li>
+                    </ul>
+                </div>
+                
+                <div class="result-box">
+                    <strong>Заключение:</strong> Версия 0.1.3 представляет собой значительный шаг вперед в плане безопасности и надежности приложения. Теперь пользователи могут быть уверены, что их данные защищены от случайного удаления, а процесс обновления стал максимально безопасным и автоматизированным.
+                </div>
+            </div>
+            
+            <footer>
+                <p>🔒 Рабочая база данных теперь полностью защищена от случайного удаления</p>
+                <p>💾 Автоматические резервные копии перед каждым обновлением</p>
+                <p>🚀 Надежный Python скрипт вместо bat-файлов</p>
+                <p>⚠️ Визуальное предупреждение при работе с реальными данными</p>
+            </footer>
+        </div>
+        
+        <script>
+            // Устанавливаем текущую дату
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.querySelectorAll('span').forEach(span => {
+                if (!span.textContent.trim()) {
+                    span.textContent = now.toLocaleDateString('ru-RU', options);
+                }
+            });
+        </script>
+    </body>
+    </html>

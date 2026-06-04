@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Чистота кода, логирование и развязка зависимостей - версия 1.2.18</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .meta p {
+            margin: 5px 0;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section h3 {
+            color: #2980b9;
+            margin: 15px 0 10px 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .added {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .changed {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .fixed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .improved {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .refactored {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .removed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .logging-section {
+            background: linear-gradient(to right, #e3f2fd, #e8f5e9);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #bbdefb;
+        }
+
+        .cleanup-section {
+            background: linear-gradient(to right, #f3e5f5, #e0f2f1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #e1bee7;
+        }
+
+        .arch-section {
+            background: linear-gradient(to right, #fff3e0, #e8f5e9);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #ffe0b2;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .summary-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-logging {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+        }
+
+        .summary-cleanup {
+            background: #f3e5f5;
+            border: 1px solid #e1bee7;
+        }
+
+        .summary-arch {
+            background: #fff3e0;
+            border: 1px solid #ffe0b2;
+        }
+
+        .summary-tests {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .comparison {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-item {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .before {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+
+        .after {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+
+        .comparison-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .code-snippet {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #4a6fa5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .version-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+
+        .files-changed {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .arch-diagram {
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .arch-box {
+            display: inline-block;
+            padding: 10px 18px;
+            border: 2px solid #4a6fa5;
+            border-radius: 5px;
+            margin: 5px;
+            background: white;
+        }
+
+        .arch-arrow {
+            font-size: 1.4em;
+            color: #4a6fa5;
+            margin: 0 8px;
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                flex-direction: column;
+            }
+
+            .stat-box {
+                flex-wrap: wrap;
+            }
+
+            .summary {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧹 ChangeLog: Чистота кода, логирование и развязка зависимостей - версия 1.2.18</h1>
+            <p class="subtitle">Логирование вместо print, гигиена исключений, удаление мёртвого кода и развязка общих хелперов API</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.18</p>
+            <p><strong>Дата:</strong> <span>3 июня 2026 г.</span></p>
+            <p><strong>Этап:</strong> Продолжение аудита: качество кода и архитектура</p>
+            <p><strong>Область изменений:</strong> core/services/*, api/* (settings_api, common, salary_api_modules), desktop/presenters, desktop/views/report, desktop/widgets</p>
+            <p><strong>Тип изменений:</strong> Рефакторинг (DRY/SOLID), логирование, удаление мёртвого кода, развязка зависимостей</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и протестировано (77/77 тестов)</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item summary-logging">
+                <h3>📝 Логирование</h3>
+                <p>print → logging в сервисах<br>Гигиена except<br>Корректные трассировки</p>
+            </div>
+            <div class="summary-item summary-cleanup">
+                <h3>🧹 Мёртвый код</h3>
+                <p>Удалён EditableTable<br>4 legacy-метода презентера<br>Неиспользуемые импорты</p>
+            </div>
+            <div class="summary-item summary-arch">
+                <h3>🏛️ Архитектура</h3>
+                <p>SettingsAPI под единый стиль<br>common → api/common.py<br>Развязка зависимостей</p>
+            </div>
+            <div class="summary-item summary-tests">
+                <h3>✅ Тесты</h3>
+                <p>77 тестов пройдено<br>UTF-8 без BOM<br>Импорты проверены</p>
+            </div>
+        </div>
+
+        <div class="version-display">
+            SalaryApp v.1.2.18 current
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-item" style="background: #e3f2fd;">
+                <div class="stat-number">6</div>
+                <div class="stat-label">print → logging</div>
+            </div>
+            <div class="stat-item" style="background: #f3e5f5;">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Удалено блоков мёртвого кода</div>
+            </div>
+            <div class="stat-item" style="background: #fff3e0;">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Импортов развязано</div>
+            </div>
+            <div class="stat-item" style="background: #e8f5e9;">
+                <div class="stat-number">77</div>
+                <div class="stat-label">Тестов пройдено</div>
+            </div>
+        </div>
+
+        <!-- ==================== ЛОГИРОВАНИЕ ==================== -->
+        <div class="logging-section">
+            <h2>📝 Группа Б2.1–Б2.2 — Логирование и гигиена исключений</h2>
+
+            <div class="note">
+                <strong>Проблема:</strong> Сервис резервного копирования выводил сообщения и ошибки через <span class="highlight">print()</span> — в desktop-режиме (.pyw) консоли нет, поэтому сообщения терялись. Дополнительно встречались «голые» <span class="highlight">except:</span>, перехватывающие в том числе прерывание пользователем.
+            </div>
+
+            <div class="comparison">
+                <div class="comparison-item before">
+                    <div class="comparison-title">ДО изменений</div>
+                    <ul>
+                        <li>6× <span class="highlight">print()</span> в backup_service.py</li>
+                        <li>Ошибки не попадали в лог-файлы</li>
+                        <li>Голые <span class="highlight">except:</span> в backup/export сервисах</li>
+                    </ul>
+                </div>
+                <div class="comparison-item after">
+                    <div class="comparison-title">ПОСЛЕ изменений</div>
+                    <ul>
+                        <li><span class="highlight">logger.info / logger.exception</span> с трассировкой</li>
+                        <li>Сообщения попадают в общий лог приложения</li>
+                        <li><span class="highlight">except Exception:</span> вместо голого except</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="files-changed">
+                <div class="file"><span class="change-type improved">УЛУЧШЕНО</span> core/services/backup_service.py</div>
+                <div class="code-snippet"># было
+except Exception as e:
+    print(f"Error restoring backup: {e}")
+# стало
+except Exception:
+    logger.exception("Error restoring backup")</div>
+                <div class="file"><span class="change-type fixed">ИСПРАВЛЕНО</span> core/services/export_service.py, core/services/backup_service.py</div>
+                <p>Голые <span class="highlight">except:</span> заменены на <span class="highlight">except Exception:</span>.</p>
+            </div>
+        </div>
+
+        <!-- ==================== DRY ==================== -->
+        <div class="logging-section">
+            <h2>♻️ Группа Б2.3–Б2.4 — DRY и удаление мусора</h2>
+
+            <div class="files-changed">
+                <div class="file"><span class="change-type refactored">DRY</span> core/services/export_service.py</div>
+                <p>Список названий месяцев больше не дублируется — используется единый источник <span class="highlight">DateUtils.get_month_name</span>:</p>
+                <div class="code-snippet"># было
+month_names = ['Январь', ..., 'Декабрь']
+month_name = month_names[row['month'] - 1]
+# стало
+month_name = DateUtils.get_month_name(row['month'])</div>
+
+                <div class="file"><span class="change-type removed">УДАЛЕНО</span> core/services/backup_service.py, core/services/export_service.py</div>
+                <p>Удалён неиспользуемый <span class="highlight">import sqlite3</span> в обоих сервисах.</p>
+            </div>
+        </div>
+
+        <!-- ==================== МЁРТВЫЙ КОД ==================== -->
+        <div class="cleanup-section">
+            <h2>🧹 Группа Б3 — Удаление мёртвого и недостижимого кода</h2>
+
+            <div class="note">
+                <strong>Проблема:</strong> В проекте оставались артефакты прошлых итераций: неиспользуемый виджет таблицы и устаревшие методы презентера графиков, недостижимые при текущем потоке данных.
+            </div>
+
+            <div class="files-changed">
+                <div class="file"><span class="change-type removed">УДАЛЕНО</span> desktop/widgets/tables.py (класс EditableTable)</div>
+                <p>Класс <span class="highlight">EditableTable</span> нигде не инстанцировался (только реэкспорт). Файл удалён, импорт из <span class="highlight">desktop/widgets/__init__.py</span> убран.</p>
+
+                <div class="file"><span class="change-type removed">УДАЛЕНО</span> desktop/presenters/chart_presenter.py (4 legacy-метода)</div>
+                <p>Удалены устаревшие <span class="highlight">prepare_monthly / prepare_yearly / prepare_growth / prepare_average</span> (для старого формата <span class="highlight">{labels, datasets}</span>). Контроллер аналитики всегда передаёт DTO с ключом <span class="highlight">items</span>, поэтому эти методы были недостижимы.</p>
+
+                <div class="file"><span class="change-type refactored">УПРОЩЕНО</span> desktop/views/report/report_view.py</div>
+                <p>4 ветки построения графиков упрощены — недостижимый fallback на legacy-методы убран:</p>
+                <div class="code-snippet"># было
+else:
+    model = self.presenter.prepare_monthly(data) if data else {"has_data": False}
+# стало
+else:
+    model = {"has_data": False}</div>
+            </div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Кодовая база стала меньше и понятнее, исчезли «мёртвые» ветки, которые усложняли чтение и сопровождение модуля аналитики.
+            </div>
+        </div>
+
+        <!-- ==================== АРХИТЕКТУРА ==================== -->
+        <div class="arch-section">
+            <h2>🏛️ Группа Б2.5 + развязка — Архитектура API</h2>
+
+            <div class="note">
+                <strong>Цель:</strong> Привести <span class="highlight">SettingsAPI</span> к единому стилю ответов остального API и устранить нездоровую связанность между пакетами.
+            </div>
+
+            <div class="files-changed">
+                <div class="file"><span class="change-type refactored">РЕФАКТОРИНГ</span> api/settings_api.py</div>
+                <p>Методы переписаны на общие хелперы (<span class="highlight">success / failure / execute_with_default_error</span>), убраны вводящие в заблуждение docstring про несуществующее «кэширование». Форма ответа сохранена.</p>
+
+                <div class="file"><span class="change-type changed">ПЕРЕМЕЩЕНО</span> api/salary_api_modules/common.py → api/common.py</div>
+                <p>Общие хелперы ответов вынесены на уровень пакета <span class="highlight">api</span>, чтобы <span class="highlight">settings_api</span> не зависел от внутреннего пакета <span class="highlight">salary_api_modules</span>. Обновлены 5 импортов (queries, commands, maintenance, analytics, settings_api).</p>
+
+                <div class="arch-diagram">
+                    <div class="arch-box">settings_api</div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-box" style="background: #e8f5e9; border-color: #28a745;"><strong>api/common</strong></div>
+                    <span class="arch-arrow">←</span>
+                    <div class="arch-box">salary_api_modules/*</div>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>Нюанс поведения:</strong> в рамках унификации <span class="highlight">SettingsAPI</span> теперь перехватывает <span class="highlight">RECOVERABLE_EXCEPTIONS</span> (как и весь API), а не «любой Exception». Это консистентно с <span class="highlight">SalaryAPI</span>; web-роуты перехватывают остаток на своей границе.
+            </div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Единый стиль ответов во всём API, отсутствие межпакетной связанности, корректная документация.
+            </div>
+        </div>
+
+        <!-- ==================== ДЕТАЛЬНЫЙ СПИСОК ==================== -->
+        <div class="section">
+            <h2>📁 Детальный список изменений</h2>
+
+            <div class="file"><span class="change-type improved">УЛУЧШЕНО</span> core/services/backup_service.py</div>
+            <ul>
+                <li>6× <span class="highlight">print()</span> → <span class="highlight">logger.info / logger.exception</span></li>
+                <li>Голый <span class="highlight">except:</span> → <span class="highlight">except Exception:</span></li>
+                <li>Удалён неиспользуемый <span class="highlight">import sqlite3</span></li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">РЕФАКТОРИНГ</span> core/services/export_service.py</div>
+            <ul>
+                <li>DRY: названия месяцев через <span class="highlight">DateUtils.get_month_name</span></li>
+                <li>Голый <span class="highlight">except:</span> → <span class="highlight">except Exception:</span></li>
+                <li>Удалён неиспользуемый <span class="highlight">import sqlite3</span></li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">РЕФАКТОРИНГ</span> api/settings_api.py</div>
+            <ul>
+                <li>Переход на общие хелперы ответов, исправлены docstring</li>
+            </ul>
+
+            <div class="file"><span class="change-type changed">ПЕРЕМЕЩЕНО</span> api/common.py (из api/salary_api_modules/common.py)</div>
+            <ul>
+                <li>Обновлены импорты в queries, commands, maintenance, analytics, settings_api</li>
+            </ul>
+
+            <div class="file"><span class="change-type removed">УДАЛЕНО</span> desktop/widgets/tables.py</div>
+            <ul>
+                <li>Мёртвый класс <span class="highlight">EditableTable</span>; убран импорт из widgets/__init__.py</li>
+            </ul>
+
+            <div class="file"><span class="change-type removed">УДАЛЕНО</span> desktop/presenters/chart_presenter.py</div>
+            <ul>
+                <li>4 недостижимых legacy-метода построения графиков</li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">УПРОЩЕНО</span> desktop/views/report/report_view.py</div>
+            <ul>
+                <li>4 ветки отрисовки графиков упрощены (убран недостижимый fallback)</li>
+            </ul>
+        </div>
+
+        <!-- ==================== ЦЕЛИ И ПРОВЕРКИ ==================== -->
+        <div class="section">
+            <h2>🎯 Достигнутые цели</h2>
+            <ul>
+                <li><strong>✅ Наблюдаемость:</strong> сервисы пишут в лог, а не в потерянный stdout</li>
+                <li><strong>✅ Надёжность:</strong> исключения перехватываются корректно (без голых except)</li>
+                <li><strong>✅ DRY:</strong> единый источник названий месяцев, удалены дубли и мусор</li>
+                <li><strong>✅ SOLID:</strong> единый стиль ответов API, развязка межпакетной связанности</li>
+                <li><strong>✅ Совместимость:</strong> проверены вызовы из StartSalary.pyw, run_web.py, run_bot.py, desktop/app.py, bot/main.py</li>
+                <li><strong>✅ Кодировка:</strong> все файлы в чистом UTF-8 без BOM (правило AGENTS.md)</li>
+            </ul>
+
+            <h3>Тестирование:</h3>
+            <ul>
+                <li><strong>Полный прогон тестов:</strong> ✅ 77 из 77 пройдено</li>
+                <li><strong>Импорты модулей:</strong> ✅ api, core, desktop — без ошибок</li>
+                <li><strong>Поиск мёртвых ссылок:</strong> ✅ обращений к удалённому коду не осталось</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>⚠️ Совместимость</h2>
+            <div class="note">
+                <strong>Обратная совместимость:</strong> публичный фасад <span class="highlight">SalaryAPI</span>, форма ответов API и поведение desktop/web/bot сохранены. Изменения внутренние.
+            </div>
+        </div>
+
+        <footer>
+            <p>📝 Логирование вместо print, корректная обработка исключений</p>
+            <p>🧹 Удалён мёртвый код: EditableTable и legacy-методы презентера</p>
+            <p>🏛️ Единый стиль ответов API и развязка зависимостей (api/common.py)</p>
+            <p>✅ Все 77 тестов пройдены, кодировка UTF-8 без BOM</p>
+        </footer>
+    </div>
+</body>
+</html>

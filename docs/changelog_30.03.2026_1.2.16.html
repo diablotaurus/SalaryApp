@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Восстановление кодировки desktop/app.py - версия 1.2.16</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        .section h3 { color: #2980b9; margin: 15px 0 10px 0; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .added { background-color: #d4edda; color: #155724; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .highlight { background: #fff3cd; padding: 2px 6px; border-radius: 4px; }
+        .version-display { font-size: 1.8em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+        .result { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 6px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ChangeLog: Восстановление кодировки desktop/app.py - версия 1.2.16</h1>
+            <p class="subtitle">Исправлены кракозябры в комментариях и docstring главного desktop-модуля</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.16</p>
+            <p><strong>Дата:</strong> 30 марта 2026 г.</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и проверено</p>
+            <p><strong>Область изменений:</strong> desktop/app.py, docs/changelog_30.03.2026_1.2.16.html, docs/changelog.html, version.txt</p>
+            <p><strong>Тип изменений:</strong> Восстановление кодировки и читаемости исходного файла</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.16</div>
+
+        <div class="section">
+            <h2>Проблема</h2>
+            <div class="note">
+                В файле <span class="highlight">desktop/app.py</span> русские комментарии и docstring были испорчены в mojibake-формат вида <span class="highlight">Р“Р»Р°...</span>. Это не влияло на выполнение Python-кода, но делало файл неудобным для чтения и сопровождения.
+            </div>
+            <ul>
+                <li>Логика приложения оставалась рабочей.</li>
+                <li>Проблема касалась только человекочитаемого текста в исходнике.</li>
+                <li>Notepad++ показывал кракозябры, потому что сам текст в файле уже был испорчен, а не из-за ошибки редактора.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Что сделано</h2>
+            <div class="file"><span class="change-type fixed">FIXED</span> desktop/app.py</div>
+            <ul>
+                <li>Восстановлены читаемые русские docstring в модуле и классе <span class="highlight">App</span>.</li>
+                <li>Восстановлены комментарии внутри методов без изменения бизнес-логики.</li>
+                <li>Сохранены все актуальные вызовы, включая <span class="highlight">create_auto_backup_on_close()</span>.</li>
+                <li>Файл заново сохранен в корректном UTF-8.</li>
+            </ul>
+            <div class="result">
+                Результат: <span class="highlight">desktop/app.py</span> снова нормально читается в редакторе и соответствует требованию проекта по UTF-8.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Проверка</h2>
+            <ul>
+                <li>Выполнен <span class="highlight">python -m py_compile desktop/app.py StartSalary.pyw</span>.</li>
+                <li>Проверено, что точка входа desktop-приложения не сломана.</li>
+                <li>Проведен дополнительный поиск похожего mojibake-паттерна; в активном коде явных новых случаев не выявлено.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>История и вывод</h2>
+            <ul>
+                <li>Проблема была локализована в содержимом самого файла, а не в настройках Notepad++.</li>
+                <li>Исправление выполнено точечно, без изменения функционального поведения desktop-приложения.</li>
+                <li>Релиз 1.2.16 является безопасным восстановлением читаемости исходников.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

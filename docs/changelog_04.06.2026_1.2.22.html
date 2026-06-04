@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Подготовка к публикации на GitHub - версия 1.2.22</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.1em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 20px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .security { background-color: #f8d7da; color: #721c24; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .highlight { background-color: #fffacd; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; }
+        .result-box { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+        .version-display { font-size: 1.8em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌍 ChangeLog: Подготовка к публикации на GitHub - версия 1.2.22</h1>
+            <p class="subtitle">Открытие исходников: README, лицензия Apache-2.0, удаление личных данных, чистая история</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.22</p>
+            <p><strong>Дата:</strong> 4 июня 2026 г.</p>
+            <p><strong>Этап:</strong> Публикация проекта как open-source</p>
+            <p><strong>Область изменений:</strong> README.md, LICENSE, NOTICE, .gitignore, scripts/, docs/, version.txt</p>
+            <p><strong>Статус:</strong> ✅ Подготовлено к публичному репозиторию</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.22 current</div>
+
+        <div class="section">
+            <h2>🌍 Что сделано для открытия исходников</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span>Добавлен <span class="highlight">README.md</span> (двуязычный RU + EN): описание, возможности, структура, установка, запуск, настройка бота, деплой.</li>
+                <li><span class="change-type added">NEW</span>Добавлены <span class="highlight">LICENSE</span> (Apache-2.0) и <span class="highlight">NOTICE</span>.</li>
+                <li><span class="change-type security">PRIVACY</span>Из репозитория исключены реальные данные: финансовый экспорт (<span class="highlight">exports/</span>) и личный ярлык запуска добавлены в <span class="highlight">.gitignore</span>.</li>
+                <li><span class="change-type changed">CHANGED</span>Личные пути вычищены из отслеживаемых файлов и заменены плейсхолдерами (<span class="highlight">&lt;DEV&gt;</span>, <span class="highlight">&lt;PROD&gt;</span>, <span class="highlight">&lt;DATA&gt;</span>).</li>
+                <li><span class="change-type changed">CHANGED</span>Скрипт деплоя больше не хранит личный путь: каталог production задаётся аргументом, переменной <span class="highlight">SALARYAPP_PROD_DIR</span> или локальным (не версионируемым) файлом <span class="highlight">scripts/deploy_target.local.txt</span>.</li>
+            </ul>
+
+            <div class="note">
+                <strong>История git:</strong> публичный репозиторий создаётся с <em>чистой историей</em> (один начальный коммит), чтобы ни токен бота, ни прежние финансовые данные не присутствовали в истории.
+            </div>
+
+            <h3>Файлы</h3>
+            <div class="file"><span class="change-type added">НОВЫЙ</span> README.md, LICENSE, NOTICE</div>
+            <div class="file"><span class="change-type changed">ОБНОВЛЁН</span> .gitignore (exports/, deploy_target.local.txt, Salary Web App.url)</div>
+            <div class="file"><span class="change-type changed">ОБНОВЛЁН</span> scripts/deploy_to_prod.py (путь к prod — без личных данных), scripts/DEPLOY.md</div>
+            <div class="file"><span class="change-type changed">ОБНОВЛЁН</span> TESTING.md, docs/changelog_04.06.2026_1.2.20.html (плейсхолдеры путей)</div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Проект готов к публикации как открытый репозиторий: есть лицензия и описание, личные/чувствительные данные не попадают в репозиторий, а новая история не содержит секретов.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Проверки</h2>
+            <ul>
+                <li>✅ В отслеживаемых файлах не осталось личных путей (кроме подписи автора в подвале web).</li>
+                <li>✅ Скрипт деплоя: dry-run работает, путь к prod берётся из локального файла/переменной.</li>
+                <li>✅ Тесты приложения проходят; кодировка UTF-8 без BOM.</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>🌍 Проект открыт под Apache-2.0 с двуязычным README</p>
+            <p>🔒 Личные и финансовые данные исключены; история чистая</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp - версия v.1.2.22</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .improved { background-color: #d1ecf1; color: #0c5460; }
+        .fixed { background-color: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .version-display { font-size: 1.6em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        .highlight { background: #fff3cd; padding: 2px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.22</h1>
+            <p class="subtitle">Краткий отчет: подготовка к публикации на GitHub (open-source)</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.22</p>
+            <p><strong>Дата:</strong> 4 июня 2026 г.</p>
+            <p><strong>Статус:</strong> ✅ Подготовлено к публичному репозиторию</p>
+            <p><strong>Подробный отчет:</strong> <a href="changelog_04.06.2026_1.2.22.html">docs/changelog_04.06.2026_1.2.22.html</a></p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.22 current</div>
+
+        <div class="section">
+            <h2>Кратко по проделанной работе</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span>Добавлены <span class="highlight">README.md</span> (RU + EN), <span class="highlight">LICENSE</span> (Apache-2.0) и <span class="highlight">NOTICE</span>.</li>
+                <li><span class="change-type added">PRIVACY</span>Из репозитория исключены реальные данные: <span class="highlight">exports/</span> и личный ярлык запуска добавлены в <span class="highlight">.gitignore</span>.</li>
+                <li><span class="change-type changed">CHANGED</span>Личные пути вычищены (плейсхолдеры). Скрипт деплоя берёт путь к prod из аргумента / <span class="highlight">SALARYAPP_PROD_DIR</span> / локального <span class="highlight">scripts/deploy_target.local.txt</span>.</li>
+                <li><span class="change-type fixed">SAFE</span>Публичный репозиторий создан с чистой историей (без токена и финансовых данных). UTF-8 без BOM.</li>
+            </ul>
+            <div class="file">README.md, LICENSE, NOTICE, .gitignore, scripts/deploy_to_prod.py, scripts/DEPLOY.md, TESTING.md, version.txt, docs/changelog_04.06.2026_1.2.22.html, docs/changelog.html</div>
+        </div>
+
+        <div class="section">
+            <h2>История изменений</h2>
+            <ul>
+                <li><a href="changelog_04.06.2026_1.2.22.html">04-06-2026</a> — v.1.2.22 — подготовка к публикации на GitHub (подробный отчет)</li>
+                <li><a href="changelog_04.06.2026_1.2.21.html">04-06-2026</a> — v.1.2.21 — защита деплоя через prod.marker (подробный отчет)</li>
+                <li><a href="changelog_04.06.2026_1.2.20.html">04-06-2026</a> — v.1.2.20 — скрипт ручного деплоя в production (подробный отчет)</li>
+                <li><a href="changelog_03.06.2026_1.2.19.html">03-06-2026</a> — v.1.2.19 — удаление неиспользуемого SalaryController (подробный отчет)</li>
+                <li><a href="changelog_03.06.2026_1.2.18.html">03-06-2026</a> — v.1.2.18 — логирование, гигиена исключений, удаление мёртвого кода, развязка зависимостей API (подробный отчет)</li>
+                <li><a href="changelog_03.06.2026_1.2.17.html">03-06-2026</a> — v.1.2.17 — безопасность токена бота, атомарное удаление года, чистка кода (подробный отчет)</li>
+                <li><a href="changelog_30.03.2026_1.2.16.html">30-03-2026</a> — v.1.2.16 — восстановление кодировки desktop/app.py (подробный отчет)</li>
+                <li><a href="changelog_30.03.2026_1.2.15.html">30-03-2026</a> — v.1.2.15 — правила UTF-8/LF, .gitattributes и .editorconfig (подробный отчет)</li>
+                <li><a href="changelog_30.03.2026_1.2.14.html">30-03-2026</a> — v.1.2.14 — hover-подсветка чекбоксов и перенос блока экспорта на вкладке "Настройки" (подробный отчет)</li>
+                <li><a href="changelog_25.03.2026_1.2.13.html">25-03-2026</a> — v.1.2.13 — мобильная статистика Telegram, команды /YYYY и исправление run_bot.bat (подробный отчет)</li>
+                <li><a href="changelog_06.03.2026_1.2.12.html">06-03-2026</a> — v.1.2.12 — учет фактической даты выплаты зарплаты в среднемесячном (подробный отчет)</li>
+                <li><a href="changelog_06.03.2026_1.2.11.html">06-03-2026</a> — v.1.2.11 — исправление среднемесячного расчета и унификация логики (подробный отчет)</li>
+                <li><a href="changelog_04.03.2026_1.2.10.html">04-03-2026</a> — v.1.2.10 — выравнивание диалога зарплаты и удаление записи при очистке (подробный отчет)</li>
+                <li><a href="changelog_28.02.2026_1.2.9.html">28-02-2026</a> — v.1.2.9 — настройка шрифта данных в карточках месяцев (подробный отчет)</li>
+                <li><a href="changelog_27.02.2026_2.html">27-02-2026</a> — v.1.2.8 — выравнивание UI на вкладках Главная/Настройки</li>
+                <li><a href="changelog_27.02.2026_1.html">27-02-2026</a> — v.1.2.7 — карточки месяцев, блок статистики, шрифты</li>
+                <li><a href="changelog_26.02.2026_1.html">26-02-2026</a> — v.1.2.6 — режимы истории и авто-бэкап при закрытии</li>
+                <li><a href="changelog_23.02.2026.html">23-02-2026</a> — v.1.2.5 — стабилизация API/логирования/тестов</li>
+                <li><a href="changelog_13.02.2026.html">13-02-2026</a> — v.1.2.2 — desktop UX и тестирование</li>
+                <li><a href="changelog_04.02.2026.html">04-02-2026</a> — v.1.2.1 — стабилизация аналитики</li>
+                <li><a href="changelog_03.02.2026_2.html">03-02-2026</a> — v.1.2.0 — Desktop аналитика и настройки</li>
+                <li><a href="changelog_03.02.2026_1.html">03-02-2026</a> — v.1.1.1 — Рефакторинг web-скриптов</li>
+                <li><a href="changelog_02.02.2026.html">02-02-2026</a> — v.1.0.0 — Крупный релиз web+desktop</li>
+                <li><a href="changelog_30.01.2026.html">30-01-2026</a> — v.0.2.1 — запуск web-приложения</li>
+                <li><a href="changelog_25.01.2026.html">25-01-2026</a> — v.0.2.0 — улучшение интерфейса и UX</li>
+                <li><a href="changelog_23.01.2026.html">23-01-2026</a> — v.0.1.3 — резервное копирование</li>
+                <li><a href="changelog_22.01.2026.html">22-01-2026</a> — v.0.1.2 — организация файлов/вьюх</li>
+                <li><a href="changelog_21.01.2026.html">21-01-2026</a> — v.0.1.1 — центрирование диалогов и UX</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

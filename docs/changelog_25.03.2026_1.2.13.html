@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Telegram-статистика по годам и исправление консольного запуска - версия v.1.2.13</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #4a6fa5; padding-bottom: 20px; }
+        h1 { color: #2c3e50; margin-bottom: 8px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; border-radius: 6px; padding: 14px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.8em; font-weight: bold; text-align: center; color: #2c3e50; border: 2px solid #4a6fa5; border-radius: 10px; padding: 12px; margin: 20px 0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 6px 6px 0; }
+        .section h2 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: .8em; font-weight: bold; margin-right: 8px; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .changed { background: #fff3cd; color: #856404; }
+        .added { background: #d4edda; color: #155724; }
+        .safe { background: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3498db; font-family: 'Courier New', monospace; margin: 6px 0; }
+        .result { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 6px; padding: 12px; }
+        .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 14px; border-radius: 0 6px 6px 0; }
+        .code-block { background: #2d2d2d; color: #f8f8f2; padding: 14px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: .9em; }
+        footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: .95em; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>ChangeLog: SalaryApp - версия v.1.2.13</h1>
+        <p class="subtitle">Telegram-бот: компактная статистика для телефона, команды по выбранному году и исправление читаемого запуска из batch-файла</p>
+    </header>
+
+    <div class="meta">
+        <p><strong>Версия:</strong> v.1.2.13</p>
+        <p><strong>Дата:</strong> 25 марта 2026 г.</p>
+        <p><strong>Область изменений:</strong> bot/main.py, run_bot.bat, tests/unit/bot/test_bot_fsm_handlers.py, docs/changelog.html, docs/changelog_25.03.2026_1.2.13.html, version.txt</p>
+        <p><strong>Причина изменений:</strong> статистика команды <code>/current</code> была неудобна на экране телефона, не было быстрых команд вида <code>/2025</code>, а при запуске <code>run_bot.bat</code> в консоли появлялись нечитаемые символы</p>
+        <p><strong>Статус:</strong> ✅ Выполнено, проверено и готово к использованию</p>
+    </div>
+
+    <div class="version-display">SalaryApp v.1.2.13 current</div>
+
+    <div class="section">
+        <h2>Что изменено</h2>
+        <ul>
+            <li><span class="change-type fixed">FIXED</span>Вывод статистики в Telegram переведен с широкой <code>&lt;pre&gt;</code>-таблицы на компактный карточный формат, читаемый на телефоне.</li>
+            <li><span class="change-type added">ADDED</span>Добавлены команды вида <code>/2025</code>, <code>/2024</code> и любой другой <code>/YYYY</code> для просмотра статистики за выбранный год.</li>
+            <li><span class="change-type changed">CHANGED</span><code>/current</code> и команды по году теперь используют единый форматтер и один контракт вывода.</li>
+            <li><span class="change-type fixed">FIXED</span>Исправлен консольный запуск из <code>run_bot.bat</code>: убрана зависимость от кириллицы в batch-файле и добавлен безопасный вызов <code>chcp.com</code> по абсолютному пути.</li>
+            <li><span class="change-type safe">SAFE</span>Проверены ключевые точки запуска: <code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>desktop/app.py</code>, <code>bot/main.py</code>.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Telegram-бот: новый формат статистики</h2>
+        <ul>
+            <li>Раньше сообщение строилось как одна строковая таблица из шести колонок: месяц, аванс, дата аванса, зарплата, дата зарплаты, итог.</li>
+            <li>На мобильном экране Telegram таблица переносилась на несколько строк и визуально разъезжалась.</li>
+            <li>Теперь каждая запись месяца показывается отдельным блоком:</li>
+        </ul>
+        <div class="code-block">Статистика за 2026 год
+
+Январь
+  Аванс: 20 783.87  •  28.01.2026
+  Зарплата: 84 562.16  •  13.02.2026
+  Итого: 105 346.03
+
+Февраль
+  Аванс: 41 021.06  •  27.02.2026
+  Зарплата: 68 673.96  •  13.03.2026
+  Итого: 109 695.02
+
+Итого за год: 215 041.05</div>
+        <div class="note">
+            Такой формат не требует горизонтальной прокрутки, не зависит от ширины моноширинного блока и остается читаемым в обычном Telegram-сообщении.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Команды по выбранному году</h2>
+        <ul>
+            <li>Добавлен обработчик команд формата <code>/YYYY</code> через фильтр регулярного выражения.</li>
+            <li>Команды <code>/2025</code> и <code>/2024</code> работают без отдельного дублирования кода, потому что используют общий метод форматирования по году.</li>
+            <li>Команда <code>/current</code> теперь является частным случаем общего форматтера: передается текущий год из <code>datetime.now().year</code>.</li>
+            <li>Справка бота обновлена и содержит пример команды <code>/2025</code>.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Исправление запуска из run_bot.bat</h2>
+        <ul>
+            <li>Проблема с кракозябрами была вызвана тем, что <code>cmd.exe</code> некорректно читает кириллицу в <code>.bat</code>, сохраненном в UTF-8 без BOM.</li>
+            <li>Отдельно в конкретном окружении команда <code>chcp</code> не находилась через <code>PATH</code>.</li>
+            <li>Решение:
+                убрать кириллицу из текста batch-файла и заменить вызов <code>chcp</code> на безопасную форму <code>%SystemRoot%\System32\chcp.com</code> с проверкой существования.</li>
+            <li>Результат: при запуске <code>run_bot.bat</code> консольный вывод остается читаемым и не начинается с ошибки про <code>chcp</code>.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Измененные файлы</h2>
+        <div class="file">bot/main.py</div>
+        <ul>
+            <li>Выделен общий форматтер <code>_format_year_table(year)</code>.</li>
+            <li>Команда <code>/current</code> переведена на единый форматированный текст без <code>parse_mode="HTML"</code>.</li>
+            <li>Добавлен обработчик команд вида <code>/2025</code>.</li>
+            <li>Обновлен текст справки <code>/help</code>.</li>
+        </ul>
+
+        <div class="file">tests/unit/bot/test_bot_fsm_handlers.py</div>
+        <ul>
+            <li>Добавлены тесты на компактный формат статистики.</li>
+            <li>Добавлены тесты на plain-text отправку для <code>/current</code>.</li>
+            <li>Добавлены тесты на форматирование за выбранный год и обработчик команды <code>/2025</code>.</li>
+        </ul>
+
+        <div class="file">run_bot.bat</div>
+        <ul>
+            <li>Исправлен вывод в консоль для batch-запуска.</li>
+            <li>Добавлен безопасный вызов <code>chcp.com</code> через <code>%SystemRoot%</code>.</li>
+            <li>Текстовые сообщения batch-файла переведены в ASCII для надежного отображения в любой консоли Windows.</li>
+        </ul>
+
+        <div class="file">version.txt</div>
+        <ul>
+            <li>Версия обновлена: <code>1.2.12 current</code> -&gt; <code>1.2.13 current</code>.</li>
+        </ul>
+
+        <div class="file">docs/changelog_25.03.2026_1.2.13.html</div>
+        <ul>
+            <li>Создан подробный отчет о доработках текущего релиза.</li>
+        </ul>
+
+        <div class="file">docs/changelog.html</div>
+        <ul>
+            <li>Обновлен краткий changelog и добавлена ссылка на новый подробный отчет.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Проверка и тестирование</h2>
+        <ul>
+            <li><code>pytest -q tests/unit/bot/test_bot_fsm_handlers.py</code> -&gt; 10 passed</li>
+            <li><code>pytest -q tests/smoke/test_entrypoints.py</code> -&gt; 3 passed</li>
+        </ul>
+        <div class="result">
+            Изменения локализованы в Telegram-боте и batch-запуске. Точки входа проекта сохранены и проходят smoke-проверку.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Архитектурные замечания</h2>
+        <ul>
+            <li><strong>MVC/OOP:</strong> бизнес-данные и API-слой не менялись; форматирование осталось в слое представления Telegram-бота.</li>
+            <li><strong>DRY:</strong> логика построения текста за произвольный год вынесена в один метод и повторно используется из <code>/current</code> и <code>/YYYY</code>.</li>
+            <li><strong>SOLID/SRP:</strong> обработчики команд только извлекают нужный год и отправляют уже подготовленный результат; формирование текста инкапсулировано отдельно.</li>
+        </ul>
+    </div>
+
+    <footer>
+        <p>SalaryApp v.1.2.13 • 25.03.2026</p>
+    </footer>
+</div>
+</body>
+</html>

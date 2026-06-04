@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Учет реальной даты выплаты зарплаты в среднемесячном - версия v.1.2.12</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #4a6fa5; padding-bottom: 20px; }
+        h1 { color: #2c3e50; margin-bottom: 8px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; border-radius: 6px; padding: 14px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.8em; font-weight: bold; text-align: center; color: #2c3e50; border: 2px solid #4a6fa5; border-radius: 10px; padding: 12px; margin: 20px 0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 6px 6px 0; }
+        .section h2 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: .8em; font-weight: bold; margin-right: 8px; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .changed { background: #fff3cd; color: #856404; }
+        .added { background: #d4edda; color: #155724; }
+        .safe { background: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3498db; font-family: 'Courier New', monospace; margin: 6px 0; }
+        .result { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 6px; padding: 12px; }
+        footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: .95em; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>ChangeLog: SalaryApp - версия v.1.2.12</h1>
+        <p class="subtitle">Донастройка среднемесячного расчета по реальному графику выплат: учет наступления salary_date</p>
+    </header>
+
+    <div class="meta">
+        <p><strong>Версия:</strong> v.1.2.12</p>
+        <p><strong>Дата:</strong> 06 марта 2026 г.</p>
+        <p><strong>Область изменений:</strong> core/services/statistics_service.py, tests/unit/core/services/test_statistics_service_average.py, version.txt</p>
+        <p><strong>Причина изменений:</strong> среднемесячное на реальных данных оставалось некорректным до учета фактической даты выплаты зарплаты за месяц</p>
+        <p><strong>Статус:</strong> ✅ Выполнено и проверено</p>
+    </div>
+
+    <div class="version-display">SalaryApp v.1.2.12 current</div>
+
+    <div class="section">
+        <h2>Суть исправления</h2>
+        <ul>
+            <li><span class="change-type fixed">FIXED</span>Месяц теперь учитывается в среднем только после фактической выплаты зарплаты за этот месяц.</li>
+            <li><span class="change-type changed">CHANGED</span>Правило расчета основано на <code>salary_date</code>, а не только на суммах.</li>
+            <li><span class="change-type added">ADDED</span>Добавлены дополнительные тесты для сценариев до/после наступления даты зарплаты и для legacy-данных без даты.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Новая бизнес-логика среднемесячного</h2>
+        <ul>
+            <li>Запись учитывается только если <code>salary &gt; 0</code>.</li>
+            <li>Если <code>salary_date</code> задана: запись учитывается только при <code>salary_date &lt;= now</code>.</li>
+            <li>Если <code>salary_date</code> не задана (legacy): учитываются только месяцы строго раньше текущего.</li>
+            <li>Текущий месяц с одним авансом не может попасть в среднемесячное до выплаты зарплаты.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Измененные файлы</h2>
+        <div class="file">core/services/statistics_service.py</div>
+        <ul>
+            <li>Скорректирован единый метод <code>calculate_average_monthly_from_records(...)</code> под реальный календарь выплат.</li>
+            <li>Учтены условия по <code>salary_date</code> и fallback для исторических записей без даты.</li>
+        </ul>
+
+        <div class="file">tests/unit/core/services/test_statistics_service_average.py</div>
+        <ul>
+            <li>Добавлены/обновлены тесты:
+                до даты выплаты, после даты выплаты, legacy без даты, единый расчет в summary.</li>
+        </ul>
+
+        <div class="file">version.txt</div>
+        <ul>
+            <li>Версия обновлена: <code>1.2.11 current</code> -> <code>1.2.12 current</code>.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Проверка</h2>
+        <ul>
+            <li><code>pytest -q tests/unit/core/services/test_statistics_service_average.py</code> -> 6 passed</li>
+            <li><code>pytest -q tests/smoke/test_entrypoints.py</code> -> 3 passed</li>
+            <li><code>pytest -q tests/unit/web/test_salaries_routes.py</code> -> 4 passed</li>
+        </ul>
+        <div class="result">
+            Совместимость с точками входа сохранена: StartSalary.pyw, run_web.py, run_bot.py, desktop/app.py, bot/main.py.
+        </div>
+    </div>
+
+    <footer>
+        <p>SalaryApp v.1.2.12 • 06.03.2026</p>
+    </footer>
+</div>
+</body>
+</html>

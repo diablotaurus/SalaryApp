@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Удаление неиспользуемого SalaryController - версия 1.2.19</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .meta p {
+            margin: 5px 0;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section h3 {
+            color: #2980b9;
+            margin: 15px 0 10px 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .removed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .changed {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .cleanup-section {
+            background: linear-gradient(to right, #f3e5f5, #e0f2f1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #e1bee7;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .code-snippet {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #4a6fa5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .version-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+
+        .arch-diagram {
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .arch-box {
+            display: inline-block;
+            padding: 8px 14px;
+            border: 2px solid #4a6fa5;
+            border-radius: 5px;
+            margin: 4px;
+            background: white;
+        }
+
+        .arch-arrow {
+            font-size: 1.3em;
+            color: #4a6fa5;
+            margin: 0 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧹 ChangeLog: Удаление неиспользуемого SalaryController - версия 1.2.19</h1>
+            <p class="subtitle">Устранён осиротевший контроллер-дублёр; рабочая цепочка операций с зарплатой не затронута</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.19</p>
+            <p><strong>Дата:</strong> <span>3 июня 2026 г.</span></p>
+            <p><strong>Этап:</strong> Аудит проекта: удаление мёртвого кода</p>
+            <p><strong>Область изменений:</strong> desktop/controllers (salary_controller, __init__), tests</p>
+            <p><strong>Тип изменений:</strong> Удаление мёртвого кода (DRY/SOLID)</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и протестировано (74/74 теста)</p>
+        </div>
+
+        <div class="version-display">
+            SalaryApp v.1.2.19 current
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-item" style="background: #f8d7da;">
+                <div class="stat-number">1</div>
+                <div class="stat-label">Удалён класс</div>
+            </div>
+            <div class="stat-item" style="background: #f3e5f5;">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Удалено файлов</div>
+            </div>
+            <div class="stat-item" style="background: #fff3e0;">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Затронуто прод-вызовов</div>
+            </div>
+            <div class="stat-item" style="background: #e8f5e9;">
+                <div class="stat-number">74</div>
+                <div class="stat-label">Тестов пройдено</div>
+            </div>
+        </div>
+
+        <div class="cleanup-section">
+            <h2>🧹 Удаление SalaryController</h2>
+
+            <div class="note">
+                <strong>Контекст:</strong> Класс <span class="highlight">SalaryController</span> существовал с самого первого коммита как тонкий контроллер-обёртка для операций с зарплатой (открыть диалог / сохранить / получить). Однако в реальном приложении он <strong>никогда не инстанцировался</strong> — только в собственном тесте. Его обязанности фактически выполняет связка <span class="highlight">SalaryDialog → NavigationController → MainTabController</span>.
+            </div>
+
+            <h3>Почему удалён</h3>
+            <ul>
+                <li><strong>Мёртвый код:</strong> по всей истории git <span class="highlight">SalaryController(...)</span> не вызывался нигде, кроме теста.</li>
+                <li><strong>Нарушение DRY:</strong> класс дублировал часть API фасада <span class="highlight">NavigationController</span>, создавая «два способа сделать одно и то же».</li>
+                <li><strong>Источник путаницы:</strong> наличие неподключённого контроллера усложняло понимание архитектуры.</li>
+            </ul>
+
+            <h3>Реальная (рабочая) схема — не изменилась</h3>
+            <div class="arch-diagram">
+                <div class="arch-box">SalaryDialog</div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box" style="background: #e8f5e9; border-color: #28a745;">NavigationController</div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">MainTabController</div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">SalaryAPI</div>
+            </div>
+
+            <div class="file"><span class="change-type removed">УДАЛЕНО</span> desktop/controllers/salary_controller.py</div>
+            <div class="file"><span class="change-type removed">УДАЛЕНО</span> tests/unit/desktop/controllers/test_salary_controller.py</div>
+            <div class="file"><span class="change-type changed">ОБНОВЛЕНО</span> desktop/controllers/__init__.py</div>
+            <div class="code-snippet"># было
+from .navigation_controller import NavigationController
+from .salary_controller import SalaryController
+# стало
+from .navigation_controller import NavigationController</div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Удалён осиротевший дублёр. Кодовая база чище, остался единственный путь выполнения операций с зарплатой. Рабочая функциональность desktop-приложения полностью сохранена.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Проверки</h2>
+            <ul>
+                <li><strong>Прод-вызовы:</strong> ✅ по всей истории git <span class="highlight">SalaryController</span> вне тестов не использовался</li>
+                <li><strong>Точки входа:</strong> ✅ StartSalary.pyw / desktop/app.py / desktop/main.py импортируют NavigationController, не затронуты</li>
+                <li><strong>Импорт пакета:</strong> ✅ <span class="highlight">desktop.controllers</span> импортируется без ошибок</li>
+                <li><strong>Тесты:</strong> ✅ 74 из 74 пройдено (было 77; минус 3 теста удалённого класса)</li>
+                <li><strong>Кодировка:</strong> ✅ UTF-8 без BOM (правило AGENTS.md)</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>🧹 Удалён неиспользуемый контроллер-дублёр SalaryController</p>
+            <p>🔗 Рабочая цепочка операций с зарплатой сохранена без изменений</p>
+            <p>✅ 74 теста пройдены, кодировка UTF-8 без BOM</p>
+        </footer>
+    </div>
+</body>
+</html>

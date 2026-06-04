@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Безопасность, корректность и чистота кода - версия 1.2.17</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .meta p {
+            margin: 5px 0;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section h3 {
+            color: #2980b9;
+            margin: 15px 0 10px 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .added {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .changed {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .fixed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .improved {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .refactored {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .security {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .security-section {
+            background: linear-gradient(to right, #fdecea, #fff3e0);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .correctness-section {
+            background: linear-gradient(to right, #e3f2fd, #e8f5e9);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #bbdefb;
+        }
+
+        .cleanup-section {
+            background: linear-gradient(to right, #f3e5f5, #e0f2f1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #e1bee7;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .summary-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-security {
+            background: #fdecea;
+            border: 1px solid #f5c6cb;
+        }
+
+        .summary-correctness {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+        }
+
+        .summary-cleanup {
+            background: #f3e5f5;
+            border: 1px solid #e1bee7;
+        }
+
+        .summary-tests {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .comparison {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-item {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .before {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+
+        .after {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+
+        .comparison-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .code-snippet {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #4a6fa5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .version-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+
+        .files-changed {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                flex-direction: column;
+            }
+
+            .stat-box {
+                flex-wrap: wrap;
+            }
+
+            .summary {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ ChangeLog: Безопасность, корректность и чистота кода - версия 1.2.17</h1>
+            <p class="subtitle">Защита токена бота, атомарное удаление года, устранение мёртвого кода и дублирования</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.17</p>
+            <p><strong>Дата:</strong> <span>3 июня 2026 г.</span></p>
+            <p><strong>Этап:</strong> Аудит проекта, повышение безопасности и качества кода</p>
+            <p><strong>Область изменений:</strong> bot/main.py, web/routes/salaries.py, core/services/*, core/repositories/salary_repository.py, core/database/*, core/config/settings.py, core/models/salary.py, .gitignore</p>
+            <p><strong>Тип изменений:</strong> Безопасность, исправление латентных багов, рефакторинг (DRY/SOLID), удаление мёртвого кода</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и протестировано (77/77 тестов)</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item summary-security">
+                <h3>🛡️ Безопасность</h3>
+                <p>Токен бота вне git<br>Шаблон .env.example<br>Ужесточение проверки локального запроса</p>
+            </div>
+            <div class="summary-item summary-correctness">
+                <h3>🎯 Корректность</h3>
+                <p>Атомарное удаление года<br>Возврат @staticmethod<br>Единый источник схемы БД</p>
+            </div>
+            <div class="summary-item summary-cleanup">
+                <h3>🧹 Чистота кода</h3>
+                <p>Единое форматирование сумм<br>Удаление мёртвого кода<br>print → logging</p>
+            </div>
+            <div class="summary-item summary-tests">
+                <h3>✅ Тесты</h3>
+                <p>77 тестов пройдено<br>Кодировка UTF-8 без BOM<br>Импорты проверены</p>
+            </div>
+        </div>
+
+        <div class="version-display">
+            SalaryApp v.1.2.17 current
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-item" style="background: #fdecea;">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Правки безопасности</div>
+            </div>
+            <div class="stat-item" style="background: #e3f2fd;">
+                <div class="stat-number">10</div>
+                <div class="stat-label">Изменённых файлов</div>
+            </div>
+            <div class="stat-item" style="background: #f3e5f5;">
+                <div class="stat-number">−110/+56</div>
+                <div class="stat-label">Строк (удалено/добавлено)</div>
+            </div>
+            <div class="stat-item" style="background: #e8f5e9;">
+                <div class="stat-number">77</div>
+                <div class="stat-label">Тестов пройдено</div>
+            </div>
+        </div>
+
+        <!-- ==================== БЕЗОПАСНОСТЬ ==================== -->
+        <div class="security-section">
+            <h2>🛡️ Группа П1 — Безопасность</h2>
+
+            <div class="note">
+                <strong>Проблема:</strong> Файл <span class="highlight">bot/.env</span> с токеном Telegram-бота отслеживался в git (был закоммичен). Кроме того, проверка «локального» запроса в web-слое считала запрос локальным, если адрес клиента не определён (<span class="highlight">None</span>) — это «отказ в сторону доступа».
+            </div>
+
+            <div class="comparison">
+                <div class="comparison-item before">
+                    <div class="comparison-title">ДО изменений</div>
+                    <ul>
+                        <li>Токен бота хранился в отслеживаемом файле <span class="highlight">bot/.env</span></li>
+                        <li>Секрет попадал в историю репозитория</li>
+                        <li><span class="highlight">_is_local_request()</span> пропускал <span class="highlight">None</span> как локальный адрес</li>
+                        <li>Не было шаблона переменных окружения для бота</li>
+                    </ul>
+                </div>
+                <div class="comparison-item after">
+                    <div class="comparison-title">ПОСЛЕ изменений</div>
+                    <ul>
+                        <li><span class="highlight">bot/.env</span> убран из индекса и добавлен в <span class="highlight">.gitignore</span></li>
+                        <li>Локальный файл сохранён — бот продолжает работать</li>
+                        <li>Добавлен шаблон <span class="highlight">bot/.env.example</span> без секрета</li>
+                        <li>Проверка локального адреса больше не пропускает <span class="highlight">None</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="files-changed">
+                <h3>Ключевые изменения:</h3>
+
+                <div class="file">
+                    <span class="change-type security">БЕЗОПАСНОСТЬ</span> bot/.env (удалён из git), .gitignore, bot/.env.example (новый)
+                </div>
+                <p>Токен убран из отслеживания, добавлено правило игнорирования и шаблон:</p>
+                <div class="code-snippet"># .gitignore
+# Секреты бота
+bot/.env
+
+# bot/.env.example
+# Токен Telegram-бота от @BotFather.
+# Скопируйте этот файл в bot/.env и подставьте реальный токен.
+BOT_TOKEN=</div>
+
+                <div class="file">
+                    <span class="change-type fixed">ИСПРАВЛЕНО</span> web/routes/salaries.py
+                </div>
+                <div class="code-snippet"># Было
+def _is_local_request() -> bool:
+    return request.remote_addr in {"127.0.0.1", "::1", None}
+
+# Стало
+def _is_local_request() -> bool:
+    return request.remote_addr in {"127.0.0.1", "::1"}</div>
+            </div>
+
+            <div class="note">
+                <strong>Важное действие для владельца:</strong> текущий токен бота остаётся в <em>истории</em> git, поэтому его необходимо отозвать в <span class="highlight">@BotFather</span> (команда <span class="highlight">/revoke</span>) и вписать новый токен в локальный <span class="highlight">bot/.env</span>.
+            </div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Секрет бота больше не попадает в репозиторий, добавлен безопасный шаблон конфигурации, а доступ к опасным web-операциям не предоставляется при неопределённом адресе клиента.
+            </div>
+        </div>
+
+        <!-- ==================== КОРРЕКТНОСТЬ ==================== -->
+        <div class="correctness-section">
+            <h2>🎯 Группа П2 — Корректность</h2>
+
+            <div class="note">
+                <strong>Проблема:</strong> Несколько латентных дефектов: потерянные декораторы <span class="highlight">@staticmethod</span>, дублирующееся (расходящееся) описание схемы БД, неатомарное удаление года с «проглатыванием» ошибок и лишний пересчёт среднемесячного значения.
+            </div>
+
+            <div class="files-changed">
+                <h3>Ключевые изменения:</h3>
+
+                <div class="file">
+                    <span class="change-type fixed">ИСПРАВЛЕНО</span> core/services/salary_service.py — возвращены @staticmethod
+                </div>
+                <p>Методы <span class="highlight">get_monthly_series_dto</span> и <span class="highlight">get_year_with_all_months</span> снова статические (как и весь класс), типизация уточнена на <span class="highlight">Optional[int]</span>:</p>
+                <div class="code-snippet"># Стало
+@staticmethod
+def get_monthly_series_dto(year: Optional[int] = None) -> Dict[str, Any]:
+    ...
+
+@staticmethod
+def get_year_with_all_months(year: int) -> Dict[str, Any]:
+    ...</div>
+
+                <div class="file">
+                    <span class="change-type refactored">DRY</span> core/database/connection.py — удалён мёртвый create_tables()
+                </div>
+                <p>Метод <span class="highlight">create_tables()</span> нигде не вызывался (все точки входа инициализируют схему через <span class="highlight">apply_all_migrations()</span>) и был вторым, расходящимся источником схемы. Удалён — единый источник схемы теперь миграции. Поправлен docstring в <span class="highlight">SalaryRepository.save()</span>: уникальность пары <span class="highlight">(year, month)</span> обеспечивает бизнес-логика <span class="highlight">add_salary</span>.</p>
+
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ МЕТОД</span> core/repositories/salary_repository.py — delete_by_year()
+                </div>
+                <p>Удаление года стало атомарным (один SQL-запрос вместо цикла), а сервис больше не «проглатывает» ошибки:</p>
+                <div class="code-snippet"># Новый метод репозитория
+@staticmethod
+def delete_by_year(year: int) -> int:
+    conn = DatabaseConnection.get_connection()
+    cursor = conn.execute("DELETE FROM salaries WHERE year = ?", (year,))
+    conn.commit()
+    return cursor.rowcount
+
+# Упрощённый сервис
+@staticmethod
+def delete_year(year: int) -> bool:
+    SalaryRepository.delete_by_year(year)
+    return True</div>
+
+                <div class="file">
+                    <span class="change-type fixed">ИСПРАВЛЕНО</span> core/services/statistics_service.py — убран дублирующий расчёт
+                </div>
+                <p>Значение <span class="highlight">avg_monthly_total</span> вычислялось дважды (второй раз сразу перезаписывало первый). Лишнее присвоение удалено; итоговое значение по-прежнему задаёт единое бизнес-правило <span class="highlight">calculate_average_monthly_from_records</span>. Поведение идентично.</p>
+            </div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Устранены потенциальные ошибки при вызове методов через экземпляр, исключён риск частичного удаления данных за год, ликвидировано расхождение схемы БД, а код статистики стал прозрачнее без изменения результата.
+            </div>
+        </div>
+
+        <!-- ==================== ЧИСТОТА КОДА ==================== -->
+        <div class="cleanup-section">
+            <h2>🧹 Группа П3 — DRY и чистота кода</h2>
+
+            <div class="note">
+                <strong>Проблема:</strong> Дублирование логики форматирования сумм, мёртвые методы и классы, использование <span class="highlight">print()</span> вместо логирования и избыточные аргументы в <span class="highlight">logger.exception</span>.
+            </div>
+
+            <div class="files-changed">
+                <h3>Ключевые изменения:</h3>
+
+                <div class="file">
+                    <span class="change-type refactored">DRY</span> bot/main.py — единое форматирование сумм
+                </div>
+                <p>Локальная функция <span class="highlight">_format_money</span> удалена, бот теперь использует общий <span class="highlight">MoneyUtils.format_amount_plain</span> (вывод идентичен):</p>
+                <div class="code-snippet"># Было
+def _format_money(value: float) -> str:
+    return f"{value:,.2f}".replace(",", " ")
+
+# Стало
+from core.utils.money import MoneyUtils
+...
+MoneyUtils.format_amount_plain(value)</div>
+
+                <div class="file">
+                    <span class="change-type changed">УДАЛЕНО</span> core/services/salary_service.py — мёртвый format_amount()
+                </div>
+                <p>Неиспользуемый метод <span class="highlight">SalaryService.format_amount</span> удалён вместе с осиротевшими импортами <span class="highlight">SettingsRepository</span> и <span class="highlight">config</span>.</p>
+
+                <div class="file">
+                    <span class="change-type changed">УДАЛЕНО</span> core/models/salary.py — мёртвый класс Advance
+                </div>
+                <p>Неиспользуемый dataclass <span class="highlight">Advance</span> удалён.</p>
+
+                <div class="file">
+                    <span class="change-type improved">УЛУЧШЕНО</span> core/database/migrations.py — print → logging
+                </div>
+                <p>Сообщения о применении миграций выводятся через <span class="highlight">logging</span> вместо <span class="highlight">print()</span>, для единообразия с остальным проектом.</p>
+
+                <div class="file">
+                    <span class="change-type improved">УЛУЧШЕНО</span> core/config/settings.py — корректное логирование исключений
+                </div>
+                <p>Конструкции вида <span class="highlight">logger.exception("...", e)</span> заменены на <span class="highlight">logger.exception("...")</span> — трассировка прикладывается автоматически.</p>
+            </div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Форматирование денежных сумм сосредоточено в одном месте, удалён мёртвый код, логирование унифицировано. Код стал чище и проще в сопровождении без изменения поведения.
+            </div>
+        </div>
+
+        <!-- ==================== ДЕТАЛЬНЫЙ СПИСОК ==================== -->
+        <div class="section">
+            <h2>📁 Детальный список изменений</h2>
+
+            <div class="file"><span class="change-type security">БЕЗОПАСНОСТЬ</span> .gitignore</div>
+            <ul>
+                <li>Добавлено правило игнорирования <span class="highlight">bot/.env</span></li>
+            </ul>
+
+            <div class="file"><span class="change-type security">БЕЗОПАСНОСТЬ</span> bot/.env (удалён из индекса), bot/.env.example (новый)</div>
+            <ul>
+                <li>Секрет бота убран из отслеживания git, локальный файл сохранён</li>
+                <li>Добавлен шаблон переменных окружения без секрета</li>
+            </ul>
+
+            <div class="file"><span class="change-type fixed">ИСПРАВЛЕНО</span> web/routes/salaries.py</div>
+            <ul>
+                <li>Проверка локального запроса больше не пропускает <span class="highlight">None</span></li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">РЕФАКТОРИНГ</span> core/services/salary_service.py</div>
+            <ul>
+                <li>Возвращены декораторы <span class="highlight">@staticmethod</span> и уточнена типизация</li>
+                <li>Упрощён <span class="highlight">delete_year</span> (атомарное удаление)</li>
+                <li>Удалён мёртвый метод <span class="highlight">format_amount</span> и осиротевшие импорты</li>
+            </ul>
+
+            <div class="file"><span class="change-type added">НОВЫЙ МЕТОД</span> core/repositories/salary_repository.py</div>
+            <ul>
+                <li>Добавлен <span class="highlight">delete_by_year()</span> — удаление года одним запросом</li>
+                <li>Уточнён docstring <span class="highlight">save()</span> об источнике уникальности</li>
+            </ul>
+
+            <div class="file"><span class="change-type fixed">ИСПРАВЛЕНО</span> core/services/statistics_service.py</div>
+            <ul>
+                <li>Убран дублирующий расчёт <span class="highlight">avg_monthly_total</span></li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">DRY</span> core/database/connection.py</div>
+            <ul>
+                <li>Удалён мёртвый метод <span class="highlight">create_tables()</span> (единый источник схемы — миграции)</li>
+            </ul>
+
+            <div class="file"><span class="change-type improved">УЛУЧШЕНО</span> core/database/migrations.py</div>
+            <ul>
+                <li><span class="highlight">print()</span> заменён на <span class="highlight">logging</span></li>
+            </ul>
+
+            <div class="file"><span class="change-type improved">УЛУЧШЕНО</span> core/config/settings.py</div>
+            <ul>
+                <li>Корректное использование <span class="highlight">logger.exception</span></li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">DRY</span> bot/main.py</div>
+            <ul>
+                <li>Удалён локальный <span class="highlight">_format_money</span>, используется <span class="highlight">MoneyUtils.format_amount_plain</span></li>
+            </ul>
+
+            <div class="file"><span class="change-type changed">УДАЛЕНО</span> core/models/salary.py</div>
+            <ul>
+                <li>Удалён неиспользуемый класс <span class="highlight">Advance</span></li>
+            </ul>
+        </div>
+
+        <!-- ==================== ЦЕЛИ И ПРОВЕРКИ ==================== -->
+        <div class="section">
+            <h2>🎯 Достигнутые цели</h2>
+            <ul>
+                <li><strong>✅ Безопасность:</strong> секрет бота вне репозитория, ужесточена авторизация опасных операций</li>
+                <li><strong>✅ Корректность:</strong> атомарное удаление года, единый источник схемы, устранены латентные дефекты</li>
+                <li><strong>✅ DRY/SOLID:</strong> единое форматирование сумм, удалён мёртвый код, унифицировано логирование</li>
+                <li><strong>✅ Совместимость:</strong> проверены вызовы из StartSalary.pyw, run_web.py, run_bot.py, desktop/app.py, bot/main.py</li>
+                <li><strong>✅ Кодировка:</strong> все файлы сохранены в чистом UTF-8 без BOM (правило AGENTS.md)</li>
+            </ul>
+
+            <h3>Тестирование:</h3>
+            <ul>
+                <li><strong>Полный прогон тестов:</strong> ✅ 77 из 77 пройдено</li>
+                <li><strong>Импорты модулей:</strong> ✅ bot, core (services/repositories/database/config/models), web — без ошибок</li>
+                <li><strong>BOM-проверка изменённых файлов:</strong> ✅ ни одного файла с BOM</li>
+                <li><strong>Web-роуты (авторизация опасных операций):</strong> ✅ тесты пройдены</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>⚠️ Совместимость и рекомендации</h2>
+            <div class="note">
+                <strong>Обратная совместимость:</strong> публичный фасад <span class="highlight">SalaryAPI</span> и поведение интерфейсов сохранены. Изменения внутренние; пользователи desktop/web/bot не заметят отличий в работе.
+            </div>
+            <ul>
+                <li><strong>Действие владельца:</strong> отозвать старый токен бота в <span class="highlight">@BotFather</span> и вписать новый в локальный <span class="highlight">bot/.env</span></li>
+                <li><strong>Новая установка бота:</strong> скопировать <span class="highlight">bot/.env.example</span> → <span class="highlight">bot/.env</span> и указать <span class="highlight">BOT_TOKEN</span></li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>🛡️ Секрет бота защищён, авторизация web-операций ужесточена</p>
+            <p>🎯 Удаление года атомарно, схема БД имеет единый источник</p>
+            <p>🧹 Удалён мёртвый код, форматирование и логирование унифицированы</p>
+            <p>✅ Все 77 тестов пройдены, кодировка UTF-8 без BOM</p>
+        </footer>
+    </div>
+</body>
+</html>

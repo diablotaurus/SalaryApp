@@ -1,0 +1,94 @@
+# Файл исключений для деплоя production (scripts/deploy_to_prod.py).
+# Поддерживаются комментарии (строки, начинающиеся с #).
+# Паттерны сопоставляются по относительному пути (прямые слеши) и по имени.
+
+# --- База данных и резервные копии (НИКОГДА не копировать в прод) ---
+db
+db/*
+db/backup/*
+*.db
+*.bak
+*.backup
+
+# --- Маркер production окружения (у прода свой) ---
+prod.marker
+
+# --- Секреты бота (у прода свой токен; защищается отдельным снимком) ---
+bot/.env
+.env
+*.env
+
+# --- Виртуальные окружения и dev-инструменты (НЕ копировать в прод!) ---
+.venv
+.venv/*
+venv
+venv/*
+env
+env/*
+.claude
+.claude/*
+.mypy_cache
+.mypy_cache/*
+htmlcov
+htmlcov/*
+build
+build/*
+dist
+dist/*
+*.egg-info
+
+# --- Git и dev-инфраструктура ---
+.git
+.git/*
+.gitignore
+.gitattributes
+.editorconfig
+.pre-commit-config.yaml
+.github
+.github/*
+
+# --- Временные файлы, кэш, логи ---
+__pycache__
+__pycache__/*
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.pytest_cache/*
+*.log
+logs
+logs/*
+
+# --- Экспортированные файлы (у прода свои; сохраняются при очистке) ---
+exports
+exports/*
+
+# --- Системные файлы ОС ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Файлы IDE ---
+.vscode
+.idea
+*.swp
+*.swo
+
+# --- Файлы разработки и тесты (в проде не нужны) ---
+requirements-dev.txt
+tests
+tests/*
+test_*
+*_test.py
+TESTING.md
+
+# --- Папка резервных копий прода (создаётся автоматически) ---
+.backup
+.backup/*
+
+# --- Заметки Notepad++ (прод-специфично) ---
+nppBackup
+nppBackup/*
+
+# --- Прочее ---
+web_legacy

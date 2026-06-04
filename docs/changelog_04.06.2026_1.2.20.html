@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Скрипт деплоя в production - версия 1.2.20</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.2em; }
+
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .meta p { margin: 5px 0; }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+        .section h3 { color: #2980b9; margin: 15px 0 10px 0; }
+
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .security { background-color: #f8d7da; color: #721c24; }
+
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .deploy-section {
+            background: linear-gradient(to right, #e3f2fd, #e8f5e9);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #bbdefb;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .code-snippet {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #4a6fa5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+        .stat-item { padding: 15px; border-radius: 8px; min-width: 150px; }
+        .stat-number { font-size: 2em; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 0.9em; color: #666; }
+
+        .version-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+
+        .arch-diagram { text-align: center; margin: 20px 0; font-family: 'Courier New', monospace; }
+        .arch-box { display: inline-block; padding: 8px 14px; border: 2px solid #4a6fa5; border-radius: 5px; margin: 4px; background: white; }
+        .arch-arrow { font-size: 1.3em; color: #4a6fa5; margin: 0 6px; }
+
+        @media (max-width: 768px) {
+            .stat-box { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 ChangeLog: Скрипт ручного деплоя в production - версия 1.2.20</h1>
+            <p class="subtitle">Версионируемый деплой current → prod в ./scripts: с бэкапом, защитой секретов и режимом dry-run</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.20</p>
+            <p><strong>Дата:</strong> <span>4 июня 2026 г.</span></p>
+            <p><strong>Этап:</strong> Инфраструктура: автоматизация деплоя</p>
+            <p><strong>Область изменений:</strong> scripts/ (новые файлы), version.txt</p>
+            <p><strong>Тип изменений:</strong> Новый инструмент (деплой), без изменений логики приложения</p>
+            <p><strong>Статус:</strong> ✅ Создано и проверено через --dry-run (тесты 74/74)</p>
+        </div>
+
+        <div class="version-display">
+            SalaryApp v.1.2.20 current
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-item" style="background: #e8f5e9;">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Новых файла в scripts/</div>
+            </div>
+            <div class="stat-item" style="background: #e3f2fd;">
+                <div class="stat-number">136</div>
+                <div class="stat-label">Файлов переносится в прод</div>
+            </div>
+            <div class="stat-item" style="background: #f8d7da;">
+                <div class="stat-number">10 724</div>
+                <div class="stat-label">Файлов .venv — исключены</div>
+            </div>
+            <div class="stat-item" style="background: #fff3e0;">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Изменений в логике приложения</div>
+            </div>
+        </div>
+
+        <div class="deploy-section">
+            <h2>🚀 Скрипт деплоя <span class="highlight">scripts/deploy_to_prod.py</span></h2>
+
+            <div class="note">
+                <strong>Зачем:</strong> ручной перенос изменений из dev-репозитория (<span class="highlight">current</span>) в production одним запуском. Ранее деплой выполнялся скриптами в папке данных на диске D: — теперь канонический скрипт версионируется вместе с кодом в <span class="highlight">./scripts</span>.
+            </div>
+
+            <h3>Что переносим и куда</h3>
+            <div class="arch-diagram">
+                <div class="arch-box">current (dev, git)</div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box" style="background: #e8f5e9; border-color: #28a745;">deploy_to_prod.py</div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-box">production</div>
+            </div>
+            <ul>
+                <li>Источник: <span class="highlight">...\CODE\MyHobby\SalaryApp\current</span> (вычисляется относительно скрипта)</li>
+                <li>Цель: <span class="highlight">...\Доходы и расходы\SalaryApp</span> (можно переопределить аргументом)</li>
+                <li>Реальная БД: <span class="highlight">&lt;DATA&gt;\SalaryApp Data\db</span> (в проде это симлинк)</li>
+            </ul>
+
+            <h3>Алгоритм</h3>
+            <ul>
+                <li><strong>Проверки безопасности:</strong> источник = репо (есть version.txt), цель содержит <span class="highlight">prod.marker</span>, источник ≠ цель.</li>
+                <li><strong>Бэкап прода</strong> → <span class="highlight">prod\.backup\&lt;версия&gt;_&lt;дата&gt;\</span>.</li>
+                <li><strong>Снимок секрета</strong> <span class="highlight">bot/.env</span> перед очисткой.</li>
+                <li><strong>Очистка прода</strong> (с сохранением данных — см. ниже).</li>
+                <li><strong>Копирование</strong> исходников по <span class="highlight">deploy_exclude.txt</span>.</li>
+                <li><strong>version.txt:</strong> запись очищенной версии без суффикса <span class="highlight">current</span> (например, <span class="highlight">1.2.20</span>).</li>
+                <li><strong>Восстановление</strong> <span class="highlight">bot/.env</span> (прод-токен не подменяется dev-токеном).</li>
+                <li><strong>Проверки</strong> ключевых файлов и итог.</li>
+            </ul>
+
+            <h3>Гарантии безопасности</h3>
+            <ul>
+                <li>🔒 БД (<span class="highlight">db</span> → D:), <span class="highlight">prod.marker</span>, <span class="highlight">bot/.env</span> — не копируются и не удаляются; симлинки при очистке не трогаются.</li>
+                <li>💾 При очистке сохраняются: <span class="highlight">.backup</span>, <span class="highlight">db</span>, <span class="highlight">prod.marker</span>, <span class="highlight">exports</span>, <span class="highlight">logs</span>, <span class="highlight">nppBackup</span>.</li>
+                <li>🧪 Режим <span class="highlight">--dry-run</span> показывает план без единого изменения.</li>
+            </ul>
+
+            <h3>Найдено и исправлено при проверке через dry-run</h3>
+            <ul>
+                <li><span class="change-type security">SECURITY</span>Прежний скрипт мог затереть прод-токен dev-токеном — добавлены защита <span class="highlight">bot/.env</span> и исключение <span class="highlight">*.env</span>.</li>
+                <li><span class="change-type fixed">FIXED</span>Каталог <span class="highlight">.venv</span> (10 724 файла) не был исключён — добавлен в исключения; перенос сократился до 136 файлов (чистые исходники).</li>
+                <li><span class="change-type fixed">FIXED</span>Добавлена защита «источник ≠ цель» (чтобы запуск из прода не очистил его сам в себя).</li>
+                <li><span class="change-type changed">CHANGED</span><span class="highlight">version.txt</span> в проде теперь без суффикса <span class="highlight">current</span>; в исключения добавлен <span class="highlight">.git</span>.</li>
+            </ul>
+
+            <h3>Файлы</h3>
+            <div class="file"><span class="change-type added">НОВЫЙ</span> scripts/deploy_to_prod.py — основной скрипт деплоя</div>
+            <div class="file"><span class="change-type added">НОВЫЙ</span> scripts/deploy_exclude.txt — список исключений</div>
+            <div class="file"><span class="change-type added">НОВЫЙ</span> scripts/deploy_to_prod.bat — запускатель (двойной клик)</div>
+            <div class="file"><span class="change-type added">НОВЫЙ</span> scripts/DEPLOY.md — описание процесса деплоя</div>
+
+            <h3>Как пользоваться</h3>
+            <div class="code-snippet">python scripts/deploy_to_prod.py --dry-run   # посмотреть план, ничего не меняя
+python scripts/deploy_to_prod.py             # реальный деплой
+# или двойной клик по scripts/deploy_to_prod.bat</div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> Деплой в production выполняется одним запуском, безопасен по отношению к реальным данным и секретам, версионируется вместе с кодом. Старые скрипты на диске D: помечены как legacy в DEPLOY.md (не удалялись).
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Проверки</h2>
+            <ul>
+                <li><strong>--dry-run:</strong> ✅ план корректен, изменения не вносились; перенос — 136 файлов</li>
+                <li><strong>Компиляция:</strong> ✅ py_compile без ошибок</li>
+                <li><strong>Тесты приложения:</strong> ✅ 74 из 74 пройдено (логика приложения не менялась)</li>
+                <li><strong>Кодировка:</strong> ✅ UTF-8 без BOM (правило AGENTS.md)</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>🚀 Ручной деплой current → prod одним запуском, с бэкапом и dry-run</p>
+            <p>🔒 БД, prod.marker и токен бота защищены; .venv и .git исключены</p>
+            <p>✅ Проверено через --dry-run; тесты 74/74; UTF-8 без BOM</p>
+        </footer>
+    </div>
+</body>
+</html>

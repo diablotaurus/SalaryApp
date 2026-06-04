@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Настройка шрифта данных в карточках месяцев - версия v.1.2.9</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.05em;
+        }
+
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .meta p {
+            margin: 5px 0;
+        }
+
+        .section {
+            margin: 25px 0;
+            padding: 18px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section h3 {
+            color: #2c3e50;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .added {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .changed {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .improved {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .fixed {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 6px 0;
+            border-left: 3px solid #3498db;
+        }
+
+        .version-display {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 12px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 18px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ChangeLog: настройка шрифта данных в карточках месяцев</h1>
+            <p class="subtitle">Реализовано управление размером шрифта для табличной части помесячной разбивки на вкладке «Главная»</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.9</p>
+            <p><strong>Дата:</strong> 28 февраля 2026 г.</p>
+            <p><strong>Область изменений:</strong> Desktop UI (вкладки «Настройки» и «Главная»)</p>
+            <p><strong>Статус:</strong> выполнено и проверено</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.9 current</div>
+
+        <div class="section">
+            <h2>Что изменено</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span>В блок «Размер шрифта» добавлена новая настройка: <span class="highlight">Данные в карточке месяца</span>.</li>
+                <li><span class="change-type changed">CHANGED</span>На вкладке «Главная» в карточках месяцев размер шрифта для табличного блока выплат теперь берется из новой настройки.</li>
+                <li><span class="change-type improved">IMPROVED</span>Высота зоны выплат в карточке месяца стала рассчитываться с учетом выбранного размера шрифта, чтобы не ломалась компоновка.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Какие элементы теперь управляются новой настройкой</h2>
+            <ul>
+                <li>Заголовки колонок: <span class="highlight">Дата</span>, <span class="highlight">Сумма</span>.</li>
+                <li>Подписи строк: <span class="highlight">Аванс</span>, <span class="highlight">Зарплата</span>.</li>
+                <li>Текст данных: даты выплат и значения сумм.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Измененные файлы</h2>
+            <div class="file">desktop/views/constants/texts.py</div>
+            <ul>
+                <li>Добавлена текстовая константа <span class="highlight">TEXT_MONTH_DATA_FONT_SIZE</span>.</li>
+                <li>Добавлено значение по умолчанию <span class="highlight">DEFAULT_MONTH_DATA_FONT_SIZE = 8</span>.</li>
+            </ul>
+
+            <div class="file">desktop/views/settings/settings_view.py</div>
+            <ul>
+                <li>Добавлена новая строка в блоке «Размер шрифта» со spinbox для <span class="highlight">month_data_font_size</span>.</li>
+                <li>Ключ <span class="highlight">month_data_font_size</span> добавлен в сброс к значениям по умолчанию.</li>
+            </ul>
+
+            <div class="file">desktop/views/main/main_view.py</div>
+            <ul>
+                <li>Добавлено чтение настройки <span class="highlight">month_data_font_size</span> при отрисовке истории.</li>
+                <li>Все шрифты табличной части выплат переведены с фиксированного размера <span class="highlight">8</span> на значение из настройки.</li>
+                <li>Высота блока выплат изменена на расчетную: <span class="highlight">max(58, 6 * size + 10)</span>.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Совместимость и безопасность изменений</h2>
+            <ul>
+                <li><span class="change-type fixed">SAFE</span>Изменения точечные, выполнены только в существующих файлах без удаления модулей и функций.</li>
+                <li><span class="change-type fixed">SAFE</span>Сохранение настроек использует существующий pipeline `settings_vars -> controller -> SettingsAPI -> SettingsRepository`.</li>
+                <li><span class="change-type fixed">SAFE</span>Проверены точки запуска и вызовы: `StartSalary.pyw`, `run_web.py`, `run_bot.py`, `desktop/app.py`, `bot/main.py`.</li>
+                <li><span class="change-type fixed">SAFE</span>Синтаксис измененных Python-файлов проверен через `python -m compileall`.</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>Изменение направлено на повышение гибкости UI без изменения бизнес-логики и API-контрактов.</p>
+            <p>Версия обновлена до v.1.2.9.</p>
+        </footer>
+    </div>
+</body>
+</html>

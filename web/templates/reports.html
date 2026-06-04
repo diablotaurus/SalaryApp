@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Аналитика - Учет заработной платы{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .stat-card { border-left: 4px solid #0d6efd; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Аналитика зарплат</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="chartYearSelect" class="form-label">Выберите год для анализа:</label>
+                        <select id="chartYearSelect" class="form-select">
+                            <option value="all">Все годы</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="chartTypeSelect" class="form-label">Тип графика:</label>
+                        <select id="chartTypeSelect" class="form-select">
+                            <option value="monthly">Помесячная динамика</option>
+                            <option value="yearly_comparison">Сравнение по годам</option>
+                            <option value="growth_rate">Темпы роста</option>
+                            <option value="average_by_month">Средние по месяцам</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="chart-container mb-4">
+                    <canvas id="salaryChart"></canvas>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">Самый доходный месяц</h6>
+                                <div id="bestMonth" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Загрузка...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">Самый доходный год</h6>
+                                <div id="bestYear" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Загрузка...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}

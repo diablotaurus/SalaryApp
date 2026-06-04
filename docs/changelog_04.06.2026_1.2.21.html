@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Защита деплоя через prod.marker - версия 1.2.21</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.1em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 20px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .security { background-color: #f8d7da; color: #721c24; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .highlight { background-color: #fffacd; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; }
+        .code-snippet { background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #4a6fa5; font-family: 'Courier New', monospace; font-size: 0.9em; white-space: pre-wrap; }
+        .result-box { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .version-display { font-size: 1.8em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th { background: #4a6fa5; color: white; padding: 8px 10px; text-align: left; }
+        td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background: #f8f9fa; }
+        footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ ChangeLog: Защита деплоя через prod.marker - версия 1.2.21</h1>
+            <p class="subtitle">Скрипт деплоя распознаёт, откуда запущен, и не даёт запустить себя из production</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.21</p>
+            <p><strong>Дата:</strong> 4 июня 2026 г.</p>
+            <p><strong>Этап:</strong> Инфраструктура: усиление безопасности деплоя</p>
+            <p><strong>Область изменений:</strong> scripts/deploy_to_prod.py, scripts/DEPLOY.md, version.txt</p>
+            <p><strong>Статус:</strong> ✅ Реализовано и проверено (защита срабатывает)</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.21 current</div>
+
+        <div class="section">
+            <h2>🛡️ Распознавание источника по prod.marker</h2>
+            <p>
+                Файл <span class="highlight">prod.marker</span> есть только в production и отсутствует в dev.
+                Скрипт деплоя теперь проверяет наличие <span class="highlight">prod.marker</span> рядом с собой (в корне источника):
+                если он найден — значит скрипт запущен из production, и деплой останавливается.
+            </p>
+
+            <div class="code-snippet"># scripts/deploy_to_prod.py (блок проверок безопасности)
+if (source_path / "prod.marker").exists():
+    print_error(
+        "Источник содержит prod.marker — похоже, скрипт запущен из PRODUCTION.\n"
+        "      Запускайте деплой из dev-репозитория (current). Остановлено."
+    )
+    return 1</div>
+
+            <p><strong>Зачем это нужно:</strong> начиная с v1.2.20 скрипт деплоя копируется и в production
+            (<span class="highlight">prod\scripts\deploy_to_prod.py</span>). Случайный запуск его из прода мог бы
+            запустить деплой «прод в прод». Новая проверка это исключает.</p>
+
+            <h3>Три взаимодополняющие проверки направления «dev → prod»</h3>
+            <table>
+                <thead>
+                    <tr><th>Проверка</th><th>Что предотвращает</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Источник содержит <span class="highlight">prod.marker</span> → отказ <em>(новое)</em></td><td>Запуск из production (при любой цели)</td></tr>
+                    <tr><td>Цель <strong>должна</strong> содержать <span class="highlight">prod.marker</span></td><td>Деплой «не туда» (цель — не настоящий прод)</td></tr>
+                    <tr><td>Источник ≠ цель</td><td>Совпадение путей</td></tr>
+                </tbody>
+            </table>
+
+            <div class="file"><span class="change-type added">ОБНОВЛЁН</span> scripts/deploy_to_prod.py — добавлена проверка prod.marker в источнике</div>
+            <div class="file"><span class="change-type added">ОБНОВЛЁН</span> scripts/DEPLOY.md — описание проверок безопасности уточнено</div>
+
+            <div class="result-box">
+                <strong>Проверка:</strong> dev-запуск (<span class="highlight">--dry-run</span>) проходит штатно (137 файлов); запуск из изолированной песочницы с <span class="highlight">prod.marker</span> корректно останавливается с кодом 1.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Итог</h2>
+            <ul>
+                <li><span class="change-type security">SECURITY</span>Скрипт деплоя нельзя случайно запустить из production.</li>
+                <li><span class="change-type fixed">SAFE</span>Логика приложения не менялась; кодировка UTF-8 без BOM.</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>🛡️ Деплой возможен только в направлении dev → prod</p>
+            <p>✅ Проверено: dev-путь работает, запуск из прода блокируется</p>
+        </footer>
+    </div>
+</body>
+</html>

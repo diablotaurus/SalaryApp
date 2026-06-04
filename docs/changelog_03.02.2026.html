@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Учет заработной платы - версия v.1.1.0</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .improved { background-color: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .version-display { font-size: 1.6em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        .files-list { columns: 2; column-gap: 30px; }
+        @media (max-width: 768px) { .files-list { columns: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 ChangeLog: SalaryApp — версия v.1.1.0</h1>
+            <p class="subtitle">Запуск Telegram-бота и базовый функционал учета зарплаты</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.1.0</p>
+            <p><strong>Дата:</strong> 3 февраля 2026 г.</p>
+            <p><strong>Статус:</strong> ✅ Готово к использованию</p>
+            <p><strong>Фокус:</strong> Bot + Data + UX</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.1.0</div>
+
+        <div class="section">
+            <h2>🤖 Telegram-бот (aiogram v3)</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span> полноценный стартовый бот на aiogram v3</li>
+                <li><span class="change-type added">NEW</span> команда /add с пошаговым вводом: аванс → дата аванса → зарплата → дата зарплаты</li>
+                <li><span class="change-type added">NEW</span> команда /current с таблицей за текущий год</li>
+                <li><span class="change-type improved">UX</span> динамическое выравнивание таблицы по ширине колонок</li>
+                <li><span class="change-type improved">DATA</span> поддержка дат аванса/зарплаты в записи</li>
+            </ul>
+            <div class="file">bot/main.py</div>
+        </div>
+
+        <div class="section">
+            <h2>🧰 Запуск и окружение</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span> скрипты запуска: run_bot.bat и run_bot.py</li>
+                <li><span class="change-type improved">CONFIG</span> проверка токена из bot/.env или переменных окружения</li>
+                <li><span class="change-type fixed">FIX</span> исправлена кодировка батника (UTF-8 без BOM)</li>
+            </ul>
+            <div class="file">run_bot.bat, run_bot.py</div>
+        </div>
+
+        <div class="section">
+            <h2>📁 Детальный список измененных файлов</h2>
+            <div class="files-list">
+                <ul>
+                    <li>bot/main.py</li>
+                    <li>run_bot.bat</li>
+                    <li>run_bot.py</li>
+                    <li>requirements.txt</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>✅ Бот готов к использованию: базовое добавление записей и просмотр текущего года.</p>
+            <p>💡 Следующий шаг: команды аналитики, inline-кнопки и расширенные отчеты.</p>
+        </footer>
+    </div>
+</body>
+</html>

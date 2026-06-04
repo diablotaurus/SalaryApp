@@ -1,0 +1,3 @@
+"""
+Internal Salary API modules.
+"""

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Desktop-настройки истории и авто-бэкап при закрытии — 26.02.2026</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1150px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .meta p {
+            margin: 6px 0;
+        }
+        .version-display {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 14px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .summary-item {
+            flex: 1;
+            min-width: 210px;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+        .summary-ui { background: #e8f5e9; border: 1px solid #c8e6c9; }
+        .summary-backup { background: #e3f2fd; border: 1px solid #bbdefb; }
+        .summary-fix { background: #fff3e0; border: 1px solid #ffe0b2; }
+        .summary-tests { background: #f3e5f5; border: 1px solid #e1bee7; }
+        .section {
+            margin: 26px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .section h3 {
+            color: #2c3e50;
+            margin: 16px 0 8px;
+        }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 6px 0;
+            border-left: 3px solid #3498db;
+        }
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .improved { background-color: #e8f5e9; color: #2e7d32; }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 14px;
+            margin: 16px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 14px;
+            border-radius: 5px;
+            margin: 12px 0;
+        }
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .stat {
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            background: #eef4ff;
+            border: 1px solid #d7e6ff;
+        }
+        .stat .num {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+        }
+        @media (max-width: 768px) {
+            .summary { flex-direction: column; }
+            .stats { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧩 ChangeLog: Настройки вида истории + авто-бэкап при закрытии</h1>
+            <p class="subtitle">Desktop: переключаемый layout карточек истории, исправление переключения 3x4 ↔ 6x2, автоматическое резервное копирование при выходе</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.6 current (hotfix/update)</p>
+            <p><strong>Дата:</strong> 26 февраля 2026 г.</p>
+            <p><strong>Этап:</strong> UX/UI доработка + исправление дефектов + надежность данных</p>
+            <p><strong>Область изменений:</strong> desktop/views/*, desktop/controllers/*, desktop/app.py, tests/unit/desktop/controllers/*</p>
+            <p><strong>Статус:</strong> ✅ Реализовано и протестировано</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item summary-ui">
+                <h3>Главная/Настройки</h3>
+                <p>Новая настройка вида истории:<br>6x2 (стандарт) / 3x4 (поквартально)</p>
+            </div>
+            <div class="summary-item summary-backup">
+                <h3>Авто-бэкап</h3>
+                <p>Добавлен реальный запуск<br>резервного копирования при закрытии</p>
+            </div>
+            <div class="summary-item summary-fix">
+                <h3>Исправление дефекта</h3>
+                <p>Смена 3x4 → 6x2 теперь<br>сразу растягивает карточки на всю ширину</p>
+            </div>
+            <div class="summary-item summary-tests">
+                <h3>Проверки</h3>
+                <p>Unit + smoke тесты<br>после каждого блока изменений</p>
+            </div>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.6 current</div>
+
+        <div class="stats">
+            <div class="stat"><div class="num">8</div><div>Измененных файлов</div></div>
+            <div class="stat"><div class="num">1</div><div>Новая user-настройка</div></div>
+            <div class="stat"><div class="num">2</div><div>Новых поведения (UI + backup)</div></div>
+            <div class="stat"><div class="num">7/7</div><div>Прогонов тестов успешно</div></div>
+        </div>
+
+        <div class="section">
+            <h2>1) Новая настройка вида истории на Главной вкладке</h2>
+            <div class="note">
+                <strong>Цель:</strong> дать пользователю переключение между текущим видом истории (6 столбцов x 2 ряда) и компактным поквартальным видом (3 столбца x 4 ряда) без изменения бизнес-логики данных.
+            </div>
+
+            <h3>Что добавлено</h3>
+            <ul>
+                <li><span class="change-type added">NEW</span> В блок «Общие настройки» добавлены radiobutton-параметры вида истории.</li>
+                <li><span class="change-type changed">CHANGE</span> Введен новый ключ настройки: <code>history_layout_mode</code> со значениями <code>standard</code> / <code>quarterly</code>.</li>
+                <li><span class="change-type improved">IMPROVE</span> После сохранения настроек автоматически выполняется обновление Главной вкладки, чтобы изменения применялись сразу.</li>
+            </ul>
+
+            <h3>Как работает на Главной</h3>
+            <ul>
+                <li><strong>standard:</strong> карточки годов по 1 в ряд, помесячная сетка 6x2.</li>
+                <li><strong>quarterly:</strong> карточки годов по 2 в ряд, помесячная сетка 3x4.</li>
+                <li>Режим читается из БД-настроек с валидацией допустимых значений и fallback на <code>standard</code>.</li>
+            </ul>
+
+            <h3>Измененные файлы</h3>
+            <div class="file">desktop/views/constants/texts.py</div>
+            <div class="file">desktop/views/settings/settings_view.py</div>
+            <div class="file">desktop/views/main/main_view.py</div>
+            <div class="file">desktop/controllers/settings_tab_controller.py</div>
+        </div>
+
+        <div class="section">
+            <h2>2) Реализован авто-бэкап при закрытии приложения</h2>
+            <div class="note">
+                <strong>Проблема:</strong> в интерфейсе существовала настройка «Автоматическое резервное копирование при закрытии», но фактический вызов создания backup в обработчике закрытия отсутствовал.
+            </div>
+
+            <h3>Что исправлено</h3>
+            <ul>
+                <li><span class="change-type fixed">FIX</span> Добавлен реальный вызов авто-бэкапа в цепочку закрытия окна: <code>App → NavigationController → MainTabController</code>.</li>
+                <li><span class="change-type improved">IMPROVE</span> Учитываются настройки <code>backup_auto</code> и <code>backup_days</code>.</li>
+                <li><span class="change-type improved">IMPROVE</span> Срок хранения для очистки старых backup применяется из пользовательской настройки на момент создания копии.</li>
+                <li><span class="change-type improved">IMPROVE</span> Добавлена безопасная обработка ошибок с логированием, без падения приложения при закрытии.</li>
+            </ul>
+
+            <h3>Измененные файлы</h3>
+            <div class="file">desktop/app.py</div>
+            <div class="file">desktop/controllers/navigation_controller.py</div>
+            <div class="file">desktop/controllers/main_tab_controller.py</div>
+        </div>
+
+        <div class="section">
+            <h2>3) Дефект переключения 3x4 → 6x2 без перезапуска</h2>
+            <div class="note">
+                <strong>Симптом:</strong> при возврате из режима 3x4 в 6x2 карточки оставались полуширины до перезапуска приложения.
+            </div>
+
+            <h3>Причина</h3>
+            <ul>
+                <li>После режима с двумя колонками сохранялась конфигурация второй колонки контейнера карточек.</li>
+            </ul>
+
+            <h3>Решение</h3>
+            <ul>
+                <li><span class="change-type fixed">FIX</span> Перед применением нового режима добавлен сброс column-конфигурации контейнера карточек.</li>
+                <li>После сброса повторно настраивается нужное количество колонок для текущего режима (1 или 2).</li>
+            </ul>
+
+            <h3>Измененный файл</h3>
+            <div class="file">desktop/views/main/main_view.py</div>
+
+            <div class="result-box">
+                <strong>Результат:</strong> теперь переключение в обе стороны (<code>6x2 ↔ 3x4</code>) применяется сразу, без перезапуска.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4) Тестирование и контроль стабильности</h2>
+            <ul>
+                <li><span class="change-type improved">TEST</span> <code>tests/unit/desktop/controllers/test_tab_controllers.py</code> — 4 passed</li>
+                <li><span class="change-type improved">TEST</span> <code>tests/smoke/test_entrypoints.py</code> — 3 passed</li>
+                <li><span class="change-type added">NEW TEST</span> Добавлен unit-тест на сценарий авто-бэкапа при закрытии (включенный <code>backup_auto</code>).</li>
+            </ul>
+
+            <h3>Измененный файл тестов</h3>
+            <div class="file">tests/unit/desktop/controllers/test_tab_controllers.py</div>
+        </div>
+
+        <div class="section">
+            <h2>5) Полный список измененных файлов за итерацию</h2>
+            <div class="file">desktop/views/constants/texts.py</div>
+            <div class="file">desktop/views/settings/settings_view.py</div>
+            <div class="file">desktop/views/main/main_view.py</div>
+            <div class="file">desktop/controllers/settings_tab_controller.py</div>
+            <div class="file">desktop/controllers/main_tab_controller.py</div>
+            <div class="file">desktop/controllers/navigation_controller.py</div>
+            <div class="file">desktop/app.py</div>
+            <div class="file">tests/unit/desktop/controllers/test_tab_controllers.py</div>
+        </div>
+
+        <footer>
+            <p>✅ Добавлена пользовательская настройка layout истории на Главной вкладке</p>
+            <p>✅ Восстановлена фактическая работа авто-бэкапа при закрытии desktop-приложения</p>
+            <p>✅ Исправлен дефект применения ширины карточек при обратном переключении режима</p>
+            <p>✅ Изменения подтверждены unit/smoke тестами</p>
+        </footer>
+    </div>
+</body>
+</html>

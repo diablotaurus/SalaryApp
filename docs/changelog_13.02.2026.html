@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp - версия v.1.2.2 (13.02.2026)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .improved { background-color: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .version-display { font-size: 1.6em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        .stat { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+        .stat-item { flex: 1; min-width: 180px; background: #eef5ff; border: 1px solid #cfe3ff; border-radius: 8px; padding: 12px; text-align: center; }
+        .stat-num { font-size: 1.4em; font-weight: bold; color: #1f4f8a; }
+        .commit { background: #fafafa; border: 1px solid #e4e4e4; border-radius: 6px; padding: 10px; margin: 10px 0; }
+        .commit code { font-size: 0.95em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.2</h1>
+            <p class="subtitle">Desktop-улучшения, централизация UX-поведения окон, полный тестовый контур и документация тестирования</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.2</p>
+            <p><strong>Дата:</strong> 13 февраля 2026 г.</p>
+            <p><strong>Статус:</strong> ✅ Завершено и зафиксировано в git</p>
+            <p><strong>Фокус релиза:</strong> Desktop UX, стабильность диалогов, качество через automated tests</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.2</div>
+
+        <div class="stat">
+            <div class="stat-item"><div class="stat-num">5</div><div>Коммитов в блоке</div></div>
+            <div class="stat-item"><div class="stat-num">13</div><div>Новых тестовых файлов</div></div>
+            <div class="stat-item"><div class="stat-num">44</div><div>Автотеста (pytest)</div></div>
+            <div class="stat-item"><div class="stat-num">100%</div><div>Тестов прошли успешно</div></div>
+        </div>
+
+        <div class="section">
+            <h2>Desktop: функциональные исправления и UX</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span> В Desktop-форму ввода зарплаты добавлены поля дат аванса и зарплаты (в формате, как в web-части).</li>
+                <li><span class="change-type fixed">FIX</span> Убраны вертикальная и горизонтальная полосы прокрутки в таблице резервных копий (по требованию UX-сценария с малым числом записей).</li>
+                <li><span class="change-type fixed">FIX</span> Скорректирована визуальная компоновка таблицы в окне резервных копий (устранено скрытие данных справа).</li>
+                <li><span class="change-type improved">IMPROVE</span> Окна <strong>«Ввод данных по зарплате»</strong>, <strong>«Экспорт истории»</strong> и <strong>«Резервные копии»</strong> центрируются относительно текущего размера и позиции главного окна.</li>
+                <li><span class="change-type added">NEW</span> Добавлено подтверждение при закрытии главного Desktop-окна приложения.</li>
+            </ul>
+            <div class="file">desktop/views/dialogs/salary_dialog.py, desktop/views/dialogs/export_dialog.py, desktop/views/dialogs/backup_dialog.py, desktop/widgets/dialogs.py, desktop/app.py, desktop/controllers/navigation_controller.py, desktop/controllers/salary_controller.py</div>
+        </div>
+
+        <div class="section">
+            <h2>Качество: тестовый контур</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span> Развернут полный каталог <code>tests/</code> c unit/integration/smoke тестами.</li>
+                <li><span class="change-type added">NEW</span> Добавлены фикстуры для изолированной временной SQLite-базы и безопасного прогона миграций.</li>
+                <li><span class="change-type improved">IMPROVE</span> Закрыты ключевые сценарии: сервисы зарплаты/дат/денег, API-ответы, repository CRUD, миграции, Desktop controller, FSM-обработчики Telegram-бота, entrypoint smoke-тесты.</li>
+                <li><span class="change-type fixed">FIX</span> Проверка регрессий по основным рабочим цепочкам, итоговый прогон: <strong>44 passed</strong>.</li>
+            </ul>
+            <div class="file">tests/conftest.py + tests/unit/* + tests/integration/* + tests/smoke/*</div>
+        </div>
+
+        <div class="section">
+            <h2>Документация</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span> Добавлен файл <code>TESTING.md</code> с быстрым запуском тестов, разделением по группам и командами для выборочного прогона.</li>
+            </ul>
+            <div class="file">TESTING.md</div>
+        </div>
+
+        <div class="section">
+            <h2>Список коммитов (полный блок работ)</h2>
+
+            <div class="commit">
+                <div><strong>1)</strong> <code>7899a4e</code> — Desktop: add salary date fields and remove backup table scrollbars</div>
+                <div>Файлы: 5, изменения: +76 / -31</div>
+            </div>
+            <div class="commit">
+                <div><strong>2)</strong> <code>5cda5c3</code> — Desktop: center salary/export/backup dialogs on main window</div>
+                <div>Файлы: 4, изменения: +17 / -14</div>
+            </div>
+            <div class="commit">
+                <div><strong>3)</strong> <code>2d8ff0a</code> — Add comprehensive unit/integration/smoke test suite</div>
+                <div>Файлы: 13, изменения: +631</div>
+            </div>
+            <div class="commit">
+                <div><strong>4)</strong> <code>52f6d8b</code> — Add TESTING.md with test run instructions</div>
+                <div>Файлы: 1, изменения: +57</div>
+            </div>
+            <div class="commit">
+                <div><strong>5)</strong> <code>cddb69c</code> — Desktop: add close confirmation for main window</div>
+                <div>Файлы: 1, изменения: +20 / -7</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Итог</h2>
+            <ul>
+                <li>Desktop-часть приведена к ожидаемому пользовательскому поведению (даты выплат, корректное центрирование, подтверждение закрытия).</li>
+                <li>Усилена надежность за счет автоматических тестов на уровне логики, данных, API, Desktop и Bot сценариев.</li>
+                <li>Добавлена рабочая инструкция по тестированию для дальнейшей поддержки и развития проекта.</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>SalaryApp — changelog_13.02.2026.html</p>
+        </footer>
+    </div>
+</body>
+</html>

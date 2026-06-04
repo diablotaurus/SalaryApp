@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Учет заработной платы - версия 0.2.0</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .meta p {
+            margin: 5px 0;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .section h3 {
+            color: #2980b9;
+            margin: 15px 0 10px 0;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .added {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .changed {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .fixed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .improved {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .refactored {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        
+        .security {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .ui {
+            background-color: #e2d9f3;
+            color: #4a235a;
+        }
+        
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+        
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .ui-section {
+            background: linear-gradient(to right, #e2d9f3, #d6c7f5);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #d6c7f5;
+        }
+        
+        .fix-section {
+            background: linear-gradient(to right, #d1ecf1, #bee5eb);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #bee5eb;
+        }
+        
+        .api-section {
+            background: linear-gradient(to right, #e8f5e9, #d4edda);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #d4edda;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .summary-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .summary-ui {
+            background: #e2d9f3;
+            border: 1px solid #d6c7f5;
+        }
+        
+        .summary-api {
+            background: #e8f5e9;
+            border: 1px solid #d4edda;
+        }
+        
+        .summary-fix {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+        }
+        
+        .summary-arch {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .comparison {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison-item {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .before {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        
+        .after {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        .comparison-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .stat-item {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .benefits-list {
+            columns: 2;
+            column-gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .benefits-list {
+                columns: 1;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .stat-box {
+                flex-wrap: wrap;
+            }
+            
+            .summary {
+                flex-direction: column;
+            }
+        }
+        
+        .problem-solution {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .problem, .solution {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .problem {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        
+        .solution {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        .version-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+        
+        .ui-visual {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .ui-screenshot {
+            display: inline-block;
+            width: 80%;
+            max-width: 600px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .ui-label {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            color: #333;
+            margin: 5px 0;
+        }
+        
+        .ui-button {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 4px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .files-changed {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .file-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+        
+        .file-stat {
+            text-align: center;
+        }
+        
+        .file-stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .file-stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .code-snippet {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #4a6fa5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .const-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .const-table th {
+            background: #4a6fa5;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .const-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .const-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .const-value {
+            font-family: 'Courier New', monospace;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .workflow-diagram {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .workflow-step {
+            display: inline-block;
+            width: 120px;
+            margin: 0 10px;
+            text-align: center;
+            vertical-align: top;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            line-height: 40px;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+        
+        .step-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .arrow {
+            display: inline-block;
+            margin: 15px 5px 0;
+            color: #3498db;
+            font-size: 1.5em;
+            vertical-align: top;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .warning-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .flowchart-step {
+            width: 80%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .flowchart-arrow {
+            font-size: 24px;
+            color: #3498db;
+        }
+        
+        .flowchart-user {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+        
+        .flowchart-ui {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+        }
+        
+        .flowchart-controller {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        
+        .flowchart-api {
+            background: #f3e5f5;
+            border: 2px solid #9c27b0;
+        }
+        
+        .flowchart-service {
+            background: #e0f2f1;
+            border: 2px solid #009688;
+        }
+        
+        .flowchart-db {
+            background: #fce4ec;
+            border: 2px solid #e91e63;
+        }
+        
+        .flowchart-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗑️ ChangeLog: Добавление функции "Удалить год" - версия 0.2.0</h1>
+            <p class="subtitle">Улучшение интерфейса, добавление массового удаления данных за год, исправление дублирования сообщений</p>
+        </header>
+        
+        <div class="meta">
+            <p><strong>Версия:</strong> v.0.2.0</p>
+            <p><strong>Дата:</strong> 25 января 2026 г.</p>
+            <p><strong>Этап:</strong> Улучшение функциональности и исправление интерфейса</p>
+            <p><strong>Область изменений:</strong> Главная вкладка, контроллеры, сервисы, API</p>
+            <p><strong>Тип изменений:</strong> Новая функция, исправление ошибок, улучшение UX</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и протестировано</p>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-item summary-ui">
+                <h3>🎨 UI/UX Улучшения</h3>
+                <p>Новая кнопка "Удалить год"<br>Стиль Danger для опасных действий<br>Подтверждение перед удалением</p>
+            </div>
+            <div class="summary-item summary-api">
+                <h3>🔌 API Расширение</h3>
+                <p>Новые методы в SalaryAPI<br>Интеграция с SalaryService<br>Стандартизированные ответы</p>
+            </div>
+            <div class="summary-item summary-fix">
+                <h3>🐛 Исправления</h3>
+                <p>Устранение дублирования сообщений<br>Оптимизация работы контроллеров<br>Улучшение взаимодействия MVC</p>
+            </div>
+            <div class="summary-item summary-arch">
+                <h3>🏗️ Архитектура</h3>
+                <p>Соблюдение принципов MVC/OOP<br>Корректная цепочка вызовов<br>Расширяемость кода</p>
+            </div>
+        </div>
+        
+        <div class="version-display">
+            Учет заработной платы v.0.2.0
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-item" style="background: #e2d9f3;">
+                <div class="stat-number">1</div>
+                <div class="stat-label">Новая функция</div>
+            </div>
+            <div class="stat-item" style="background: #e8f5e9;">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Измененных файлов</div>
+            </div>
+            <div class="stat-item" style="background: #d1ecf1;">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Исправленных ошибок</div>
+            </div>
+            <div class="stat-item" style="background: #fff3cd;">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Новых методов</div>
+            </div>
+        </div>
+        
+        <div class="ui-section">
+            <h2>🎨 Добавление кнопки "Удалить год" на главной вкладке</h2>
+            
+            <div class="note">
+                <strong>Пользовательское удобство:</strong> Теперь пользователи могут удалять все данные за выбранный год одним кликом, что значительно упрощает управление историей.
+            </div>
+            
+            <div class="ui-visual">
+                <h3>🎯 Новый интерфейс карточки года:</h3>
+                <div class="ui-screenshot">
+                    <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div class="ui-label" style="font-size: 16px; font-weight: bold;">2024 год</div>
+                            <div>
+                                <span style="display: inline-block; padding: 6px 12px; background: #007bff; color: white; border-radius: 4px; margin-right: 8px; font-size: 12px;">Редактировать</span>
+                                <span style="display: inline-block; padding: 6px 12px; background: #dc3545; color: white; border-radius: 4px; font-size: 12px; font-weight: bold;">Удалить год</span>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px solid #eee; padding-top: 10px;">
+                            <div class="ui-label"><strong>Общий доход:</strong> 450 000.00 руб.</div>
+                            <div class="ui-label"><strong>Среднемесячный:</strong> 37 500.00 руб.</div>
+                            <div class="ui-label"><strong>Месяцев с данными:</strong> 12</div>
+                        </div>
+                    </div>
+                    <p style="color: #666; font-size: 12px; text-align: center;">Новый вид карточки года с кнопками "Редактировать" и "Удалить год"</p>
+                </div>
+            </div>
+            
+            <div class="comparison">
+                <div class="comparison-item before">
+                    <div class="comparison-title">❌ ДО версии 0.2.0:</div>
+                    <ul>
+                        <li>Только кнопка "Редактировать"</li>
+                        <li>Невозможно удалить весь год</li>
+                        <li>Приходилось удалять каждый месяц отдельно</li>
+                        <li>Нет массового управления данными</li>
+                        <li>Ограниченный функционал управления историей</li>
+                    </ul>
+                </div>
+                <div class="comparison-item after">
+                    <div class="comparison-title">✅ ПОСЛЕ версии 0.2.0:</div>
+                    <ul>
+                        <li>Две кнопки: "Редактировать" и "Удалить год"</li>
+                        <li>Массовое удаление всех данных за год</li>
+                        <li>Подтверждение перед опасным действием</li>
+                        <li>Кнопка "Удалить год" выделена красным цветом</li>
+                        <li>Полный контроль над историей данных</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="flowchart">
+                <h3>📋 Процесс удаления года:</h3>
+                
+                <div class="flowchart-step flowchart-user">
+                    <div class="flowchart-title">👤 Пользователь</div>
+                    <p>Нажимает кнопку "Удалить год" на карточке нужного года</p>
+                </div>
+                
+                <div class="flowchart-arrow">↓</div>
+                
+                <div class="flowchart-step flowchart-ui">
+                    <div class="flowchart-title">🎨 MainView</div>
+                    <p>Показывает диалог подтверждения с предупреждением</p>
+                </div>
+                
+                <div class="flowchart-arrow">↓</div>
+                
+                <div class="flowchart-step flowchart-controller">
+                    <div class="flowchart-title">🎮 NavigationController</div>
+                    <p>Обрабатывает подтверждение и вызывает SalaryAPI</p>
+                </div>
+                
+                <div class="flowchart-arrow">↓</div>
+                
+                <div class="flowchart-step flowchart-api">
+                    <div class="flowchart-title">🔌 SalaryAPI</div>
+                    <p>Вызывает SalaryService и возвращает стандартизированный ответ</p>
+                </div>
+                
+                <div class="flowchart-arrow">↓</div>
+                
+                <div class="flowchart-step flowchart-service">
+                    <div class="flowchart-title">⚙️ SalaryService</div>
+                    <p>Вызывает SalaryRepository для удаления всех записей за год</p>
+                </div>
+                
+                <div class="flowchart-arrow">↓</div>
+                
+                <div class="flowchart-step flowchart-db">
+                    <div class="flowchart-title">🗄️ База данных</div>
+                    <p>Удаляет все записи за указанный год из таблицы salaries</p>
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Пользователи теперь имеют полный контроль над своими данными. Удаление всего года стало простым и безопасным процессом с подтверждением действия и немедленным обновлением интерфейса.
+            </div>
+        </div>
+        
+        <div class="api-section">
+            <h2>🔌 Расширение API и бизнес-логики</h2>
+            
+            <div class="note">
+                <strong>Архитектурные изменения:</strong> Добавлена полная цепочка методов от представления до базы данных с соблюдением принципов MVC и OOP.
+            </div>
+            
+            <div class="files-changed">
+                <h3>Новые методы в SalaryService:</h3>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ МЕТОД</span> core/services/salary_service.py - delete_year()
+                </div>
+                
+                <div class="code-block">
+@staticmethod
+def delete_year(year: int) -> bool:
+    """Удалить все записи за указанный год"""
+    try:
+        # Получаем все записи за год
+        salaries = SalaryRepository.get_by_year(year)
+        
+        # Удаляем каждую запись
+        for salary in salaries:
+            SalaryRepository.delete_by_id(salary.id)
+        
+        return True
+    except Exception:
+        return False
+                </div>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ МЕТОД</span> api/salary_api.py - delete_year()
+                </div>
+                
+                <div class="code-block">
+@staticmethod
+def delete_year(year: int) -> Dict[str, Any]:
+    """Удалить все данные за год"""
+    try:
+        success = SalaryService.delete_year(year)
+        
+        if success:
+            return {
+                'success': True,
+                'message': f'Данные за {year} год успешно удалены',
+                'data': {'year': year}
+            }
+        else:
+            return {
+                'success': False,
+                'error': 'Ошибка удаления',
+                'message': f'Не удалось удалить данные за {year} год'
+            }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e),
+            'message': f'Ошибка при удалении данных за {year} год'
+        }
+                </div>
+                
+                <h3>Новые методы в NavigationController:</h3>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ МЕТОД</span> desktop/controllers/navigation_controller.py - delete_year()
+                </div>
+                
+                <div class="code-snippet">
+def delete_year(self, year: int):
+    """Удалить все данные за год"""
+    try:
+        # Запрашиваем подтверждение
+        confirm = self.show_message(
+            "Удаление года",
+            f"Вы уверены, что хотите удалить все данные за {year} год?\nЭто действие нельзя отменить.",
+            "question"
+        )
+        
+        if not confirm:
+            return False
+        
+        # Вызываем API для удаления года
+        response = SalaryAPI.delete_year(year)
+        
+        if response['success']:
+            self.show_message("Успех", response['message'], "info")
+            # Обновляем историю
+            self.refresh_history()
+            # Обновляем аналитику
+            self.refresh_reports()
+            return True
+        else:
+            self.show_message("Ошибка", response['message'], "error")
+            return False
+    except Exception as e:
+        self.show_message("Ошибка", f"Не удалось удалить данные за год: {str(e)}", "error")
+        return False
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Создана полная архитектурная цепочка для обработки удаления года. Все изменения соответствуют принципам MVC и OOP, обеспечивая чистоту кода и легкость дальнейшего расширения.
+            </div>
+        </div>
+        
+        <div class="fix-section">
+            <h2>🐛 Исправление дублирования сообщений в настройках</h2>
+            
+            <div class="note">
+                <strong>Обнаруженная проблема:</strong> При сохранении настроек сообщение об успешном сохранении появлялось два раза из-за дублирования логики в представлении и контроллере.
+            </div>
+            
+            <div class="problem-solution">
+                <div class="problem">
+                    <h3>❌ ПРОБЛЕМА (до версии 0.2.0):</h3>
+                    <ul>
+                        <li><strong>SettingsView._save_settings()</strong> показывал сообщение</li>
+                        <li><strong>NavigationController.save_settings()</strong> тоже показывал сообщение</li>
+                        <li><strong>Дублирование кода:</strong> Одна и та же логика в двух местах</li>
+                        <li><strong>Нарушение MVC:</strong> Представление выполняло функцию контроллера</li>
+                        <li><strong>Путаница для пользователя:</strong> Два одинаковых сообщения подряд</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <h3>✅ РЕШЕНИЕ (в версии 0.2.0):</h3>
+                    <ul>
+                        <li><strong>Убрано из SettingsView:</strong> Удален лишний вывод сообщения</li>
+                        <li><strong>Оставлено в контроллере:</strong> Контроллер отвечает за взаимодействие с пользователем</li>
+                        <li><strong>Соблюдение MVC:</strong> Четкое разделение ответственности</li>
+                        <li><strong>Чистый код:</strong> Устранено дублирование логики</li>
+                        <li><strong>Улучшенный UX:</strong> Сообщение показывается только один раз</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="files-changed">
+                <h3>Исправление в SettingsView:</h3>
+                
+                <div class="file">
+                    <span class="change-type fixed">ИСПРАВЛЕН</span> desktop/views/settings/settings_view.py - _save_settings()
+                </div>
+                
+                <div class="code-block">
+# БЫЛО (неправильно - дублирование):
+def _save_settings(self):
+    """Сохранить настройки"""
+    settings = {}
+    for key, var in self.settings_vars.items():
+        settings[key] = var.get()
+    
+    if self.controller.save_settings(settings):
+        messagebox.showinfo("Успех", MESSAGE_SUCCESS)  # ⚠️ ЛИШНЕЕ сообщение!
+</div>
+                
+                <div class="code-block">
+# СТАЛО (правильно):
+def _save_settings(self):
+    """Сохранить настройки"""
+    settings = {}
+    for key, var in self.settings_vars.items():
+        settings[key] = var.get()
+    
+    # Просто вызываем метод контроллера. Контроллер сам покажет сообщение.
+    # Убрали повторный показ сообщения здесь, чтобы избежать дублирования.
+    self.controller.save_settings(settings)
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Устранено дублирование сообщений при сохранении настроек. Теперь сообщение показывается только один раз, что улучшает пользовательский опыт и соблюдает архитектурные принципы MVC.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📁 Детальный список изменений в файлах</h2>
+            
+            <h3>Измененные файлы:</h3>
+            
+            <div class="file-stats">
+                <div class="file-stat">
+                    <div class="file-stat-number">5</div>
+                    <div class="file-stat-label">Измененных файлов</div>
+                </div>
+                <div class="file-stat">
+                    <div class="file-stat-number">6</div>
+                    <div class="file-stat-label">Новых методов</div>
+                </div>
+                <div class="file-stat">
+                    <div class="file-stat-number">3</div>
+                    <div class="file-stat-label">Новые константы</div>
+                </div>
+                <div class="file-stat">
+                    <div class="file-stat-number">2</div>
+                    <div class="file-stat-label">Исправления</div>
+                </div>
+            </div>
+            
+            <div class="file">
+                <span class="change-type added">НОВАЯ КОНСТАНТА</span> desktop/views/constants/texts.py
+            </div>
+            <ul>
+                <li><span class="change-type added">TEXT_DELETE_YEAR = "Удалить год"</span> - текст для кнопки удаления</li>
+                <li><span class="change-type added">CONFIRM_DELETE_YEAR</span> - текст подтверждения удаления</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> desktop/views/main/main_view.py
+            </div>
+            <ul>
+                <li><span class="change-type added">Добавлен импорт TEXT_DELETE_YEAR</span></li>
+                <li><span class="change-type added">Изменен метод _create_year_card()</span> - добавлена кнопка "Удалить год"</li>
+                <li><span class="change-type added">Новый метод _delete_year()</span> - обработчик кнопки</li>
+                <li><span class="change-type changed">Обновлена разметка кнопок</span> - контейнер для выравнивания</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> desktop/controllers/navigation_controller.py
+            </div>
+            <ul>
+                <li><span class="change-type added">Новый метод delete_year()</span> - удаление года с подтверждением</li>
+                <li><span class="change-type changed">Интеграция с SalaryAPI</span> - вызов API для удаления</li>
+                <li><span class="change-type improved">Автоматическое обновление</span> - после удаления обновляются вкладки</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> core/services/salary_service.py
+            </div>
+            <ul>
+                <li><span class="change-type added">Новый метод delete_year()</span> - бизнес-логика удаления</li>
+                <li><span class="change-type improved">Использование существующих методов репозитория</span></li>
+                <li><span class="change-type security">Обработка ошибок</span> - безопасное удаление</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> api/salary_api.py
+            </div>
+            <ul>
+                <li><span class="change-type added">Новый метод delete_year()</span> - API метод для удаления</li>
+                <li><span class="change-type improved">Стандартизированный ответ</span> - единый формат ответов API</li>
+                <li><span class="change-type security">Обработка исключений</span> - корректная обработка ошибок</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type fixed">ИСПРАВЛЕН</span> desktop/views/settings/settings_view.py
+            </div>
+            <ul>
+                <li><span class="change-type fixed">Устранено дублирование сообщений</span> - убран лишний messagebox</li>
+                <li><span class="change-type improved">Соблюдение MVC</span> - контроллер отвечает за сообщения</li>
+                <li><span class="change-type changed">Упрощен метод _save_settings()</span></li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Преимущества и улучшения версии 0.2.0</h2>
+            
+            <h3>Для пользователя:</h3>
+            <div class="benefits-list">
+                <ul>
+                    <li><strong>Удобное управление данными:</strong> Удаление всего года одним кликом</li>
+                    <li><strong>Безопасность:</strong> Подтверждение перед опасным действием</li>
+                    <li><strong>Наглядный интерфейс:</strong> Кнопка "Удалить год" выделена красным цветом</li>
+                    <li><strong>Чистота сообщений:</strong> Нет дублирования уведомлений</li>
+                    <li><strong>Интуитивная навигация:</strong> Кнопки расположены логично</li>
+                    <li><strong>Немедленная обратная связь:</strong> Интерфейс обновляется после удаления</li>
+                </ul>
+            </div>
+            
+            <h3>Для разработчика:</h3>
+            <ul>
+                <li><strong>Чистая архитектура:</strong> Соблюдение принципов MVC и OOP</li>
+                <li><strong>Расширяемость:</strong> Легко добавить новые функции управления данными</li>
+                <li><strong>Единый код:</strong> Устранено дублирование логики</li>
+                <li><strong>Стандартизированные API ответы:</strong> Упрощена обработка результатов</li>
+                <li><strong>Качественная обработка ошибок:</strong> Пользователь видит понятные сообщения</li>
+                <li><strong>Логичная цепочка вызовов:</strong> View → Controller → API → Service → Repository</li>
+            </ul>
+            
+            <h3>Тестирование после изменений:</h3>
+            <ul>
+                <li><strong>✅ Кнопка "Удалить год":</strong> Отображается на каждой карточке года</li>
+                <li><strong>✅ Подтверждение удаления:</strong> Диалог появляется перед удалением</li>
+                <li><strong>✅ Удаление данных:</strong> Все записи за год удаляются из БД</li>
+                <li><strong>✅ Обновление интерфейса:</strong> Карточка года исчезает после удаления</li>
+                <li><strong>✅ Обновление аналитики:</strong> Графики обновляются после удаления</li>
+                <li><strong>✅ Одно сообщение:</strong> При сохранении настроек сообщение показывается один раз</li>
+                <li><strong>✅ Отмена удаления:</strong> При отказе данные не удаляются</li>
+                <li><strong>✅ Обработка ошибок:</strong> При ошибке удаления показывается сообщение</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 План будущих улучшений</h2>
+            
+            <div class="benefits-list">
+                <ul>
+                    <li><strong>Восстановление удаленных данных:</strong> Корзина для удаленных записей с возможностью восстановления</li>
+                    <li><strong>Расширенное подтверждение:</strong> Показ статистики удаляемых данных перед подтверждением</li>
+                    <li><strong>Журнал действий:</strong> История всех операций удаления/добавления данных</li>
+                    <li><strong>Массовые операции:</strong> Выделение нескольких лет для массового удаления</li>
+                    <li><strong>Экспорт перед удалением:</strong> Автоматический экспорт данных перед удалением года</li>
+                    <li><strong>Расширенная аналитика:</strong> Подробные отчеты по удаленным данным</li>
+                    <li><strong>Настройки безопасности:</strong> Дополнительные подтверждения для опасных операций</li>
+                </ul>
+            </div>
+            
+            <div class="result-box">
+                <strong>Заключение:</strong> Версия 0.2.0 значительно улучшает управление данными в приложении. Новая функция "Удалить год" делает работу с историей заработной платы более удобной и эффективной, а исправление дублирования сообщений улучшает пользовательский опыт. Все изменения выполнены с соблюдением архитектурных принципов, что обеспечивает чистоту кода и легкость дальнейшего развития приложения.
+            </div>
+        </div>
+        
+        <footer>
+            <p>🗑️ Добавлена функция массового удаления данных за год</p>
+            <p>🎨 Улучшен интерфейс главной вкладки</p>
+            <p>🐛 Исправлено дублирование сообщений в настройках</p>
+            <p>🏗️ Соблюдение принципов MVC и OOP</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Устанавливаем текущую дату
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.querySelectorAll('span').forEach(span => {
+            if (!span.textContent.trim()) {
+                span.textContent = now.toLocaleDateString('ru-RU', options);
+            }
+        });
+    </script>
+</body>
+</html>

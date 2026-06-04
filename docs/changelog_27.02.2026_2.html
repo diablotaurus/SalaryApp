@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Выравнивание UI на вкладках Главная/Настройки - версия v.1.2.8</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 30px; }
+        header { text-align: center; margin-bottom: 32px; padding-bottom: 18px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin: 0 0 8px 0; }
+        .subtitle { color: #6f7f90; font-size: 1.05em; }
+        .meta { background: #ecf0f1; border-radius: 6px; padding: 14px 16px; margin-bottom: 22px; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 24px 0; padding: 18px 20px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 6px 6px 0; }
+        .section h2 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #dcdfe3; padding-bottom: 8px; }
+        .section h3 { color: #2f6fa1; margin-bottom: 8px; }
+        ul { padding-left: 20px; }
+        li { margin: 7px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .improved { background: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; border-left: 3px solid #3498db; border-radius: 4px; padding: 8px 12px; margin: 8px 0; font-family: 'Courier New', monospace; }
+        .highlight { background: #fff3cd; border-radius: 4px; padding: 2px 6px; font-family: 'Courier New', monospace; }
+        .result { background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 6px; padding: 12px 14px; }
+        footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #dcdfe3; text-align: center; color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📐 ChangeLog: Выравнивание UI на вкладках Главная/Настройки — v.1.2.8</h1>
+            <p class="subtitle">Второй этап доработок: единая сетка настроек цветов/шрифтов, стабилизация структуры карточек месяцев и улучшение адаптивности в узком окне</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.8</p>
+            <p><strong>Дата:</strong> 27 февраля 2026 г.</p>
+            <p><strong>Область изменений:</strong> desktop/views/main/main_view.py, desktop/views/settings/settings_view.py, desktop/views/constants/numbers.py, docs/, .gitignore</p>
+            <p><strong>Тип изменений:</strong> UI/UX, layout-выравнивание, эксплуатационные настройки репозитория</p>
+            <p><strong>Статус:</strong> ✅ Выполнено и проверено</p>
+        </div>
+
+        <div class="section">
+            <h2>Ключевые результаты этапа</h2>
+            <ul>
+                <li><span class="change-type fixed">FIX</span> В блоке <strong>Настройки цвета</strong> устранено «гуляние» элементов: строки переведены на общую табличную сетку <span class="highlight">Label | Entry | Preview | Button</span>, теперь все 3 строки выровнены строго друг под другом.</li>
+                <li><span class="change-type fixed">FIX</span> В блоке <strong>Размер шрифта</strong> настройки «Названия Месяца» и «Строки "Итого"» также переведены на единую grid-сетку для ровного вертикального выравнивания.</li>
+                <li><span class="change-type improved">IMPROVE</span> В карточках месяцев на вкладке <strong>Главная</strong> внедрена фиксированная зона выплат — строка «Итого» больше не смещается вверх/вниз при частично заполненных данных.</li>
+                <li><span class="change-type changed">CHANGE</span> Табличная часть выплат переработана до 3 колонок <span class="highlight">Тип | Дата | Сумма</span>, разделитель «-» удален как лишний визуальный шум.</li>
+                <li><span class="change-type improved">IMPROVE</span> Улучшено поведение в узких карточках: уменьшены внутренние отступы и минимальные размеры колонок, данные вмещаются лучше при сужении окна.</li>
+                <li><span class="change-type changed">CHANGE</span> Для вкладки настроек/главного окна сохранено согласованное поведение: дата и суммы выровнены по правому краю внутри карточки месяца.</li>
+                <li><span class="change-type changed">CHANGE</span> Обновлена минимальная ширина главного окна: <span class="highlight">WINDOW_MAIN_MIN_WIDTH = 1360</span>.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Что изменено по файлам</h2>
+
+            <h3>1) Главная вкладка (карточки месяцев)</h3>
+            <div class="file">desktop/views/main/main_view.py</div>
+            <ul>
+                <li>Добавлена фиксированная по высоте зона выплат <code>payments_area</code>.</li>
+                <li>Таблица выплат перестроена: 3 колонки вместо 4 (убран отдельный разделитель).</li>
+                <li>Настроено выравнивание даты и суммы по правому краю.</li>
+                <li>Снижены горизонтальные отступы и <code>minsize</code> колонок для лучшей адаптации в узком режиме.</li>
+                <li>Строка «Итого» закреплена у нижней части карточки.</li>
+            </ul>
+
+            <h3>2) Вкладка настроек (визуальное выравнивание)</h3>
+            <div class="file">desktop/views/settings/settings_view.py</div>
+            <ul>
+                <li>Блок «Настройки цвета» переведен на общую grid-структуру, убрано растяжение первой колонки.</li>
+                <li>Блок «Размер шрифта» также переведен на grid для единообразного вида.</li>
+                <li>Сохранены текущие цветовые preview-индикаторы в каждой строке.</li>
+            </ul>
+
+            <h3>3) Константы размеров</h3>
+            <div class="file">desktop/views/constants/numbers.py</div>
+            <ul>
+                <li>Обновлена минимальная ширина главного окна для стабильного отображения доработанного layout.</li>
+            </ul>
+
+            <h3>4) Репозиторий и артефакты</h3>
+            <div class="file">.gitignore</div>
+            <ul>
+                <li>Явно добавлено исключение <code>db/backup/</code> из Git.</li>
+                <li>Папка резервных копий удалена из рабочего дерева по согласованию.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Проверка качества</h2>
+            <ul>
+                <li>Проверка синтаксиса измененных модулей через <code>python -m py_compile</code> — успешно.</li>
+                <li>Проверка кодировки файлов через <code>scripts/check_encoding.ps1</code> — успешно.</li>
+                <li>Изменения в точках входа (<code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>desktop/app.py</code>, <code>bot/main.py</code>) не затрагивались.</li>
+            </ul>
+            <div class="result">
+                <strong>Итог:</strong> интерфейс стал визуально более строгим и предсказуемым: строки настроек и строки выплат выровнены, «Итого» стабилизировано в карточках, а адаптивность при сужении окна улучшена.
+            </div>
+        </div>
+
+        <footer>
+            <p>SalaryApp v.1.2.8 • Desktop UI alignment stage 2 • 27.02.2026</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Рефакторинг аналитики (DTO + Presenter) и стабилизация web-графиков</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.2em; }
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .meta p { margin: 5px 0; }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .section h3 { color: #2980b9; margin: 15px 0 10px 0; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .improved { background-color: #e8f5e9; color: #2e7d32; }
+        .refactored { background-color: #e3f2fd; color: #0d47a1; }
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .summary-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .summary-core { background: #e8f5e9; border: 1px solid #c8e6c9; }
+        .summary-desktop { background: #e3f2fd; border: 1px solid #bbdefb; }
+        .summary-web { background: #fff3e0; border: 1px solid #ffe0b2; }
+        .summary-files { background: #f3e5f5; border: 1px solid #e1bee7; }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .benefits-list { columns: 2; column-gap: 30px; }
+        @media (max-width: 768px) { .benefits-list { columns: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧩 ChangeLog: DTO + Presenter для аналитики</h1>
+            <p class="subtitle">Рефакторинг аналитики, стабилизация web-графиков и единые DTO</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.1</p>
+            <p><strong>Дата:</strong> 4 февраля 2026 г.</p>
+            <p><strong>Этап:</strong> Рефакторинг (DTO, Presenter, Web charts)</p>
+            <p><strong>Область изменений:</strong> desktop/, core/, api/, web/</p>
+            <p><strong>Тип изменений:</strong> Рефакторинг, стабилизация, унификация данных</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и протестировано</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item summary-core">
+                <h3>📦 DTO</h3>
+                <p>Введены DTO-ответы<br>Без ломки API<br>Единый формат данных</p>
+            </div>
+            <div class="summary-item summary-desktop">
+                <h3>🖥 Desktop</h3>
+                <p>Presenter для графиков<br>Чистая подготовка данных<br>KPI через DTO</p>
+            </div>
+            <div class="summary-item summary-web">
+                <h3>🌐 Web</h3>
+                <p>DTO-ответы API<br>Исправлена кодировка<br>Красивые линии графиков</p>
+            </div>
+            <div class="summary-item summary-files">
+                <h3>📁 Файлы</h3>
+                <p>Добавлено: 1<br>Обновлено: 7<br>Удалено: 0</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧠 Основные изменения</h2>
+            <ul>
+                <li><span class="change-type refactored">REFACTOR</span> Введён Presenter-слой для графиков (Desktop)</li>
+                <li><span class="change-type improved">IMPROVE</span> Перевод графиков на DTO-ответы API (Desktop/Web)</li>
+                <li><span class="change-type fixed">FIX</span> Устранены ошибки NoneType в аналитике</li>
+                <li><span class="change-type fixed">FIX</span> В web-графиках восстановлены русские подписи (UTF-8)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🖥 Desktop аналитика</h2>
+            <h3>Presenter и DTO</h3>
+            <ul>
+                <li>Создан Presenter для подготовки данных графиков</li>
+                <li>Графики принимают только подготовленные модели</li>
+                <li>KPI форматируются через единые утилиты</li>
+            </ul>
+            <div class="file">desktop/presenters/chart_presenter.py</div>
+            <div class="file">desktop/views/report/report_view.py</div>
+        </div>
+
+        <div class="section">
+            <h2>📦 DTO и сервисы</h2>
+            <ul>
+                <li>DTO-методы в SalaryService и StatisticsService</li>
+                <li>DTO-методы в SalaryAPI (без изменения старых методов)</li>
+                <li>Формат KPI вынесен в utils</li>
+            </ul>
+            <div class="file">core/services/salary_service.py</div>
+            <div class="file">core/services/statistics_service.py</div>
+            <div class="file">api/salary_api.py</div>
+            <div class="file">core/utils/money.py</div>
+        </div>
+
+        <div class="section">
+            <h2>🌐 Web аналитика</h2>
+            <ul>
+                <li>Графики строятся по DTO</li>
+                <li>Исправлены русские легенды и подписи</li>
+                <li>Линии стали «легкими»: прозрачная линия + точки</li>
+            </ul>
+            <div class="file">web/routes/salaries.py</div>
+            <div class="file">web/static/js/reports.js</div>
+        </div>
+
+        <div class="section">
+            <h2>✅ Проверка и совместимость</h2>
+            <div class="note">
+                Изменения внесены без ломки существующего API. Старые методы сохранены.
+            </div>
+            <ul>
+                <li>Desktop: графики и KPI работают корректно</li>
+                <li>Web: графики обновляются при смене года и типа</li>
+                <li>DTO совместимы с текущими контроллерами</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>📌 Итог</h2>
+            <div class="result-box">
+                Аналитика переведена на единый DTO-слой и Presenter, ошибки устранены, web-графики приведены к стабильному и красивому виду.
+            </div>
+        </div>
+
+        <footer>
+            <p>📄 Этот ChangeLog описывает переход аналитики на DTO/Presenter и стабилизацию web-графиков.</p>
+            <p>🎯 Следующий шаг — очистка «мёртвых» методов и унификация кодировки в сервисах.</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp - версия v.1.2.10</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1180px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.08em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 6px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 24px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 6px 6px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        .section h3 { color: #2b6ea5; margin: 14px 0 8px; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: .8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .improved { background-color: #e8f5e9; color: #2e7d32; }
+        .refactored { background-color: #e3f2fd; color: #0d47a1; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 6px 0; border-left: 3px solid #3498db; }
+        .summary-grid { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0; }
+        .summary-item { flex: 1; min-width: 220px; border-radius: 8px; padding: 14px; }
+        .s1 { background: #e8f5e9; border: 1px solid #c8e6c9; }
+        .s2 { background: #e3f2fd; border: 1px solid #bbdefb; }
+        .s3 { background: #fff3e0; border: 1px solid #ffe0b2; }
+        .s4 { background: #f3e5f5; border: 1px solid #e1bee7; }
+        .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 14px; border-radius: 0 4px 4px 0; margin: 14px 0; }
+        .result { background: #d1ecf1; border: 1px solid #bee5eb; padding: 14px; border-radius: 6px; margin-top: 10px; }
+        .version-display { font-size: 1.8em; font-weight: bold; text-align: center; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; color: #2c3e50; }
+        .kbd { background: #2d2d2d; color: #f8f8f2; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; }
+        footer { text-align: center; margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; color: #6b6b6b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.10</h1>
+            <p class="subtitle">Выравнивание диалога ввода зарплаты, центрирование кнопок, сценарий «Очистить + Сохранить» с удалением записи из БД</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.10</p>
+            <p><strong>Дата:</strong> 04 марта 2026 г.</p>
+            <p><strong>Этап:</strong> UI/UX + корректировка бизнес-сценария очистки данных</p>
+            <p><strong>Статус:</strong> ✅ Изменения внедрены и протестированы</p>
+            <p><strong>Точка фокуса:</strong> диалог <span class="kbd">Ввод данных по зарплате</span> (desktop)</p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-item s1">
+                <h3>UI-макет</h3>
+                <p>Поля выровнены по сетке, <span class="kbd">руб.</span> приближено к полям, окно сделано компактнее.</p>
+            </div>
+            <div class="summary-item s2">
+                <h3>Кнопки</h3>
+                <p>Кнопки <span class="kbd">Сохранить / Очистить / Закрыть</span> выровнены по центру окна.</p>
+            </div>
+            <div class="summary-item s3">
+                <h3>Очистка данных</h3>
+                <p><span class="kbd">Очистить</span> больше не меняет год/месяц. Сценарий удаления переведен на реальное удаление записи из БД.</p>
+            </div>
+            <div class="summary-item s4">
+                <h3>MVC-цепочка</h3>
+                <p>Удаление добавлено через существующие слои API/Controller/Service без обходов и дублирования.</p>
+            </div>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.10 current</div>
+
+        <div class="section">
+            <h2>Что было сделано</h2>
+            <h3>1) Компоновка диалога ввода зарплаты</h3>
+            <ul>
+                <li><span class="change-type changed">CHANGED</span>Старая компоновка на <span class="kbd">pack</span> заменена на выровненную сетку для ровных колонок подписи/поля/единицы измерения.</li>
+                <li><span class="change-type improved">IMPROVED</span>Элементы <span class="kbd">руб.</span> прижаты к полям суммы, без избыточного отступа.</li>
+                <li><span class="change-type improved">IMPROVED</span>Размер окна диалога уменьшен, убрано лишнее пустое пространство внизу.</li>
+                <li><span class="change-type improved">IMPROVED</span>Блок кнопок выровнен по центру окна.</li>
+            </ul>
+
+            <h3>2) Исправление сценария очистки</h3>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Кнопка <span class="kbd">Очистить</span> больше не сбрасывает выбранные <strong>Год</strong> и <strong>Месяц</strong> на текущие.</li>
+                <li><span class="change-type fixed">FIXED</span>Сценарий <span class="kbd">Очистить → Сохранить</span> изменен: запись за выбранный период удаляется из БД, а не перезаписывается нулями.</li>
+                <li><span class="change-type added">ADDED</span>Подтверждение необратимого удаления перед выполнением очистки данных за месяц.</li>
+                <li><span class="change-type improved">IMPROVED</span>После удаления обновляется история на главной вкладке, месяц отображается как <span class="kbd">Нет данных</span>.</li>
+            </ul>
+
+            <div class="note">
+                <strong>Важно:</strong> удаление реализовано через уже существующий метод сервиса <span class="kbd">SalaryService.delete_salary</span>, без добавления лишней бизнес-логики в UI.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Измененные файлы</h2>
+            <div class="file"><span class="change-type changed">UPDATED</span>desktop/views/dialogs/salary_dialog.py</div>
+            <ul>
+                <li>Новая сеточная компоновка полей и центрирование кнопок.</li>
+                <li>Флаг режима очистки и сценарий удаления записи при сохранении после очистки.</li>
+                <li>Подтверждение необратимого удаления и информационное сообщение о результате.</li>
+            </ul>
+
+            <div class="file"><span class="change-type changed">UPDATED</span>desktop/views/constants/numbers.py</div>
+            <ul>
+                <li>Актуализирован размер окна диалога зарплаты для компактного отображения.</li>
+            </ul>
+
+            <div class="file"><span class="change-type added">UPDATED</span>desktop/views/constants/texts.py</div>
+            <ul>
+                <li>Добавлены строки подтверждения и результата операции очистки/удаления.</li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">UPDATED</span>api/salary_api_modules/commands.py</div>
+            <ul>
+                <li>Добавлена команда удаления записи за конкретный месяц/год.</li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">UPDATED</span>api/salary_api.py</div>
+            <ul>
+                <li>Добавлен фасадный метод удаления записи за период.</li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">UPDATED</span>desktop/controllers/main_tab_controller.py</div>
+            <ul>
+                <li>Добавлен метод удаления записи через API с обновлением истории.</li>
+            </ul>
+
+            <div class="file"><span class="change-type refactored">UPDATED</span>desktop/controllers/navigation_controller.py</div>
+            <ul>
+                <li>Прокинут вызов удаления для использования из диалога.</li>
+            </ul>
+
+            <div class="file"><span class="change-type changed">UPDATED</span>version.txt</div>
+            <ul>
+                <li>Версия повышена до <span class="kbd">1.2.10 current</span>.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Проверки и совместимость</h2>
+            <ul>
+                <li><span class="change-type fixed">TEST</span>Проверена компиляция измененных Python-файлов: успешно.</li>
+                <li><span class="change-type fixed">TEST</span>Запуск unit-тестов по затронутым слоям: <span class="kbd">10 passed</span>.</li>
+                <li><span class="change-type fixed">SAFE</span>Проверена совместимость с ключевыми точками запуска: <span class="kbd">StartSalary.pyw</span>, <span class="kbd">run_web.py</span>, <span class="kbd">run_bot.py</span>, <span class="kbd">desktop/app.py</span>, <span class="kbd">bot/main.py</span>.</li>
+            </ul>
+
+            <div class="result">
+                <strong>Итог:</strong> интерфейс диалога стал визуально ровным и компактным, а очистка теперь выполняет ожидаемое физическое удаление записи за выбранный период без нежелательного переключения Года/Месяца.
+            </div>
+        </div>
+
+        <footer>
+            <p>SalaryApp v.1.2.10 • Desktop UI & Data Flow Update</p>
+        </footer>
+    </div>
+</body>
+</html>

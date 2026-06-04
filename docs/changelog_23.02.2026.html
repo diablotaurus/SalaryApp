@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Stabilization release - версия v.1.2.5</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.6em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .improved { background-color: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .result { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 12px; border-radius: 0 5px 5px 0; margin: 12px 0; }
+        footer { text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡 ChangeLog: Stabilization release — версия v.1.2.5</h1>
+            <p class="subtitle">Унификация API-контрактов, web integration-тесты, observability и финальная стабилизация</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.5</p>
+            <p><strong>Дата:</strong> 23 февраля 2026 г.</p>
+            <p><strong>Коммит:</strong> 25fc17d</p>
+            <p><strong>Статус:</strong> ✅ Stabilization release завершен</p>
+            <p><strong>Дополнительно:</strong> исправлена кодировка desktop UI (коммит 56ae6fd)</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.5 current</div>
+
+        <div class="section">
+            <h2>1) Итерация 3: унификация API-контрактов</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span> Введен единый response schema для web API</li>
+                <li><span class="change-type changed">CHANGE</span> Нормализованы success/error ответы по статусам и полям</li>
+                <li><span class="change-type improved">IMPROVE</span> Добавлен единый mapping исключений в HTTP-коды</li>
+            </ul>
+            <div class="file">web/routes/response.py, web/routes/salaries.py, web/routes/settings.py</div>
+            <div class="result">
+                API стал предсказуемым: клиент получает одинаковую структуру тела ответа и стабильные HTTP-коды на критичных маршрутах.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2) Web integration-тесты критичных сценариев</h2>
+            <ul>
+                <li><span class="change-type added">NEW</span> Добавлены контрактные integration-тесты для:
+                    <ul>
+                        <li><code>DELETE /api/delete_year</code></li>
+                        <li><code>POST /api/backup</code></li>
+                        <li><code>PUT /api/settings/&lt;key&gt;</code></li>
+                        <li><code>POST /api/salary</code></li>
+                    </ul>
+                </li>
+                <li><span class="change-type fixed">FIX</span> Проверены success/failure ветки и корректные HTTP-коды</li>
+                <li><span class="change-type improved">IMPROVE</span> Подтверждена санитизация error-пейлоада в production-режиме</li>
+            </ul>
+            <div class="file">tests/integration/web/test_api_contracts.py, tests/unit/web/test_settings_routes.py</div>
+            <div class="result">
+                Покрытие контрактов снижает риск регрессий API при доработках backend и frontend.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3) Закрытие tech debt по observability</h2>
+            <ul>
+                <li><span class="change-type changed">CHANGE</span> Удалены разрозненные <code>print(...)</code> в runtime-узлах</li>
+                <li><span class="change-type improved">IMPROVE</span> Переход на единый логгер для диагностики и сопровождения</li>
+            </ul>
+            <div class="file">core/config/settings.py, core/database/connection.py, web/bootstrap.py</div>
+            <div class="result">
+                Логирование стало консистентным, что упростило анализ ошибок и сопровождение в продакшене.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4) Stabilization release</h2>
+            <ul>
+                <li><span class="change-type changed">CHANGE</span> Обновлена версия приложения в <code>version.txt</code> до <strong>1.2.5 current</strong></li>
+                <li><span class="change-type fixed">FIX</span> Исправлена кодировка русских подписей вкладок и текста подтверждения закрытия окна</li>
+                <li><span class="change-type improved">IMPROVE</span> Выполнен полный прогон автотестов и проверка кодировки</li>
+            </ul>
+            <div class="file">version.txt, desktop/app.py</div>
+            <div class="result">
+                Релиз стабилизирован: <strong>pytest -q: 66 passed</strong>, проблем с UTF-8 в ключевых UI-зонах не выявлено.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Детальный список файлов релиза</h2>
+            <div class="file">core/config/settings.py</div>
+            <div class="file">core/database/connection.py</div>
+            <div class="file">desktop/app.py</div>
+            <div class="file">tests/integration/web/test_api_contracts.py</div>
+            <div class="file">tests/unit/web/test_settings_routes.py</div>
+            <div class="file">web/bootstrap.py</div>
+            <div class="file">web/routes/response.py</div>
+            <div class="file">web/routes/salaries.py</div>
+            <div class="file">web/routes/settings.py</div>
+            <div class="file">version.txt</div>
+        </div>
+
+        <footer>
+            <p>✅ Итог: API-контракты унифицированы, web-критичный контур покрыт integration-тестами, observability-долг закрыт.</p>
+            <p>📌 Релиз v.1.2.5 подготовлен как стабильная базовая точка для следующих функциональных итераций.</p>
+        </footer>
+    </div>
+</body>
+</html>

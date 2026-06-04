@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Учет заработной платы - версия v.1.1.1</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .improved { background-color: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .version-display { font-size: 1.6em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        .files-list { columns: 2; column-gap: 30px; }
+        @media (max-width: 768px) { .files-list { columns: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛠️ ChangeLog: SalaryApp — версия v.1.1.1</h1>
+            <p class="subtitle">Рефакторинг web-скриптов, устранение дублей и стабилизация главной страницы</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.1.1</p>
+            <p><strong>Дата:</strong> 3 февраля 2026 г.</p>
+            <p><strong>Статус:</strong> ✅ Готово к использованию</p>
+            <p><strong>Фокус:</strong> Web + JS + Clean-up</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.1.1</div>
+
+        <div class="section">
+            <h2>🌐 Web-версия</h2>
+            <ul>
+                <li><span class="change-type improved">REFACTOR</span> вынесены inline-скрипты из HTML в web/static/js</li>
+                <li><span class="change-type improved">CLEAN</span> удалены дублирующиеся функции форматирования и масок ввода</li>
+                <li><span class="change-type fixed">FIX</span> исправлена ошибка главной страницы (зависание спиннеров)</li>
+                <li><span class="change-type improved">DATA</span> отображение месяца берется из API (month_name)</li>
+            </ul>
+            <div class="file">web/templates/*.html, web/static/js/*</div>
+        </div>
+
+        <div class="section">
+            <h2>🧩 Общие утилиты</h2>
+            <ul>
+                <li><span class="change-type improved">COMMON</span> единые функции formatMoney/formatCurrency, маски дат и валидации</li>
+                <li><span class="change-type improved">COMMON</span> унифицированный вывод дат через DateUtils</li>
+            </ul>
+            <div class="file">web/static/js/common.js, core/models/salary.py</div>
+        </div>
+
+        <div class="section">
+            <h2>📁 Детальный список измененных файлов</h2>
+            <div class="files-list">
+                <ul>
+                    <li>web/templates/index.html</li>
+                    <li>web/templates/reports.html</li>
+                    <li>web/templates/settings.html</li>
+                    <li>web/static/js/common.js</li>
+                    <li>web/static/js/index.js</li>
+                    <li>web/static/js/reports.js</li>
+                    <li>web/static/js/settings.js</li>
+                    <li>core/models/salary.py</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>✅ Web-версия снова стабильна, логика упорядочена, дубли удалены.</p>
+            <p>💡 Следующий шаг: при желании — сборка/минификация JS.</p>
+        </footer>
+    </div>
+</body>
+</html>

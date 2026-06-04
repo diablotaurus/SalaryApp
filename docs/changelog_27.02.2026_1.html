@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Desktop UI доработки Главной и Настроек - версия v.1.2.7</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 3px solid #4a6fa5;
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .subtitle {
+            color: #6b7c93;
+            font-size: 1.05em;
+        }
+
+        .meta {
+            background: #ecf0f1;
+            border-radius: 6px;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+        }
+
+        .meta p {
+            margin: 5px 0;
+        }
+
+        .section {
+            margin: 22px 0;
+            padding: 18px 20px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #dfe3e8;
+            padding-bottom: 8px;
+        }
+
+        .section h3 {
+            color: #2f6fa1;
+            margin-bottom: 8px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 7px 0;
+        }
+
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .improved { background: #e8f5e9; color: #2e7d32; }
+
+        .file {
+            font-family: 'Courier New', monospace;
+            background: #f1f1f1;
+            border-left: 3px solid #3498db;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin: 8px 0;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .result {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 6px;
+            padding: 12px 14px;
+        }
+
+        footer {
+            margin-top: 28px;
+            border-top: 1px solid #dfe3e8;
+            padding-top: 14px;
+            color: #6c757d;
+            font-size: 0.95em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧩 ChangeLog: Desktop UI доработки Главной и Настроек — v.1.2.7</h1>
+            <div class="subtitle">Переработка карточек месяцев, новые настройки отображения и оптимизация компоновки вкладки «Настройки»</div>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.7</p>
+            <p><strong>Дата:</strong> 27 февраля 2026 г.</p>
+            <p><strong>Область изменений:</strong> desktop/views/main/main_view.py, desktop/views/settings/settings_view.py, desktop/views/constants/texts.py, docs/</p>
+            <p><strong>Тип изменений:</strong> UI/UX улучшения, расширение настроек, исправления компоновки</p>
+            <p><strong>Статус:</strong> ✅ Выполнено и проверено</p>
+        </div>
+
+        <div class="section">
+            <h2>Ключевые изменения</h2>
+            <ul>
+                <li><span class="change-type changed">CHANGE</span> Изменен формат отображения месячной карточки на вкладке «Главная»: данные выплат представлены в структуре <span class="highlight">Дата - Сумма</span> для аванса и зарплаты.</li>
+                <li><span class="change-type added">NEW</span> Добавлены настройки размеров шрифта для карточек месяцев:
+                    <span class="highlight">month_title_font_size</span> и <span class="highlight">month_total_font_size</span>.</li>
+                <li><span class="change-type added">NEW</span> Добавлена отдельная настройка вида блока статистики на Главной:
+                    <span class="highlight">main_stats_layout_mode = row|column</span>.</li>
+                <li><span class="change-type changed">CHANGE</span> Логика блока статистики в карточке года отвязана от вида истории (6х2/3х4), теперь управляется отдельной настройкой.</li>
+                <li><span class="change-type improved">IMPROVE</span> Вкладка «Настройки» переразложена по логическим секциям:
+                    «Общие настройки», «Вкладка Главная», «Вкладка Аналитика», «Резервное копирование», «Настройки экспорта».</li>
+                <li><span class="change-type fixed">FIX</span> Исправлены визуальные регрессии после уплотнения layout:
+                    корректное положение кнопок «Сохранить/Сбросить», равная ширина блоков, корректная группировка всех цветов в одном блоке.</li>
+                <li><span class="change-type changed">CHANGE</span> Обновлен формат даты по умолчанию:
+                    <span class="highlight">DEFAULT_DATE_FORMAT = "%d.%m.%Y"</span>.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Детализация по файлам</h2>
+
+            <h3>1) Main UI (Главная)</h3>
+            <div class="file">desktop/views/main/main_view.py</div>
+            <ul>
+                <li>Обновлен рендер месячной ячейки: вместо вертикального списка «Аванс/Дата/Зарплата/Дата» используется табличный блок «Дата - Сумма».</li>
+                <li>Добавлено чтение и применение на лету настроек размера шрифтов месяца и строки «Итого».</li>
+                <li>Добавлен безопасный парсинг размеров шрифта с ограничением диапазона (защита от некорректных значений).</li>
+                <li>Добавлен отдельный режим отображения блока статистики карточки года (<code>row</code>/<code>column</code>).</li>
+            </ul>
+
+            <h3>2) Settings UI (Настройки)</h3>
+            <div class="file">desktop/views/settings/settings_view.py</div>
+            <ul>
+                <li>Добавлены новые элементы управления:
+                    <code>Вид блока статистики</code>, размеры шрифтов месяца/итого.</li>
+                <li>Добавлены новые логические блоки интерфейса, соответствующие согласованному макету.</li>
+                <li>Оптимизирована компоновка для меньшей вертикальной высоты: часть настроек перенесена в двухколоночные ряды.</li>
+                <li>Восстановлена исходная компоновка панели действий (кнопки «Сохранить» и «Сбросить» в ожидаемом порядке и расположении).</li>
+                <li>Обновлен <code>reset</code> с учетом всех новых параметров.</li>
+            </ul>
+
+            <h3>3) Константы и default-значения</h3>
+            <div class="file">desktop/views/constants/texts.py</div>
+            <ul>
+                <li>Добавлены константы для новых подписей и режимов настройки UI.</li>
+                <li>Добавлены default-значения для новых параметров:
+                    <code>DEFAULT_MAIN_STATS_LAYOUT_MODE</code>,
+                    <code>DEFAULT_MONTH_TITLE_FONT_SIZE</code>,
+                    <code>DEFAULT_MONTH_TOTAL_FONT_SIZE</code>.</li>
+                <li>Обновлено default-значение формата даты на <code>%d.%m.%Y</code>.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Архитектурные и UX-результаты</h2>
+            <ul>
+                <li>Соблюдено разделение ответственности: представления управляют только UI, настройки хранятся через существующий Settings API/Repository.</li>
+                <li>Изменения внедрены без удаления функций и модулей, только через расширение существующих компонентов.</li>
+                <li>Повышена управляемость интерфейса: ключевые аспекты вида Главной вкладки вынесены в пользовательские настройки.</li>
+                <li>Улучшена читаемость месячных карточек при сохранении текущих бизнес-правил (скрытие нулевых выплат, сохранение формата даты из данных).</li>
+            </ul>
+            <div class="result">
+                <strong>Итог:</strong> Desktop-часть стала более гибкой в настройке, визуально стабильной и удобной при работе в неразвернутом окне.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Проверка и совместимость</h2>
+            <ul>
+                <li>Проверен синтаксис измененных Python-файлов через <code>python -m py_compile</code> — ошибок нет.</li>
+                <li>Проверены точки входа проекта: <code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>desktop/app.py</code>, <code>bot/main.py</code> — несовместимостей не внесено.</li>
+                <li>Изменения обратно совместимы на уровне структуры данных и основных сценариев запуска.</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>SalaryApp v.1.2.7 • Desktop UI/UX update • 27.02.2026</p>
+        </footer>
+    </div>
+</body>
+</html>

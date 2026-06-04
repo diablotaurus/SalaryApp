@@ -1,0 +1,314 @@
+"""
+Сервис для статистических вычислений.
+
+Содержит методы для расчета различных статистических показателей
+по данным о зарплатах, включая сравнения по годам, темпы роста,
+средние значения и поиск лучших периодов.
+"""
+
+from typing import Dict, Any, Iterable
+from datetime import datetime
+from core.database.connection import DatabaseConnection
+from core.repositories.salary_repository import SalaryRepository
+from core.repositories.year_repository import YearRepository
+from core.utils.dates import DateUtils
+
+
+class StatisticsService:
+    """Сервис для вычисления статистики по данным о зарплатах"""
+
+    @staticmethod
+    def calculate_average_monthly_from_records(records: Iterable[Any], now: datetime | None = None) -> float:
+        """
+        Рассчитать среднемесячное значение по записям.
+
+        Правило:
+        - месяц учитывается только если зарплата за него фактически выплачена;
+        - выплата подтверждается salary > 0 и:
+          1) salary_date задана и наступила (<= now), либо
+          2) salary_date не задана (legacy-данные), но месяц строго раньше текущего.
+
+        Args:
+            records: Итерируемая коллекция объектов с полями year, month, advance, salary
+            now: Текущая дата (для тестирования можно передать вручную)
+
+        Returns:
+            float: Среднемесячное значение
+        """
+        current = now or datetime.now()
+        totals: list[float] = []
+
+        for record in records or []:
+            advance = float(getattr(record, "advance", 0) or 0)
+            salary = float(getattr(record, "salary", 0) or 0)
+            if salary <= 0:
+                continue
+
+            total = advance + salary
+            if total <= 0:
+                continue
+
+            year = int(getattr(record, "year", 0) or 0)
+            month = int(getattr(record, "month", 0) or 0)
+            salary_date = getattr(record, "salary_date", None)
+
+            # Если дата зарплаты известна, учитываем только после наступления даты выплаты.
+            if salary_date is not None:
+                if salary_date > current:
+                    continue
+            else:
+                # Legacy-режим: без даты считаем закрытыми только прошедшие месяцы.
+                if (year, month) >= (current.year, current.month):
+                    continue
+
+            totals.append(total)
+
+        if not totals:
+            return 0.0
+        return sum(totals) / len(totals)
+    
+    @staticmethod
+    def get_yearly_comparison_dto() -> Dict[str, Any]:
+        """
+        Получить DTO (Data Transfer Object) для сравнения по годам.
+        
+        Returns:
+            Dict[str, Any]: Структура с данными для графика сравнения по годам
+            
+        Данные:
+            - year: Год
+            - total: Общая сумма за год
+            
+        Производительность:
+            - Использует оптимизированный запрос через YearRepository
+            - Данные возвращаются в формате, готовом для использования в графиках
+        """
+        yearly_totals = YearRepository.get_yearly_totals()
+        items = []
+        for item in yearly_totals:
+            items.append({
+                "year": int(item["year"]),
+                "total": float(item["total"] or 0)
+            })
+        return {"items": items}
+    
+    @staticmethod
+    def get_growth_rate_dto() -> Dict[str, Any]:
+        """
+        Получить DTO для графика темпов роста.
+        
+        Returns:
+            Dict[str, Any]: Структура с данными о росте доходов по годам
+            
+        Особенности:
+            - Для неполных годов делается проекция на полный год
+            - Поле 'projected' указывает, является ли значение спроектированным
+            - Используется для отображения реалистичной динамики роста
+            
+        Проекция:
+            - Если в году есть данные менее чем за 12 месяцев, 
+              общая сумма проецируется на 12 месяцев
+            - Это дает более точное сравнение между годами
+        """
+        conn = DatabaseConnection.get_connection()
+        # SQL-запрос для получения годовых сумм с количеством месяцев
+        rows = conn.execute("""
+            SELECT year,
+                   SUM(advance + salary) AS total,
+                   COUNT(*) AS months_count
+            FROM salaries
+            GROUP BY year
+            ORDER BY year
+        """).fetchall()
+        
+        items = []
+        for row in rows:
+            total = float(row["total"] or 0)
+            months_count = int(row["months_count"] or 0)
+            
+            # Определение, является ли год неполным (данные менее чем за 12 месяцев)
+            projected = months_count > 0 and months_count < 12
+            
+            # Проекция неполных годов на 12 месяцев для корректного сравнения
+            if projected:
+                adjusted_total = (total / months_count) * 12
+            else:
+                adjusted_total = total
+                
+            items.append({
+                "year": int(row["year"]),
+                "total": adjusted_total,
+                "projected": projected  # Флаг спроектированных данных
+            })
+        return {"items": items}
+    
+    @staticmethod
+    def get_average_by_month_dto() -> Dict[str, Any]:
+        """
+        Получить DTO для графика средних значений по месяцам.
+        
+        Returns:
+            Dict[str, Any]: Структура со средними значениями по месяцам
+            
+        Данные:
+            - month: Номер месяца (1-12)
+            - avg_advance: Средний аванс за месяц
+            - avg_salary: Средняя зарплата за месяц
+            - avg_total: Средняя общая сумма за месяц
+            
+        Использование:
+            - Полезно для выявления сезонных тенденций
+            - Помогает планировать бюджет по месяцам
+        """
+        conn = DatabaseConnection.get_connection()
+        cursor = conn.execute("""
+            SELECT
+                month,
+                AVG(advance) as avg_advance,
+                AVG(salary) as avg_salary,
+                AVG(advance + salary) as avg_total
+            FROM salaries
+            GROUP BY month
+            ORDER BY month
+        """)
+        
+        results = cursor.fetchall()
+        items = []
+        for row in results:
+            items.append({
+                "month": int(row["month"]),
+                "avg_advance": float(row["avg_advance"] or 0),
+                "avg_salary": float(row["avg_salary"] or 0),
+                "avg_total": float(row["avg_total"] or 0)
+            })
+        return {"items": items}
+    
+    @staticmethod
+    def get_best_periods() -> Dict[str, Any]:
+        """
+        Найти лучший месяц и лучший год по общей сумме дохода.
+        
+        Returns:
+            Dict[str, Any]: Информация о лучшем месяце и лучшем годе
+            
+        Критерии:
+            - Лучший месяц: месяц с максимальной суммой (аванс + зарплата)
+            - Лучший год: год с максимальной общей суммой
+            
+        Структура результата:
+            - best_month: Словарь с данными о лучшем месяце или None
+            - best_year: Словарь с данными о лучшем годе или None
+        """
+        conn = DatabaseConnection.get_connection()
+        
+        # Поиск лучшего месяца (группировка по году и месяцу)
+        best_month = conn.execute("""
+            SELECT year, month, SUM(advance + salary) AS total
+            FROM salaries
+            GROUP BY year, month
+            ORDER BY total DESC
+            LIMIT 1
+        """).fetchone()
+        
+        # Поиск лучшего года (группировка по году)
+        best_year = conn.execute("""
+            SELECT year, SUM(advance + salary) AS total
+            FROM salaries
+            GROUP BY year
+            ORDER BY total DESC
+            LIMIT 1
+        """).fetchone()
+        
+        # Инициализация результата
+        result = {"best_month": None, "best_year": None}
+        
+        # Заполнение данных о лучшем месяце если найден
+        if best_month:
+            result["best_month"] = {
+                "year": best_month["year"],
+                "month": best_month["month"],
+                "month_name": DateUtils.get_month_name(best_month["month"]),
+                "total": float(best_month["total"] or 0)
+            }
+        
+        # Заполнение данных о лучшем годе если найден
+        if best_year:
+            result["best_year"] = {
+                "year": best_year["year"],
+                "total": float(best_year["total"] or 0)
+            }
+        
+        return result
+    
+    @staticmethod
+    def get_summary_statistics(year: int = None) -> Dict[str, Any]:
+        """
+        Получить сводную статистику по всем данным или за конкретный год.
+        
+        Args:
+            year: Опциональный параметр - год для фильтрации статистики
+            
+        Returns:
+            Dict[str, Any]: Словарь со сводной статистикой
+            
+        Статистические показатели:
+            - Общие суммы (авансы, зарплаты, итого)
+            - Средние месячные значения
+            - Количество записей и лет
+            - Первый и последний год с данными
+            
+        Особенности:
+            - При year=None возвращает статистику за все время
+            - При указанном year - статистику только за этот год
+        """
+        # Получение базовой статистики из репозитория
+        stats = SalaryRepository.get_statistics(year)
+        records = SalaryRepository.get_by_year(year) if year is not None else SalaryRepository.get_all()
+        
+        # Извлечение и преобразование базовых показателей
+        total_records = stats.get("total_records", 0) or 0
+        total_advance = float(stats.get("total_advance_all", 0) or 0)
+        total_salary = float(stats.get("total_salary_all", 0) or 0)
+        
+        # Определение первого и последнего года
+        if year is not None:
+            # Для конкретного года первый и последний год совпадают
+            first_year = year
+            last_year = year
+        else:
+            # Для общей статистики берем из данных
+            first_year = stats.get("first_year", datetime.now().year) or datetime.now().year
+            last_year = stats.get("last_year", datetime.now().year) or datetime.now().year
+        
+        # Дополнительные расчеты
+        years_count = len(stats.get("by_year", []))
+        total_amount = total_advance + total_salary
+        
+        # Формирование сводки
+        summary = {
+            "total_records": total_records,
+            "total_advance": total_advance,
+            "total_salary": total_salary,
+            "first_year": first_year,
+            "last_year": last_year,
+            "years_count": years_count,
+            "total_amount": total_amount
+        }
+        
+        # Расчет средних значений (если есть записи)
+        if summary["total_records"] > 0:
+            summary["avg_monthly_advance"] = summary["total_advance"] / summary["total_records"]
+            summary["avg_monthly_salary"] = summary["total_salary"] / summary["total_records"]
+        else:
+            # Если записей нет - нулевые значения
+            summary["avg_monthly_advance"] = 0
+            summary["avg_monthly_salary"] = 0
+
+        # Единое бизнес-правило среднемесячного для всех интерфейсов
+        summary["avg_monthly_total"] = StatisticsService.calculate_average_monthly_from_records(records)
+
+        # Дополнительные поля для совместимости
+        summary["total_all"] = summary["total_amount"]
+        summary["average_monthly"] = summary["avg_monthly_total"]
+        
+        return summary

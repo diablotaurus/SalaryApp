@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Реструктуризация views и оптимизация кода - версия 0.1.2</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4a6fa5;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .meta {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .meta p {
+            margin: 5px 0;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .section h3 {
+            color: #2980b9;
+            margin: 15px 0 10px 0;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        .change-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .added {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .changed {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .fixed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .improved {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .refactored {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        
+        .file {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+            border-left: 3px solid #3498db;
+        }
+        
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .architecture-section {
+            background: linear-gradient(to right, #e3f2fd, #f3e5f5);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #bbdefb;
+        }
+        
+        .constants-section {
+            background: linear-gradient(to right, #fff3e0, #e0f2f1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #ffe0b2;
+        }
+        
+        .imports-section {
+            background: linear-gradient(to right, #e8f5e9, #e3f2fd);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border: 1px solid #c8e6c9;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .summary-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .summary-structure {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .summary-constants {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+        }
+        
+        .summary-imports {
+            background: #fff3e0;
+            border: 1px solid #ffe0b2;
+        }
+        
+        .summary-maintainability {
+            background: #f3e5f5;
+            border: 1px solid #e1bee7;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .result-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .comparison {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison-item {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .before {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        
+        .after {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        .comparison-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .stat-item {
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .benefits-list {
+            columns: 2;
+            column-gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .benefits-list {
+                columns: 1;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .stat-box {
+                flex-wrap: wrap;
+            }
+            
+            .summary {
+                flex-direction: column;
+            }
+        }
+        
+        .problem-solution {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .problem, .solution {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .problem {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        
+        .solution {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        .version-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 2px solid #4a6fa5;
+        }
+        
+        .structure-visual {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .tree-structure {
+            display: inline-block;
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .tree-item {
+            margin: 5px 0;
+        }
+        
+        .tree-folder {
+            color: #2980b9;
+            font-weight: bold;
+        }
+        
+        .tree-file {
+            color: #2c3e50;
+        }
+        
+        .tree-package {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .files-changed {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .file-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+        
+        .file-stat {
+            text-align: center;
+        }
+        
+        .file-stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .file-stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .code-snippet {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #4a6fa5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .const-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .const-table th {
+            background: #4a6fa5;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .const-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .const-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .const-value {
+            font-family: 'Courier New', monospace;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .import-example {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .import-keyword {
+            color: #66d9ef;
+        }
+        
+        .import-module {
+            color: #a6e22e;
+        }
+        
+        .import-from {
+            color: #f92672;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏗️ ChangeLog: Реструктуризация views и оптимизация кода - версия 0.1.2</h1>
+            <p class="subtitle">Логическая организация файлов views, разделение констант, обновление импортов, улучшение поддерживаемости</p>
+        </header>
+        
+        <div class="meta">
+            <p><strong>Версия:</strong> v.0.1.2</p>
+            <p><strong>Дата:</strong> <span>22 января 2026 г.</span></p>
+            <p><strong>Этап:</strong> Рефакторинг и оптимизация архитектуры</p>
+            <p><strong>Область изменений:</strong> desktop/views/, desktop/controllers/, desktop/app.py</p>
+            <p><strong>Тип изменений:</strong> Реструктуризация, рефакторинг, улучшение архитектуры</p>
+            <p><strong>Статус:</strong> ✅ Успешно завершено и протестировано</p>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-item summary-structure">
+                <h3>📁 Структура каталогов</h3>
+                <p>Новая логическая организация<br>Группировка связанных файлов<br>Упрощение навигации</p>
+            </div>
+            <div class="summary-item summary-constants">
+                <h3>📊 Константы</h3>
+                <p>Разделение на текстовые/числовые<br>Улучшенная читаемость<br>Легкость изменения</p>
+            </div>
+            <div class="summary-item summary-imports">
+                <h3>📦 Импорты</h3>
+                <p>Обновленные пути импорта<br>Чистые зависимости<br>Предотвращение конфликтов</p>
+            </div>
+            <div class="summary-item summary-maintainability">
+                <h3>🔧 Поддерживаемость</h3>
+                <p>Следование принципам OOP/MVC<br>Упрощение поддержки<br>Масштабируемость</p>
+            </div>
+        </div>
+        
+        <div class="version-display">
+            Учет заработной платы v.0.1.2
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-item" style="background: #e8f5e9;">
+                <div class="stat-number">15</div>
+                <div class="stat-label">Созданных файлов</div>
+            </div>
+            <div class="stat-item" style="background: #e3f2fd;">
+                <div class="stat-number">9</div>
+                <div class="stat-label">Измененных файлов</div>
+            </div>
+            <div class="stat-item" style="background: #fff3e0;">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Новых каталогов</div>
+            </div>
+            <div class="stat-item" style="background: #f3e5f5;">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Работоспособность</div>
+            </div>
+        </div>
+        
+        <div class="architecture-section">
+            <h2>🏗️ Полная реструктуризация desktop/views/</h2>
+            
+            <div class="note">
+                <strong>Проблема:</strong> В каталоге desktop/views/ образовался "бардак" - все файлы были перемешаны, что затрудняло навигацию, поддержку и добавление новых компонентов. Отсутствовала логическая организация.
+            </div>
+            
+            <div class="structure-visual">
+                <div class="tree-structure">
+                    <div class="tree-item tree-folder">desktop/views/</div>
+                    <div class="tree-item tree-package">├── __init__.py</div>
+                    <div class="tree-item tree-file">├── base_view.py</div>
+                    <div class="tree-item tree-folder">├── constants/</div>
+                    <div class="tree-item tree-package">│   ├── __init__.py</div>
+                    <div class="tree-item tree-file">│   ├── texts.py</div>
+                    <div class="tree-item tree-file">│   └── numbers.py</div>
+                    <div class="tree-item tree-folder">├── main/</div>
+                    <div class="tree-item tree-package">│   ├── __init__.py</div>
+                    <div class="tree-item tree-file">│   ├── main_view.py</div>
+                    <div class="tree-item tree-file">│   └── constants.py (опционально)</div>
+                    <div class="tree-item tree-folder">├── report/</div>
+                    <div class="tree-item tree-package">│   ├── __init__.py</div>
+                    <div class="tree-item tree-file">│   ├── report_view.py</div>
+                    <div class="tree-item tree-file">│   └── constants.py (опционально)</div>
+                    <div class="tree-item tree-folder">├── settings/</div>
+                    <div class="tree-item tree-package">│   ├── __init__.py</div>
+                    <div class="tree-item tree-file">│   ├── settings_view.py</div>
+                    <div class="tree-item tree-file">│   └── constants.py (опционально)</div>
+                    <div class="tree-item tree-folder">└── dialogs/</div>
+                    <div class="tree-item tree-package">&nbsp;&nbsp;&nbsp;&nbsp;├── __init__.py</div>
+                    <div class="tree-item tree-file">&nbsp;&nbsp;&nbsp;&nbsp;├── salary_dialog.py</div>
+                    <div class="tree-item tree-file">&nbsp;&nbsp;&nbsp;&nbsp;├── export_dialog.py</div>
+                    <div class="tree-item tree-file">&nbsp;&nbsp;&nbsp;&nbsp;├── backup_dialog.py</div>
+                    <div class="tree-item tree-file">&nbsp;&nbsp;&nbsp;&nbsp;└── constants.py (опционально)</div>
+                </div>
+            </div>
+            
+            <div class="problem-solution">
+                <div class="problem">
+                    <h3>❌ ДО реструктуризации:</h3>
+                    <ul>
+                        <li><strong>Бардак в views:</strong> Все файлы в одной папке</li>
+                        <li><strong>Сложная навигация:</strong> Трудно найти нужный файл</li>
+                        <li><strong>Смешение ответственности:</strong> View, диалоги и константы перемешаны</li>
+                        <li><strong>Нарушение SRP:</strong> Один файл constants.py содержал все константы</li>
+                        <li><strong>Сложность масштабирования:</strong> Трудно добавлять новые компоненты</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <h3>✅ ПОСЛЕ реструктуризации:</h3>
+                    <ul>
+                        <li><strong>Логическая организация:</strong> Файлы сгруппированы по назначению</li>
+                        <li><strong>Упрощенная навигация:</strong> Ясная структура каталогов</li>
+                        <li><strong>Разделение ответственности:</strong> Каждый модуль отвечает за свою часть</li>
+                        <li><strong>Следование SRP:</strong> Константы разделены на текстовые и числовые</li>
+                        <li><strong>Легкость масштабирования:</strong> Просто добавлять новые модули</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="files-changed">
+                <h3>Новая структура каталогов:</h3>
+                
+                <div class="file-stats">
+                    <div class="file-stat">
+                        <div class="file-stat-number">5</div>
+                        <div class="file-stat-label">Новых каталогов</div>
+                    </div>
+                    <div class="file-stat">
+                        <div class="file-stat-number">3</div>
+                        <div class="file-stat-label">Основных view</div>
+                    </div>
+                    <div class="file-stat">
+                        <div class="file-stat-number">3</div>
+                        <div class="file-stat-label">Диалоговых окна</div>
+                    </div>
+                    <div class="file-stat">
+                        <div class="file-stat-number">1</div>
+                        <div class="file-stat-label">Базовый класс</div>
+                    </div>
+                </div>
+                
+                <p><strong>Логическая группировка:</strong></p>
+                <ul>
+                    <li><span class="highlight">main/</span> - Главная вкладка и её компоненты</li>
+                    <li><span class="highlight">report/</span> - Вкладка аналитики и графики</li>
+                    <li><span class="highlight">settings/</span> - Вкладка настроек приложения</li>
+                    <li><span class="highlight">dialogs/</span> - Все диалоговые окна</li>
+                    <li><span class="highlight">constants/</span> - Общие константы для всех представлений</li>
+                </ul>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Каталог desktop/views/ теперь имеет четкую логическую структуру, соответствующую принципам OOP и MVC. Каждый компонент находится в соответствующем каталоге, что значительно упрощает навигацию, поддержку и добавление новых функций.
+            </div>
+        </div>
+        
+        <div class="constants-section">
+            <h2>📊 Разделение констант на текстовые и числовые</h2>
+            
+            <div class="note">
+                <strong>Проблема:</strong> Все константы хранились в одном файле constants.py, что создавало путаницу и затрудняло поиск нужных значений. Смешение текстовых и числовых констант ухудшало читаемость.
+            </div>
+            
+            <div class="comparison">
+                <div class="comparison-item before">
+                    <div class="comparison-title">СТАРЫЙ ФАЙЛ constants.py:</div>
+                    <ul>
+                        <li><strong>Смешанные константы:</strong> Тексты и числа в одном файле</li>
+                        <li><strong>Большой файл:</strong> Более 200 строк кода</li>
+                        <li><strong>Сложность поиска:</strong> Трудно найти нужную константу</li>
+                        <li><strong>Нарушение SRP:</strong> Один файл отвечает за всё</li>
+                        <li><strong>Проблемы с конфликтами:</strong> Риск конфликта имен</li>
+                    </ul>
+                </div>
+                <div class="comparison-item after">
+                    <div class="comparison-title">НОВАЯ СТРУКТУРА constants/:</div>
+                    <ul>
+                        <li><strong>Разделение:</strong> Тексты и числа в разных файлах</li>
+                        <li><strong>Модульность:</strong> Несколько небольших файлов</li>
+                        <li><strong>Легкость поиска:</strong> Ясная организация</li>
+                        <li><strong>Следование SRP:</strong> Каждый файл отвечает за свой тип</li>
+                        <li><strong>Предотвращение конфликтов:</strong> Четкое разделение</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="files-changed">
+                <h3>Новая структура констант:</h3>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ ФАЙЛ</span> desktop/views/constants/texts.py
+                </div>
+                <p>Содержит все текстовые константы приложения:</p>
+                <ul>
+                    <li><span class="const-value">TEXT_ADD_DATA = "Добавить данные"</span></li>
+                    <li><span class="const-value">DIALOG_SALARY_TITLE = "Ввод данных по зарплаты"</span></li>
+                    <li><span class="const-value">ERROR_NO_YEAR_MONTH = "Пожалуйста, выберите год и месяц"</span></li>
+                    <li><span class="const-value">CHART_MONTHLY_TITLE = "Зарплата по месяцам"</span></li>
+                    <li><span class="const-value">TEXT_GENERAL_SETTINGS = "Общие настройки"</span></li>
+                </ul>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ ФАЙЛ</span> desktop/views/constants/numbers.py
+                </div>
+                <p>Содержит все числовые константы и размеры:</p>
+                <ul>
+                    <li><span class="const-value">PADX_DEFAULT = 10</span></li>
+                    <li><span class="const-value">WINDOW_MAIN_MIN_WIDTH = 1280</span></li>
+                    <li><span class="const-value">SETTINGS_ENTRY_WIDTH = 12</span></li>
+                    <li><span class="const-value">TEXT_WRAPLENGTH_EXPORT_INFO = 380</span></li>
+                    <li><span class="const-value">DEFAULT_BACKUP_DAYS = 30</span></li>
+                </ul>
+                
+                <div class="file">
+                    <span class="change-type added">НОВЫЙ ФАЙЛ</span> desktop/views/constants/__init__.py
+                </div>
+                <p>Экспортирует все константы для удобного импорта:</p>
+                <div class="code-snippet">
+# Экспортирует все константы из текстовых и числовых модулей
+from .texts import *
+from .numbers import *
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Константы теперь логически разделены на текстовые и числовые. Это улучшает читаемость кода, упрощает поиск нужных значений и предотвращает конфликты имен. Новые константы легко добавлять в соответствующий файл.
+            </div>
+        </div>
+        
+        <div class="imports-section">
+            <h2>📦 Обновление импортов во всех файлах проекта</h2>
+            
+            <div class="note">
+                <strong>Вызов:</strong> После реструктуризации необходимо было обновить все импорты в проекте, чтобы они соответствовали новым путям к файлам.
+            </div>
+            
+            <div class="files-changed">
+                <h3>Примеры обновленных импортов:</h3>
+                
+                <div class="file">
+                    <span class="change-type changed">ОБНОВЛЕНЫ ИМПОРТЫ</span> desktop/views/main/main_view.py
+                </div>
+                <div class="import-example">
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.base_view</span> <span class="import-keyword">import</span> <span class="import-from">BaseView</span><br>
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.constants</span> <span class="import-keyword">import</span> (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="import-from">PADX_DEFAULT</span>, <span class="import-from">PADY_DEFAULT</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="import-from">TEXT_ACTIONS</span>, <span class="import-from">TEXT_ADD_DATA</span>, <span class="import-from">TEXT_REFRESH_HISTORY</span><br>
+)
+                </div>
+                
+                <div class="file">
+                    <span class="change-type changed">ОБНОВЛЕНЫ ИМПОРТЫ</span> desktop/views/dialogs/salary_dialog.py
+                </div>
+                <div class="import-example">
+<span class="import-keyword">from</span> <span class="import-module">desktop.widgets.dialogs</span> <span class="import-keyword">import</span> <span class="import-from">BaseDialog</span><br>
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.constants</span> <span class="import-keyword">import</span> (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="import-from">DIALOG_SALARY_TITLE</span>, <span class="import-from">TEXT_SELECT_YEAR</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="import-from">TEXT_SELECT_MONTH</span>, <span class="import-from">TEXT_ADVANCE</span>, <span class="import-from">TEXT_SALARY</span><br>
+)
+                </div>
+                
+                <div class="file">
+                    <span class="change-type changed">ОБНОВЛЕНЫ ИМПОРТЫ</span> desktop/controllers/navigation_controller.py
+                </div>
+                <div class="import-example">
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.dialogs.salary_dialog</span> <span class="import-keyword">import</span> <span class="import-from">SalaryDialog</span><br>
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.dialogs.export_dialog</span> <span class="import-keyword">import</span> <span class="import-from">ExportDialog</span><br>
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.dialogs.backup_dialog</span> <span class="import-keyword">import</span> <span class="import-from">BackupDialog</span>
+                </div>
+                
+                <div class="file">
+                    <span class="change-type changed">ОБНОВЛЕНЫ ИМПОРТЫ</span> desktop/app.py
+                </div>
+                <div class="import-example">
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.main.main_view</span> <span class="import-keyword">import</span> <span class="import-from">MainView</span><br>
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.report.report_view</span> <span class="import-keyword">import</span> <span class="import-from">ReportView</span><br>
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.settings.settings_view</span> <span class="import-keyword">import</span> <span class="import-from">SettingsView</span><br>
+<span class="import-keyword">from</span> <span class="import-module">desktop.views.constants</span> <span class="import-keyword">import</span> (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="import-from">WINDOW_MAIN_MIN_WIDTH</span>, <span class="import-from">WINDOW_MAIN_MIN_HEIGHT</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="import-from">WINDOW_MAIN_DEFAULT_WIDTH</span>, <span class="import-from">WINDOW_MAIN_DEFAULT_HEIGHT</span><br>
+)
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <strong>Результат:</strong> Все импорты в проекте были успешно обновлены для соответствия новой структуре каталогов. Приложение работает корректно, без ошибок импорта. Новые пути отражают логическую организацию проекта.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📁 Детальный список изменений</h2>
+            
+            <h3>Созданные каталоги и файлы:</h3>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ КАТАЛОГ</span> desktop/views/constants/
+            </div>
+            <ul>
+                <li><span class="highlight">__init__.py</span> - Экспортирует все константы</li>
+                <li><span class="highlight">texts.py</span> - Все текстовые константы (216 строк)</li>
+                <li><span class="highlight">numbers.py</span> - Все числовые константы (30 строк)</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ КАТАЛОГ</span> desktop/views/main/
+            </div>
+            <ul>
+                <li><span class="highlight">__init__.py</span> - Экспортирует MainView</li>
+                <li><span class="highlight">main_view.py</span> - Главная вкладка (220 строк)</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ КАТАЛОГ</span> desktop/views/report/
+            </div>
+            <ul>
+                <li><span class="highlight">__init__.py</span> - Экспортирует ReportView</li>
+                <li><span class="highlight">report_view.py</span> - Вкладка аналитики (320 строк)</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ КАТАЛОГ</span> desktop/views/settings/
+            </div>
+            <ul>
+                <li><span class="highlight">__init__.py</span> - Экспортирует SettingsView</li>
+                <li><span class="highlight">settings_view.py</span> - Вкладка настроек (180 строк)</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type added">НОВЫЙ КАТАЛОГ</span> desktop/views/dialogs/
+            </div>
+            <ul>
+                <li><span class="highlight">__init__.py</span> - Экспортирует все диалоги</li>
+                <li><span class="highlight">salary_dialog.py</span> - Диалог ввода зарплаты (180 строк)</li>
+                <li><span class="highlight">export_dialog.py</span> - Диалог экспорта (90 строк)</li>
+                <li><span class="highlight">backup_dialog.py</span> - Диалог резервных копий (230 строк)</li>
+            </ul>
+            
+            <h3>Обновленные файлы:</h3>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> desktop/views/__init__.py
+            </div>
+            <ul>
+                <li>Обновлены импорты для новой структуры</li>
+                <li>Теперь импортирует из подкаталогов</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> desktop/views/base_view.py
+            </div>
+            <ul>
+                <li>Базовый класс остается в корне</li>
+                <li>Не требует изменений в импортах</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> desktop/controllers/navigation_controller.py
+            </div>
+            <ul>
+                <li>Обновлены пути импорта диалогов</li>
+                <li>Теперь импортирует из dialogs/</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> desktop/controllers/salary_controller.py
+            </div>
+            <ul>
+                <li>Обновлен импорт SalaryDialog</li>
+                <li>Теперь импортирует из dialogs/</li>
+            </ul>
+            
+            <div class="file">
+                <span class="change-type changed">ОБНОВЛЕН</span> desktop/app.py
+            </div>
+            <ul>
+                <li>Обновлены импорты представлений</li>
+                <li>Теперь импортирует из соответствующих каталогов</li>
+            </ul>
+            
+            <h3>Удаленные файлы (из корня views):</h3>
+            <ul>
+                <li><span class="highlight">constants.py</span> - Заменен на каталог constants/</li>
+                <li><span class="highlight">main_view.py</span> - Перемещен в main/</li>
+                <li><span class="highlight">report_view.py</span> - Перемещен в report/</li>
+                <li><span class="highlight">settings_view.py</span> - Перемещен в settings/</li>
+                <li><span class="highlight">salary_dialog.py</span> - Перемещен в dialogs/</li>
+                <li><span class="highlight">export_dialog.py</span> - Перемещен в dialogs/</li>
+                <li><span class="highlight">backup_dialog.py</span> - Перемещен в dialogs/</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Достигнутые цели и преимущества</h2>
+            
+            <h3>Архитектурные преимущества:</h3>
+            <div class="benefits-list">
+                <ul>
+                    <li><strong>Следование SRP:</strong> Каждый модуль отвечает за свою часть</li>
+                    <li><strong>Высокая связность:</strong> Связанные файлы сгруппированы вместе</li>
+                    <li><strong>Низкая связанность:</strong> Минимальные зависимости между модулями</li>
+                    <li><strong>Упрощенная навигация:</strong> Логическая структура каталогов</li>
+                    <li><strong>Легкость поддержки:</strong> Изменения в одном модуле не затрагивают другие</li>
+                    <li><strong>Масштабируемость:</strong> Легко добавлять новые модули</li>
+                </ul>
+            </div>
+            
+            <h3>Практические преимущества:</h3>
+            <ul>
+                <li><strong>Улучшенная читаемость:</strong> Код стал чище и понятнее</li>
+                <li><strong>Простота поиска:</strong> Легко найти нужный файл или константу</li>
+                <li><strong>Предотвращение конфликтов:</strong> Разделение констант предотвращает конфликты имен</li>
+                <li><strong>Упрощенное тестирование:</strong> Легче тестировать изолированные модули</li>
+                <li><strong>Командная разработка:</strong> Разные разработчики могут работать над разными модулями</li>
+                <li><strong>Легкий рефакторинг:</strong> Проще вносить изменения в будущем</li>
+            </ul>
+            
+            <h3>Тестирование после изменений:</h3>
+            <ul>
+                <li><strong>✅ Запуск приложения:</strong> Приложение успешно запускается</li>
+                <li><strong>✅ Все вкладки:</strong> Главная, Аналитика, Настройки работают корректно</li>
+                <li><strong>✅ Все диалоги:</strong> Диалоги открываются и работают правильно</li>
+                <li><strong>✅ Импорты:</strong> Нет ошибок импорта</li>
+                <li><strong>✅ Функциональность:</strong> Вся функциональность сохранилась</li>
+                <li><strong>✅ Производительность:</strong> Нет снижения производительности</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>⚠️ Совместимость и рекомендации</h2>
+            
+            <div class="note">
+                <strong>Обратная совместимость:</strong> Все изменения полностью обратно совместимы. Функциональность приложения не изменилась, только улучшилась структура кода. Существующие пользователи не заметят никаких изменений в работе приложения.
+            </div>
+            
+            <h3>Для разработчиков (руководство по новой структуре):</h3>
+            <ul>
+                <li><strong>Добавление новых view:</strong> Создавайте новый каталог в desktop/views/ или добавляйте в существующий</li>
+                <li><strong>Добавление новых диалогов:</strong> Размещайте в desktop/views/dialogs/ и наследуйте от BaseDialog</li>
+                <li><strong>Добавление констант:</strong> Текстовые константы - в texts.py, числовые - в numbers.py</li>
+                <li><strong>Импорт view:</strong> Импортируйте из соответствующего каталога (main/, report/, settings/)</li>
+                <li><strong>Импорт диалогов:</strong> Импортируйте из dialogs/</li>
+                <li><strong>Импорт констант:</strong> Импортируйте из desktop.views.constants</li>
+            </ul>
+            
+            <h3>Будущие улучшения на основе новой структуры:</h3>
+            <ul>
+                <li><strong>Локализация:</strong> Легко добавить поддержку разных языков через texts.py</li>
+                <li><strong>Темы оформления:</strong> Можно добавить каталог themes/ для разных тем</li>
+                <li><strong>Компоненты:</strong> Создать каталог components/ для переиспользуемых виджетов</li>
+                <li><strong>Тестирование:</strong> Легко добавлять unit-тесты для каждого модуля</li>
+                <li><strong>Документация:</strong> Автоматическая генерация документации по структуре</li>
+                <li><strong>Плагины:</strong> Возможность добавлять модули через плагины</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 Будущие возможности и развитие</h2>
+            
+            <div class="benefits-list">
+                <ul>
+                    <li><strong>Модульная архитектура:</strong> Легко добавлять новые функциональные модули</li>
+                    <li><strong>Интернационализация:</strong> Поддержка нескольких языков через текстовые константы</li>
+                    <li><strong>Система тем:</strong> Динамическая смена тем оформления</li>
+                    <li><strong>Компонентный подход:</strong> Создание библиотеки переиспользуемых компонентов</li>
+                    <li><strong>Автоматическое тестирование:</strong> Легко покрыть тестами каждый модуль</li>
+                    <li><strong>CI/CD интеграция:</strong> Автоматическая проверка структуры и импортов</li>
+                    <li><strong>Генерация кода:</strong> Шаблоны для быстрого создания новых view и диалогов</li>
+                </ul>
+            </div>
+            
+            <div class="result-box">
+                <strong>Итог версии 0.1.2:</strong> Проведена полная реструктуризация каталога desktop/views/, что значительно улучшило архитектуру проекта. Теперь код организован логически, следует принципам OOP и MVC, упрощена навигация, поддержка и масштабирование. Все изменения обратно совместимы и не затрагивают функциональность приложения.
+            </div>
+        </div>
+        
+        <footer>
+            <p>🏗️ Реструктуризация views улучшила архитектуру проекта и следует принципам OOP/MVC</p>
+            <p>📊 Константы разделены на текстовые и числовые для лучшей организации</p>
+            <p>📦 Все импорты обновлены для соответствия новой структуре каталогов</p>
+            <p>🔧 Упрощена поддержка, навигация и добавление новых функций</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Устанавливаем текущую дату
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('ru-RU', options);
+    </script>
+</body>
+</html>

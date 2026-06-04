@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: Единый расчет среднемесячного значения - версия v.1.2.11</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #4a6fa5; padding-bottom: 20px; }
+        h1 { color: #2c3e50; margin-bottom: 8px; }
+        .subtitle { color: #7f8c8d; font-size: 1.05em; }
+        .meta { background: #ecf0f1; border-radius: 6px; padding: 14px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.8em; font-weight: bold; text-align: center; color: #2c3e50; border: 2px solid #4a6fa5; border-radius: 10px; padding: 12px; margin: 20px 0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .section { margin: 25px 0; padding: 18px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 6px 6px 0; }
+        .section h2 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+        .section h3 { color: #2980b9; margin-bottom: 10px; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: .8em; font-weight: bold; margin-right: 8px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .safe { background: #e8f5e9; color: #2e7d32; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3498db; font-family: 'Courier New', monospace; margin: 6px 0; }
+        .result { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 6px; padding: 12px; }
+        footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: .95em; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>ChangeLog: SalaryApp - версия v.1.2.11</h1>
+        <p class="subtitle">Исправление расчета среднемесячного значения в карточке года и унификация бизнес-логики для desktop/web</p>
+    </header>
+
+    <div class="meta">
+        <p><strong>Версия:</strong> v.1.2.11</p>
+        <p><strong>Дата:</strong> 06 марта 2026 г.</p>
+        <p><strong>Область изменений:</strong> core/models/year.py, core/services/statistics_service.py, tests/unit/core/services/test_statistics_service_average.py, version.txt</p>
+        <p><strong>Причина изменений:</strong> в текущем месяце аванс мог учитываться в среднем до наступления даты зарплаты, что давало некорректное «Среднемесячное»</p>
+        <p><strong>Статус:</strong> ✅ Выполнено и проверено тестами</p>
+    </div>
+
+    <div class="version-display">SalaryApp v.1.2.11 current</div>
+
+    <div class="section">
+        <h2>Что было сделано</h2>
+        <ul>
+            <li><span class="change-type fixed">FIXED</span>Исправлен расчет среднемесячного значения в доменной модели года.</li>
+            <li><span class="change-type changed">CHANGED</span>Расчет среднего вынесен в единый метод, чтобы исключить расхождения между desktop и web.</li>
+            <li><span class="change-type added">ADDED</span>Добавлены unit-тесты на ключевые сценарии (неполный текущий месяц и закрытый месяц).</li>
+            <li><span class="change-type safe">SAFE</span>Обновлена версия в <code>version.txt</code> согласно правилам проекта.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Детально по файлам</h2>
+
+        <div class="file">core/services/statistics_service.py</div>
+        <ul>
+            <li>Добавлен метод <code>calculate_average_monthly_from_records(records, now=None)</code>.</li>
+            <li>Введено единое бизнес-правило для среднего:
+                учитывать только месяцы с суммой <code>advance + salary &gt; 0</code>.</li>
+            <li>Текущий месяц исключается из среднего, если в нем еще нет зарплаты (<code>salary &lt;= 0</code>).</li>
+            <li>Метод <code>get_summary_statistics(...)</code> теперь использует это единое правило для поля <code>average_monthly</code>.</li>
+        </ul>
+
+        <div class="file">core/models/year.py</div>
+        <ul>
+            <li>Свойство <code>YearSummary.average_monthly</code> переведено на вызов единого метода из <code>StatisticsService</code>.</li>
+            <li>Устранено дублирование формулы и риск рассинхронизации между частями приложения.</li>
+        </ul>
+
+        <div class="file">tests/unit/core/services/test_statistics_service_average.py</div>
+        <ul>
+            <li>Добавлен тест: текущий месяц с одним авансом не учитывается в среднем.</li>
+            <li>Добавлен тест: текущий месяц учитывается, если зарплата уже внесена.</li>
+            <li>Добавлен тест: <code>get_summary_statistics(...)</code> использует единое правило расчета.</li>
+        </ul>
+
+        <div class="file">version.txt</div>
+        <ul>
+            <li>Версия обновлена с <code>1.2.10 current</code> до <code>1.2.11 current</code>.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Архитектурный результат (MVC, OOP, DRY, SOLID)</h2>
+        <ul>
+            <li><strong>DRY:</strong> правило среднего теперь в одном месте.</li>
+            <li><strong>SOLID (SRP):</strong> логика расчета сосредоточена в сервисном слое статистики.</li>
+            <li><strong>MVC:</strong> View продолжает только отображать данные, расчет не перенесен в UI.</li>
+            <li><strong>OOP:</strong> доменная модель <code>YearSummary</code> использует сервисный контракт, без дублирующей арифметики.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Проверка и совместимость</h2>
+        <h3>Запущенные тесты</h3>
+        <ul>
+            <li><code>pytest -q tests/unit/core/services/test_statistics_service_average.py</code> -> 3 passed</li>
+            <li><code>pytest -q tests/smoke/test_entrypoints.py</code> -> 3 passed</li>
+            <li><code>pytest -q tests/unit/web/test_salaries_routes.py</code> -> 4 passed</li>
+        </ul>
+
+        <h3>Точки запуска (обязательная проверка)</h3>
+        <ul>
+            <li><code>StartSalary.pyw</code></li>
+            <li><code>run_web.py</code></li>
+            <li><code>run_bot.py</code></li>
+            <li><code>desktop/app.py</code></li>
+            <li><code>bot/main.py</code></li>
+        </ul>
+        <div class="result">
+            Изменения не затрагивают контракты точек входа и совместимы с существующей схемой запуска desktop/web/bot.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Итог</h2>
+        <p>
+            Исправлен функциональный дефект расчета среднемесячного значения для неполного текущего месяца.
+            Логика централизована и используется единообразно, что снижает риск будущих расхождений между интерфейсами.
+        </p>
+    </div>
+
+    <footer>
+        <p>SalaryApp v.1.2.11 • 06.03.2026</p>
+    </footer>
+</div>
+</body>
+</html>
