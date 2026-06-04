@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: CI (GitHub Actions) и бейджи в README - версия 1.2.23</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.1em; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .section { margin: 25px 0; padding: 20px; border-left: 4px solid #3498db; background: #f8f9fa; border-radius: 0 5px 5px 0; }
+        .section h2 { color: #2c3e50; margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .change-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 8px; }
+        .added { background-color: #d4edda; color: #155724; }
+        .changed { background-color: #fff3cd; color: #856404; }
+        .fixed { background-color: #d1ecf1; color: #0c5460; }
+        .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
+        .highlight { background-color: #fffacd; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; }
+        .result-box { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .code-snippet { background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 3px solid #4a6fa5; font-family: 'Courier New', monospace; font-size: 0.9em; white-space: pre-wrap; }
+        .version-display { font-size: 1.8em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
+        footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 ChangeLog: CI (GitHub Actions) и бейджи в README - версия 1.2.23</h1>
+            <p class="subtitle">Автоматический прогон тестов на каждый push/PR и статусные бейджи в README</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Версия:</strong> v.1.2.23</p>
+            <p><strong>Дата:</strong> 4 июня 2026 г.</p>
+            <p><strong>Этап:</strong> Инфраструктура open-source: CI и оформление</p>
+            <p><strong>Область изменений:</strong> .github/workflows/ci.yml, README.md, version.txt</p>
+            <p><strong>Статус:</strong> ✅ Настроено</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.23 current</div>
+
+        <div class="section">
+            <h2>🤖 Непрерывная интеграция (CI)</h2>
+            <p>Добавлен workflow <span class="highlight">.github/workflows/ci.yml</span>, который при каждом <span class="highlight">push</span> и <span class="highlight">pull_request</span> запускает тесты.</p>
+            <ul>
+                <li>Окружение: <span class="highlight">windows-latest</span> (целевая ОС приложения; есть Tkinter для desktop-тестов).</li>
+                <li>Матрица версий Python: <span class="highlight">3.11</span> и <span class="highlight">3.12</span>.</li>
+                <li>Зависимости из <span class="highlight">requirements-dev.txt</span> (основные + pytest), кэш pip.</li>
+                <li>Запуск: <span class="highlight">python -m pytest -q</span> (74 теста).</li>
+            </ul>
+            <div class="code-snippet">name: CI
+on: [push, pull_request]
+jobs:
+  tests:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ matrix.python-version }}", cache: pip }
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q</div>
+            <p>Линтеры (black/flake8) в CI не подключались, чтобы не «краснить» сборку на неотформатированном коде. Существующий workflow <span class="highlight">encoding-check.yml</span> не изменялся.</p>
+        </div>
+
+        <div class="section">
+            <h2>🏷️ Бейджи в README</h2>
+            <p>Под заголовком добавлены бейджи: статус CI, лицензия (Apache-2.0), версия Python.</p>
+            <div class="file"><span class="change-type added">НОВЫЙ</span> .github/workflows/ci.yml</div>
+            <div class="file"><span class="change-type changed">ОБНОВЛЁН</span> README.md (бейджи)</div>
+            <div class="result-box">
+                <strong>Результат:</strong> Тесты прогоняются автоматически на каждое изменение, а статус виден прямо в README. Это упрощает поддержку и повышает доверие к открытому проекту.
+            </div>
+        </div>
+
+        <footer>
+            <p>🤖 Тесты запускаются автоматически на push/PR (Windows, Python 3.11 и 3.12)</p>
+            <p>🏷️ В README — бейджи CI, лицензии и версии Python</p>
+        </footer>
+    </div>
+</body>
+</html>

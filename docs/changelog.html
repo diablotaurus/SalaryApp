@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.22</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.23</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -29,33 +29,33 @@
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.22</h1>
-            <p class="subtitle">Краткий отчет: подготовка к публикации на GitHub (open-source)</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.23</h1>
+            <p class="subtitle">Краткий отчет: CI (GitHub Actions) и бейджи в README</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.22</p>
+            <p><strong>Версия:</strong> v.1.2.23</p>
             <p><strong>Дата:</strong> 4 июня 2026 г.</p>
-            <p><strong>Статус:</strong> ✅ Подготовлено к публичному репозиторию</p>
-            <p><strong>Подробный отчет:</strong> <a href="changelog_04.06.2026_1.2.22.html">docs/changelog_04.06.2026_1.2.22.html</a></p>
+            <p><strong>Статус:</strong> ✅ Настроено</p>
+            <p><strong>Подробный отчет:</strong> <a href="changelog_04.06.2026_1.2.23.html">docs/changelog_04.06.2026_1.2.23.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.22 current</div>
+        <div class="version-display">SalaryApp v.1.2.23 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type added">NEW</span>Добавлены <span class="highlight">README.md</span> (RU + EN), <span class="highlight">LICENSE</span> (Apache-2.0) и <span class="highlight">NOTICE</span>.</li>
-                <li><span class="change-type added">PRIVACY</span>Из репозитория исключены реальные данные: <span class="highlight">exports/</span> и личный ярлык запуска добавлены в <span class="highlight">.gitignore</span>.</li>
-                <li><span class="change-type changed">CHANGED</span>Личные пути вычищены (плейсхолдеры). Скрипт деплоя берёт путь к prod из аргумента / <span class="highlight">SALARYAPP_PROD_DIR</span> / локального <span class="highlight">scripts/deploy_target.local.txt</span>.</li>
-                <li><span class="change-type fixed">SAFE</span>Публичный репозиторий создан с чистой историей (без токена и финансовых данных). UTF-8 без BOM.</li>
+                <li><span class="change-type added">CI</span>Добавлен workflow <span class="highlight">.github/workflows/ci.yml</span>: автоматический прогон тестов на каждый push/PR (windows-latest, Python 3.11 и 3.12).</li>
+                <li><span class="change-type added">NEW</span>В <span class="highlight">README.md</span> добавлены бейджи: статус CI, лицензия (Apache-2.0), версия Python.</li>
+                <li><span class="change-type changed">CHANGED</span>Линтеры в CI не подключались (чтобы не «краснить» сборку); существующий <span class="highlight">encoding-check.yml</span> не изменялся.</li>
             </ul>
-            <div class="file">README.md, LICENSE, NOTICE, .gitignore, scripts/deploy_to_prod.py, scripts/DEPLOY.md, TESTING.md, version.txt, docs/changelog_04.06.2026_1.2.22.html, docs/changelog.html</div>
+            <div class="file">.github/workflows/ci.yml, README.md, version.txt, docs/changelog_04.06.2026_1.2.23.html, docs/changelog.html</div>
         </div>
 
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_04.06.2026_1.2.23.html">04-06-2026</a> — v.1.2.23 — CI (GitHub Actions) и бейджи в README (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.22.html">04-06-2026</a> — v.1.2.22 — подготовка к публикации на GitHub (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.21.html">04-06-2026</a> — v.1.2.21 — защита деплоя через prod.marker (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.20.html">04-06-2026</a> — v.1.2.20 — скрипт ручного деплоя в production (подробный отчет)</li>

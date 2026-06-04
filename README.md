@@ -1,5 +1,9 @@
 # SalaryApp
 
+![CI](https://github.com/diablotaurus/SalaryApp/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/github/license/diablotaurus/SalaryApp)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)
+
 Учёт личной заработной платы: desktop-приложение, веб-интерфейс и Telegram-бот на едином ядре.
 Помесячный учёт аванса и зарплаты, суммирование и аналитика по периодам.
 
