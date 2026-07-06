@@ -4,6 +4,9 @@ Flask==2.3.3
 # Telegram bot framework (aiogram v3)
 aiogram==3.13.1
 
+# SOCKS5-прокси для Telegram-бота (опционально, для настройки TELEGRAM_PROXY)
+aiohttp-socks==0.11.0
+
 # Data analysis - требует компилятора C/C++ на Windows
 # Для Windows: установите Visual C++ Build Tools или используйте --only-binary
 pandas==2.3.3

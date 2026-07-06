@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Optional
 
 from aiogram import Bot, Dispatcher, Router, types, F
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -78,6 +79,72 @@ def _load_bot_token() -> str:
                     return token
 
     raise RuntimeError("BOT_TOKEN не найден. Укажите в bot/.env или переменной окружения.")
+
+
+# ==================== ПРОКСИ ДЛЯ TELEGRAM ====================
+def _load_proxy() -> Optional[str]:
+    """
+    Загрузить адрес прокси для Telegram из TELEGRAM_PROXY.
+
+    Порядок поиска:
+    1. Переменная окружения TELEGRAM_PROXY (или SALARYAPP_TELEGRAM_PROXY)
+    2. Файл bot/.env (ключ TELEGRAM_PROXY)
+
+    Returns:
+        Optional[str]: Адрес прокси (например, "socks5://192.168.0.8:10808")
+                       или None, если не задан.
+    """
+    # Поиск в переменных окружения
+    value = os.getenv("TELEGRAM_PROXY") or os.getenv("SALARYAPP_TELEGRAM_PROXY")
+    if value and value.strip():
+        return value.strip()
+
+    # Поиск в файле .env
+    env_path = Path(__file__).resolve().parent / ".env"
+    if env_path.exists():
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            if key.strip() == "TELEGRAM_PROXY":
+                proxy = val.strip().strip('"').strip("'")
+                return proxy or None
+
+    return None
+
+
+async def _create_bot(token: str) -> Bot:
+    """
+    Создать экземпляр бота с учётом прокси (прокси-first с откатом на прямое подключение).
+
+    Логика:
+        - Если задан TELEGRAM_PROXY и прокси отвечает (проверка через get_me с таймаутом) —
+          бот ходит через прокси.
+        - Если прокси не задан или недоступен (например, локальный прокси выключен) —
+          бот подключается напрямую.
+        - Любая ошибка на этапе проверки прокси (включая отсутствие aiohttp_socks)
+          приводит к безопасному откату на прямое подключение.
+
+    Args:
+        token: Токен бота.
+
+    Returns:
+        Bot: Готовый экземпляр бота.
+    """
+    proxy = _load_proxy()
+    if proxy:
+        bot = Bot(token=token, session=AiohttpSession(proxy=proxy))
+        try:
+            # Быстрая проверка доступности прокси (с таймаутом, чтобы не зависнуть)
+            await asyncio.wait_for(bot.get_me(), timeout=10)
+            logger.info("Telegram: подключение через прокси %s", proxy)
+            return bot
+        except Exception as exc:
+            logger.warning("Прокси %s недоступен (%s) — подключаюсь напрямую", proxy, exc)
+            await bot.session.close()
+
+    return Bot(token=token)
 
 
 # ==================== FSM СОСТОЯНИЯ ДЛЯ ДИАЛОГА ====================
@@ -387,9 +454,10 @@ async def main():
     # Применение миграций БД при запуске
     apply_all_migrations()
 
-    # Создание экземпляра бота
-    bot = Bot(token=_load_bot_token())
-    
+    # Создание экземпляра бота (через прокси при наличии TELEGRAM_PROXY, иначе напрямую)
+    token = _load_bot_token()
+    bot = await _create_bot(token)
+
     # Настройка хранилища состояний (в памяти)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
