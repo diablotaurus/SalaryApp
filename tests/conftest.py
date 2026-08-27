@@ -15,10 +15,12 @@ from core.database.migrations import apply_all_migrations
 @pytest.fixture
 def temp_db(tmp_path: Path):
     old_path = config.db.path
+    old_backup_dir = config.db.backup_dir
     test_db_path = tmp_path / "salary_test.db"
 
     DatabaseConnection.close_connection()
     config.db.path = str(test_db_path)
+    config.db.backup_dir = str(tmp_path / "backup")
     apply_all_migrations()
 
     try:
@@ -26,3 +28,4 @@ def temp_db(tmp_path: Path):
     finally:
         DatabaseConnection.close_connection()
         config.db.path = old_path
+        config.db.backup_dir = old_backup_dir

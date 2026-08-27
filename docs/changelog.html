@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.24</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.25</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -24,39 +24,51 @@
         .file { background: #f1f1f1; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', monospace; margin: 5px 0; border-left: 3px solid #3498db; }
         .version-display { font-size: 1.6em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; border: 2px solid #4a6fa5; }
         .highlight { background: #fff3cd; padding: 2px 6px; border-radius: 4px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .refactored { background-color: #e3f2fd; color: #0d47a1; }
+        @media (max-width: 600px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .section { padding: 12px; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.24</h1>
-            <p class="subtitle">Краткий отчет: полировка desktop-интерфейса (окно «О программе», единые диалоги, блок истории)</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.25</h1>
+            <p class="subtitle">Краткий отчёт: безопасность, целостность данных, резервные копии и архитектурные исправления по итогам code review</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.24</p>
-            <p><strong>Дата:</strong> 5 июня 2026 г.</p>
-            <p><strong>Статус:</strong> ✅ Завершено и протестировано (74/74)</p>
-            <p><strong>Подробный отчет:</strong> <a href="changelog_05.06.2026_1.2.24.html">docs/changelog_05.06.2026_1.2.24.html</a></p>
+            <p><strong>Версия:</strong> v.1.2.25</p>
+            <p><strong>Дата:</strong> 27 августа 2026 г.</p>
+            <p><strong>Проверки:</strong> 110 тестов; критический Ruff; UTF-8 без BOM; аудит зависимостей. Ручная проверка подтверждена пользователем.</p>
+            <p><strong>Подробный отчёт:</strong> <a href="changelog_27.08.2026_1.2.25.html">docs/changelog_27.08.2026_1.2.25.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.24 current</div>
+        <div class="version-display">SalaryApp v.1.2.25 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type added">NEW</span>Окно «О программе» (<span class="highlight">about_dialog.py</span>) + кнопка на вкладке «Главная» справа.</li>
-                <li><span class="change-type changed">UI</span>Единый стиль диалогов: авто-размер «Ввод зарплаты»/«Экспорт», одинаковые кнопки по центру во всех окнах; исправлен баг фокуса в «Экспорт».</li>
-                <li><span class="change-type changed">UI</span>Блок «История заработной платы» чище: тоньше рамки, меньше плотность ячеек, дефолт шрифтов 10/10/9.</li>
-                <li><span class="change-type refactored">REFACTOR</span>Декомпозиция длинных методов карточки + вынос шрифтов/ширин в константы.</li>
-                <li><span class="change-type removed">REMOVED</span>Удалён мёртвый <span class="highlight">update_statistics</span>. Тесты 74/74, UTF-8 без BOM.</li>
+                <li><span class="change-type added">SECURITY</span>Telegram-бот допускает только пользователей из <code>BOT_ALLOWED_IDS</code>. Внешние запросы ко всем Web API требуют <code>X-API-Key</code>; ключ в URL не принимается.</li>
+                <li><span class="change-type fixed">DATA</span>Миграция <code>005_salary_integrity</code>: хранение денег в целых копейках, уникальный год/месяц, ограничения и атомарный UPSERT. Перед изменением непустой БД создаётся резервная копия.</li>
+                <li><span class="change-type improved">BACKUP</span>Согласованный SQLite-снимок, проверка архива и БД, ограничение путей, автоматический бэкап перед восстановлением.</li>
+                <li><span class="change-type fixed">DEPLOY</span>Неполный бэкап останавливает обновление, включая <code>--yes</code>. Ошибки очистки, копирования и итоговой проверки запускают откат кода.</li>
+                <li><span class="change-type refactored">MVC</span>Добавлены <code>SettingsService</code> и <code>AnalyticsRepository</code>, настройки передаются во View контроллером, команды бота вынесены из bootstrap.</li>
+                <li><span class="change-type changed">WEB</span>Обычный запуск через Waitress, рабочие восстановление и удаление резервных копий, JSON-ошибки API и логирование.</li>
+                <li><span class="change-type improved">QUALITY</span>Абсолютные runtime-пути, UTF-8 для BAT-файлов, обновлённые зависимости, Python 3.13 в CI, Ruff и pip-audit.</li>
             </ul>
-            <div class="file">about_dialog.py (новый), main_view.py, settings_view.py, salary_dialog.py, export_dialog.py, backup_dialog.py, main_tab_controller.py, texts.py, numbers.py, test_tab_controllers.py, version.txt, docs/changelog_05.06.2026_1.2.24.html, docs/changelog.html</div>
+            <p><strong>Перед обновлением:</strong> остановите desktop, Web и бота; обновите зависимости. Имеющийся production-файл <code>bot/.env</code> сохраняется скриптом деплоя. Production в рамках подготовки этого релиза не обновлялся.</p>
+            <p><strong>Важно:</strong> после миграции <code>005</code> нельзя запускать старый код на новой БД. Для возврата к прежней версии потребуется согласованное восстановление кода и домиграционной БД. Подробности и ограничения приведены в <a href="changelog_27.08.2026_1.2.25.html#upgrade">инструкции по обновлению</a>.</p>
         </div>
 
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_27.08.2026_1.2.25.html">27-08-2026</a> - v.1.2.25 - безопасность, целостность БД, резервные копии, rollback деплоя, архитектура и CI (подробный отчёт)</li>
                 <li><a href="changelog_05.06.2026_1.2.24.html">05-06-2026</a> — v.1.2.24 — полировка desktop-интерфейса: окно «О программе», единые диалоги, блок истории (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.23.html">04-06-2026</a> — v.1.2.23 — CI (GitHub Actions) и бейджи в README (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.22.html">04-06-2026</a> — v.1.2.22 — подготовка к публикации на GitHub (подробный отчет)</li>

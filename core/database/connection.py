@@ -47,13 +47,10 @@ class DatabaseConnection:
             # Создаем директорию для БД, если её нет
             db_path.parent.mkdir(parents=True, exist_ok=True)
             
-            # Создаем подключение с настройками:
-            # - check_same_thread=False: позволяет использовать подключение в разных потоках
-            # - timeout=10: время ожидания блокировки базы (секунды)
+            # Каждому потоку соответствует отдельное соединение.
             conn = sqlite3.connect(
                 str(db_path),
-                check_same_thread=False,
-                timeout=10
+                timeout=10,
             )
             # Устанавливаем row_factory для возврата строк в виде словарей
             conn.row_factory = sqlite3.Row
@@ -61,6 +58,9 @@ class DatabaseConnection:
             
             # Включаем поддержку внешних ключей (PRAGMA foreign_keys)
             conn.execute("PRAGMA foreign_keys = ON")
+            conn.execute("PRAGMA busy_timeout = 10000")
+            conn.execute("PRAGMA journal_mode = WAL")
+            conn.execute("PRAGMA synchronous = NORMAL")
             
         return DatabaseConnection._local.connection
     

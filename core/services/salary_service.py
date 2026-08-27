@@ -11,6 +11,7 @@ from core.models.salary import Salary
 from core.models.year import YearSummary
 from core.repositories.salary_repository import SalaryRepository
 from core.utils.dates import DateUtils
+from core.utils.money_values import normalize_amount
 
 
 class SalaryService:
@@ -46,6 +47,10 @@ class SalaryService:
             Если запись за указанный месяц уже существует, она обновляется.
             Если не существует - создается новая запись.
         """
+        year, month = SalaryService._validate_period(year, month)
+        advance = normalize_amount(advance, "сумма аванса")
+        salary = normalize_amount(salary, "сумма зарплаты")
+
         # Проверяем, были ли переданы даты
         advance_date_provided = advance_date is not None and str(advance_date).strip() != ""
         salary_date_provided = salary_date is not None and str(salary_date).strip() != ""
@@ -54,30 +59,33 @@ class SalaryService:
         parsed_advance_date = SalaryService._parse_date_strict(advance_date, "даты аванса") if advance_date_provided else None
         parsed_salary_date = SalaryService._parse_date_strict(salary_date, "даты зарплаты") if salary_date_provided else None
 
-        # Проверяем существующую запись
-        existing = SalaryRepository.get_by_year_month(year, month)
-        
-        if existing:
-            # Обновляем существующую запись
-            existing.advance = advance
-            existing.salary = salary
-            # Обновляем даты только если они были явно переданы
-            if advance_date_provided:
-                existing.advance_date = parsed_advance_date
-            if salary_date_provided:
-                existing.salary_date = parsed_salary_date
-            return SalaryRepository.save(existing)
-        else:
-            # Создаем новую запись
-            new_salary = Salary(
-                year=year,
-                month=month,
-                advance=advance,
-                salary=salary,
-                advance_date=parsed_advance_date,
-                salary_date=parsed_salary_date
-            )
-            return SalaryRepository.save(new_salary)
+        new_salary = Salary(
+            year=year,
+            month=month,
+            advance=advance,
+            salary=salary,
+            advance_date=parsed_advance_date,
+            salary_date=parsed_salary_date,
+        )
+        return SalaryRepository.upsert(new_salary)
+
+    @staticmethod
+    def _validate_period(year: Any, month: Any) -> tuple[int, int]:
+        try:
+            normalized_year = int(str(year).strip())
+            normalized_month = int(str(month).strip())
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Год и месяц должны быть целыми числами") from exc
+
+        if str(normalized_year) != str(year).strip():
+            raise ValueError("Год должен быть целым числом")
+        if str(normalized_month) != str(month).strip():
+            raise ValueError("Месяц должен быть целым числом")
+        if not 2000 <= normalized_year <= 2100:
+            raise ValueError("Год должен быть в диапазоне 2000-2100")
+        if not 1 <= normalized_month <= 12:
+            raise ValueError("Месяц должен быть в диапазоне 1-12")
+        return normalized_year, normalized_month
     
     @staticmethod
     def get_salary(year: int, month: int) -> Optional[Salary]:

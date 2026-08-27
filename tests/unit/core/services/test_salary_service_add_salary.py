@@ -9,21 +9,14 @@ from core.services.salary_service import SalaryService
 def test_add_salary_creates_new_record(monkeypatch):
     captured = {}
 
-    def fake_get_by_year_month(year, month):
-        return None
-
-    def fake_save(salary_obj):
+    def fake_upsert(salary_obj):
         salary_obj.id = 101
         captured["saved"] = salary_obj
         return salary_obj
 
     monkeypatch.setattr(
-        "core.services.salary_service.SalaryRepository.get_by_year_month",
-        fake_get_by_year_month,
-    )
-    monkeypatch.setattr(
-        "core.services.salary_service.SalaryRepository.save",
-        fake_save,
+        "core.services.salary_service.SalaryRepository.upsert",
+        fake_upsert,
     )
 
     created = SalaryService.add_salary(
@@ -37,30 +30,14 @@ def test_add_salary_creates_new_record(monkeypatch):
     assert captured["saved"].salary_date.strftime("%d.%m.%Y") == "25.03.2025"
 
 
-def test_add_salary_updates_existing_record_without_overwriting_dates_on_empty_input(monkeypatch):
-    existing = Salary(
-        id=7,
-        year=2025,
-        month=4,
-        advance=5000.0,
-        salary=12000.0,
-        advance_date=datetime.strptime("11.04.2025", "%d.%m.%Y"),
-        salary_date=datetime.strptime("26.04.2025", "%d.%m.%Y"),
-    )
-
-    def fake_get_by_year_month(year, month):
-        return existing
-
-    def fake_save(salary_obj):
-        return salary_obj
-
-    monkeypatch.setattr(
-        "core.services.salary_service.SalaryRepository.get_by_year_month",
-        fake_get_by_year_month,
-    )
-    monkeypatch.setattr(
-        "core.services.salary_service.SalaryRepository.save",
-        fake_save,
+def test_add_salary_updates_existing_record_without_overwriting_dates_on_empty_input(temp_db):
+    SalaryService.add_salary(
+        2025,
+        4,
+        5000.0,
+        12000.0,
+        "11.04.2025",
+        "26.04.2025",
     )
 
     updated = SalaryService.add_salary(2025, 4, 7000.0, 15000.0, "", "")
@@ -71,12 +48,22 @@ def test_add_salary_updates_existing_record_without_overwriting_dates_on_empty_i
     assert updated.salary_date.strftime("%d.%m.%Y") == "26.04.2025"
 
 
-def test_add_salary_invalid_date_raises_value_error(monkeypatch):
-    monkeypatch.setattr(
-        "core.services.salary_service.SalaryRepository.get_by_year_month",
-        lambda year, month: None,
-    )
-
+def test_add_salary_invalid_date_raises_value_error():
     with pytest.raises(ValueError):
         SalaryService.add_salary(2025, 5, 1000.0, 2000.0, "99.99.2025", None)
 
+
+@pytest.mark.parametrize(
+    ("year", "month", "advance", "salary"),
+    [
+        (1999, 1, 1, 1),
+        (2101, 1, 1, 1),
+        (2025, 0, 1, 1),
+        (2025, 13, 1, 1),
+        (2025, 1, -1, 1),
+        (2025, 1, 1, float("nan")),
+    ],
+)
+def test_add_salary_rejects_invalid_domain_values(year, month, advance, salary):
+    with pytest.raises(ValueError):
+        SalaryService.add_salary(year, month, advance, salary)

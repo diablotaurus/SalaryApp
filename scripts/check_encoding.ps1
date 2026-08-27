@@ -4,7 +4,7 @@ param(
 
 $extensions = @(
     "*.py","*.pyw","*.html","*.css","*.js","*.json","*.md","*.txt",
-    "*.yml","*.yaml","*.ini","*.cfg","*.toml","*.ps1","*.csv"
+    "*.yml","*.yaml","*.ini","*.cfg","*.toml","*.ps1","*.bat","*.csv"
 )
 
 $utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)

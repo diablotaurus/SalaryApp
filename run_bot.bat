@@ -1,6 +1,6 @@
 @echo off
 if exist "%SystemRoot%\System32\chcp.com" "%SystemRoot%\System32\chcp.com" 65001 >nul
-cd /d %~dp0
+cd /d "%~dp0"
 
 echo ================================================================
 echo Starting SalaryApp Telegram bot
@@ -23,7 +23,7 @@ if errorlevel 1 (
     echo Missing dependencies detected.
     echo Installing dependencies from requirements.txt...
     echo.
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
     if errorlevel 1 (
         echo.
         echo FAILED TO INSTALL DEPENDENCIES!

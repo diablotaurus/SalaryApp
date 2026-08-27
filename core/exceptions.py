@@ -36,7 +36,14 @@ class PresentationError(SalaryAppError):
     """Desktop/web presentation layer operation failed."""
 
 
-RECOVERABLE_EXCEPTIONS = (ValueError, TypeError, KeyError, RuntimeError, OSError)
+RECOVERABLE_EXCEPTIONS = (
+    SalaryAppError,
+    ValueError,
+    TypeError,
+    KeyError,
+    RuntimeError,
+    OSError,
+)
 
 
 def to_app_error(exc: Exception, default_message: str) -> SalaryAppError:

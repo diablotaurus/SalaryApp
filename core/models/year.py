@@ -1,6 +1,34 @@
 from dataclasses import dataclass
-from typing import List
+from datetime import datetime
+from typing import Any, Iterable, List
 from .salary import Salary
+
+
+def calculate_average_monthly(
+    records: Iterable[Any], now: datetime | None = None
+) -> float:
+    """Calculate the average for months whose salary payment is complete."""
+    current = now or datetime.now()
+    totals: list[float] = []
+
+    for record in records or []:
+        advance = float(getattr(record, "advance", 0) or 0)
+        salary = float(getattr(record, "salary", 0) or 0)
+        if salary <= 0 or advance + salary <= 0:
+            continue
+
+        year = int(getattr(record, "year", 0) or 0)
+        month = int(getattr(record, "month", 0) or 0)
+        salary_date = getattr(record, "salary_date", None)
+        if salary_date is not None:
+            if salary_date > current:
+                continue
+        elif (year, month) >= (current.year, current.month):
+            continue
+
+        totals.append(advance + salary)
+
+    return sum(totals) / len(totals) if totals else 0.0
 
 
 @dataclass
@@ -26,9 +54,7 @@ class YearSummary:
     @property
     def average_monthly(self) -> float:
         """Среднемесячная зарплата"""
-        from core.services.statistics_service import StatisticsService
-
-        return StatisticsService.calculate_average_monthly_from_records(self.records)
+        return calculate_average_monthly(self.records)
     
     def add_record(self, salary: Salary):
         """Добавить запись о зарплате"""

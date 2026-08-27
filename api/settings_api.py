@@ -11,7 +11,7 @@ API-слой для работы с настройками приложения.
 from typing import Any, Dict
 
 from api.common import execute_with_default_error, failure, success
-from core.repositories.settings_repository import SettingsRepository
+from core.services.settings_service import SettingsService
 
 
 class SettingsAPI:
@@ -26,7 +26,7 @@ class SettingsAPI:
             Dict: Словарь всех настроек (ключ-значение) с количеством записей
         """
         def _action() -> dict:
-            settings = SettingsRepository.get_all_settings()
+            settings = SettingsService.get_all_settings()
             return success(settings, count=len(settings))
 
         return execute_with_default_error(_action, "Ошибка при получении настроек")
@@ -47,7 +47,7 @@ class SettingsAPI:
             - Ключ передаётся как параметр SQL-запроса (защита от инъекций)
         """
         def _action() -> dict:
-            value = SettingsRepository.get_setting(key, default)
+            value = SettingsService.get_setting(key, default)
             return success({"key": key, "value": value})
 
         return execute_with_default_error(_action, f"Ошибка при получении настройки {key}")
@@ -69,13 +69,22 @@ class SettingsAPI:
             - При сохранении обновляется timestamp (updated_at)
         """
         def _action() -> dict:
-            SettingsRepository.set_setting(key, value)
+            normalized = SettingsService.set_setting(key, value)
             return success(
-                {"key": key, "value": value},
+                {"key": key, "value": normalized},
                 message=f"Настройка {key} успешно сохранена",
             )
 
         return execute_with_default_error(_action, f"Ошибка при сохранении настройки {key}")
+
+    @staticmethod
+    def set_settings(settings: Dict[str, Any]) -> Dict[str, Any]:
+        """Атомарно проверить и сохранить набор настроек."""
+        def _action() -> dict:
+            normalized = SettingsService.set_settings(settings)
+            return success(normalized, message="Настройки успешно сохранены")
+
+        return execute_with_default_error(_action, "Ошибка при сохранении настроек")
 
     @staticmethod
     def delete_setting(key: str) -> Dict[str, Any]:
@@ -92,7 +101,7 @@ class SettingsAPI:
             - После удаления пользовательской настройки используется значение по умолчанию
         """
         def _action() -> dict:
-            if SettingsRepository.delete_setting(key):
+            if SettingsService.delete_setting(key):
                 return success(message=f"Настройка {key} успешно удалена")
             # Настройка не найдена - это не ошибка, а нормальная ситуация
             return failure(f"Настройка {key} не найдена", error="Настройка не найдена")

@@ -1,7 +1,11 @@
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 
 from core.repositories.salary_repository import SalaryRepository
+from core.repositories.analytics_repository import AnalyticsRepository
 from core.models.salary import Salary
+from core.database.connection import DatabaseConnection
+from core.services.salary_service import SalaryService
 
 
 def test_salary_repository_save_get_delete_crud(temp_db):
@@ -32,3 +36,76 @@ def test_salary_repository_save_get_delete_crud(temp_db):
     assert deleted is True
     assert SalaryRepository.get_by_year_month(2025, 7) is None
 
+
+def test_salary_repository_persists_integer_kopecks(temp_db):
+    SalaryRepository.save(Salary(year=2025, month=8, advance=123.45, salary=678.9))
+
+    conn = DatabaseConnection.get_connection()
+    row = conn.execute(
+        "SELECT advance, salary, typeof(advance), typeof(salary) FROM salaries"
+    ).fetchone()
+
+    assert tuple(row) == (12345, 67890, "integer", "integer")
+
+
+def test_upsert_keeps_one_record_per_period(temp_db):
+    first = SalaryRepository.upsert(
+        Salary(year=2025, month=9, advance=100.0, salary=200.0)
+    )
+    second = SalaryRepository.upsert(
+        Salary(year=2025, month=9, advance=300.0, salary=400.0)
+    )
+
+    conn = DatabaseConnection.get_connection()
+    count = conn.execute(
+        "SELECT COUNT(*) FROM salaries WHERE year = 2025 AND month = 9"
+    ).fetchone()[0]
+
+    assert first.id == second.id
+    assert count == 1
+    assert second.advance == 300.0
+
+
+def test_concurrent_upserts_do_not_create_duplicate_periods(temp_db):
+    def write_salary(index):
+        try:
+            return SalaryService.add_salary(
+                2026,
+                3,
+                1000 + index,
+                2000 + index,
+            ).id
+        finally:
+            DatabaseConnection.close_connection()
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        ids = list(executor.map(write_salary, range(16)))
+
+    conn = DatabaseConnection.get_connection()
+    count = conn.execute(
+        "SELECT COUNT(*) FROM salaries WHERE year = 2026 AND month = 3"
+    ).fetchone()[0]
+
+    assert count == 1
+    assert len(set(ids)) == 1
+
+
+def test_analytics_returns_rubles_from_kopeck_storage(temp_db):
+    SalaryService.add_salary(2026, 1, 100.25, 200.75)
+    SalaryService.add_salary(2026, 2, 300.5, 400.5)
+
+    yearly = AnalyticsRepository.get_yearly_totals()
+    averages = AnalyticsRepository.get_average_by_month()
+    best_year = AnalyticsRepository.get_best_year()
+
+    assert yearly == [
+        {
+            "year": 2026,
+            "total_advance": 400.75,
+            "total_salary": 601.25,
+            "total": 1002.0,
+            "months_count": 2,
+        }
+    ]
+    assert averages[0]["avg_total"] == 301.0
+    assert best_year == {"year": 2026, "total": 1002.0}

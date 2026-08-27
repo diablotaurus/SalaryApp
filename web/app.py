@@ -10,10 +10,12 @@ import os
 from flask import Flask
 
 from core.config.settings import config
+from core.database.connection import DatabaseConnection
 from web.routes.errors import errors_bp
 from web.routes.pages import pages_bp
 from web.routes.salaries import salaries_bp
 from web.routes.settings import settings_bp
+from web.security import install_api_security
 
 
 def create_app() -> Flask:
@@ -42,12 +44,18 @@ def create_app() -> Flask:
         secret_key = os.urandom(24)  # Генерация случайного ключа (24 байта)
     app.secret_key = secret_key
 
+    install_api_security(app)
+
     # Регистрация blueprint'ов (модулей маршрутов)
     # Порядок регистрации не имеет значения для маршрутизации
     app.register_blueprint(pages_bp)      # Статические страницы (главная, отчеты, настройки)
     app.register_blueprint(salaries_bp)   # API для работы с зарплатами
     app.register_blueprint(settings_bp)   # API для работы с настройками
     app.register_blueprint(errors_bp)     # Обработчики ошибок (404, 500)
+
+    @app.teardown_appcontext
+    def close_database_connection(_exception=None):
+        DatabaseConnection.close_connection()
 
     return app
 

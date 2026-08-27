@@ -4,11 +4,9 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from api.salary_api import SalaryAPI
+from api.settings_api import SettingsAPI
 from core.config.settings import config
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
-from core.repositories.settings_repository import SettingsRepository
-from core.services.backup_service import BackupService
-from core.services.salary_service import SalaryService
 from core.utils.dates import DateUtils
 from desktop.views.dialogs.backup_dialog import BackupDialog
 from desktop.views.dialogs.export_dialog import ExportDialog
@@ -23,7 +21,11 @@ class MainTabController:
         self.app = navigation.app
 
     def add_data(self):
-        current_year, current_month = SalaryService.get_current_period()
+        period_response = SalaryAPI.get_current_period()
+        period = period_response.get("data", {}) if period_response.get("success") else {}
+        fallback_year, fallback_month = DateUtils.get_current_period()
+        current_year = int(period.get("year", fallback_year))
+        current_month = int(period.get("month", fallback_month))
         dialog = SalaryDialog(self.app, self.navigation, current_year, current_month)
         dialog.grab_set()
 
@@ -66,6 +68,10 @@ class MainTabController:
         try:
             response = SalaryAPI.get_all_grouped_by_year()
             if response["success"]:
+                settings_response = SettingsAPI.get_settings()
+                settings = settings_response.get("data", {}) if settings_response.get("success") else {}
+                if hasattr(self.app.main_view, "apply_settings"):
+                    self.app.main_view.apply_settings(settings)
                 self.app.main_view.display_years(response["data"])
             else:
                 self.navigation.show_message("Ошибка", response["message"], "error")
@@ -174,7 +180,8 @@ class MainTabController:
 
     def restore_backup(self, backup_path: str) -> bool:
         try:
-            if BackupService.restore_backup(backup_path):
+            response = SalaryAPI.restore_backup(backup_path)
+            if response["success"]:
                 self.navigation.show_message("Успех", "База данных успешно восстановлена", "info")
                 self.navigation.refresh_history()
                 self.navigation.refresh_reports()
@@ -189,7 +196,8 @@ class MainTabController:
 
     def delete_backup(self, backup_path: str) -> bool:
         try:
-            if BackupService.delete_backup(backup_path):
+            response = SalaryAPI.delete_backup(backup_path)
+            if response["success"]:
                 self.navigation.show_message("Успех", "Резервная копия удалена", "info")
                 return True
 
@@ -209,12 +217,18 @@ class MainTabController:
                   или в процессе возникла ошибка.
         """
         try:
-            raw_auto = SettingsRepository.get_setting("backup_auto", "1")
+            auto_response = SettingsAPI.get_setting("backup_auto", "1")
+            raw_auto = auto_response.get("data", {}).get("value", "1")
             is_enabled = str(raw_auto).strip().lower() in ("1", "true", "yes", "y", "on")
             if not is_enabled:
                 return False
 
-            raw_days = SettingsRepository.get_setting("backup_days", str(config.db.backup_retention_days))
+            days_response = SettingsAPI.get_setting(
+                "backup_days", str(config.db.backup_retention_days)
+            )
+            raw_days = days_response.get("data", {}).get(
+                "value", str(config.db.backup_retention_days)
+            )
             try:
                 retention_days = max(1, int(str(raw_days).strip()))
             except (TypeError, ValueError):
@@ -223,7 +237,9 @@ class MainTabController:
             previous_retention = config.db.backup_retention_days
             config.db.backup_retention_days = retention_days
             try:
-                BackupService.create_backup("auto_on_close")
+                response = SalaryAPI.create_backup("auto_on_close")
+                if not response["success"]:
+                    raise RuntimeError(response.get("message", "Не удалось создать резервную копию"))
             finally:
                 config.db.backup_retention_days = previous_retention
             return True

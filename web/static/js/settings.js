@@ -33,11 +33,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (backupItems) {
         backupItems.addEventListener('click', function(event) {
-            const target = event.target.closest('.backup-restore-btn');
+            const target = event.target.closest('.backup-restore-btn, .backup-delete-btn');
             if (!target) return;
             const filename = target.getAttribute('data-filename');
             if (filename) {
-                restoreBackup(filename);
+                if (target.classList.contains('backup-delete-btn')) {
+                    deleteBackup(filename);
+                } else {
+                    restoreBackup(filename);
+                }
             }
         });
     }
@@ -73,18 +77,23 @@ async function listBackups() {
                 let html = '';
                 result.data.forEach(backup => {
                     const date = new Date(backup.created_at).toLocaleString('ru-RU');
+                    const filename = escapeHtml(backup.filename);
+                    const comment = escapeHtml(backup.comment || '');
                     html += `
                         <div class="list-group-item">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="mb-1">${backup.filename}</h6>
+                                    <h6 class="mb-1">${filename}</h6>
                                     <small class="text-muted">Создано: ${date}</small>
-                                    ${backup.comment ? `<p class="mb-0 small">${backup.comment}</p>` : ''}
+                                    ${comment ? `<p class="mb-0 small">${comment}</p>` : ''}
                                 </div>
                                 <div>
                                     <small class="text-muted me-2">${backup.size}</small>
-                                    <button class="btn btn-sm btn-outline-primary backup-restore-btn" data-filename="${backup.filename}">
+                                    <button class="btn btn-sm btn-outline-primary backup-restore-btn" data-filename="${filename}" title="Восстановить">
                                         <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger backup-delete-btn" data-filename="${filename}" title="Удалить">
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
                             </div>
@@ -105,12 +114,28 @@ async function listBackups() {
 }
 
 async function restoreBackup(filename) {
-    if (confirm(`Вы уверены, что хотите восстановить базу данных из резервной копии "${filename}"?`)) {
-        showStatus('Восстановление из резервной копии...', 'info');
-        setTimeout(() => {
-            showStatus('Функция восстановления находится в разработке', 'warning');
-        }, 1000);
-    }
+    if (!confirm(`Вы уверены, что хотите восстановить базу данных из резервной копии "${filename}"?`)) return;
+    const result = await makeRequest('/api/backup/restore', {
+        method: 'POST',
+        body: JSON.stringify({ filename })
+    });
+    showStatus(result.message, result.success ? 'success' : 'error');
+}
+
+async function deleteBackup(filename) {
+    if (!confirm(`Удалить резервную копию "${filename}"?`)) return;
+    const result = await makeRequest('/api/backup', {
+        method: 'DELETE',
+        body: JSON.stringify({ filename })
+    });
+    showStatus(result.message, result.success ? 'success' : 'error');
+    if (result.success) await listBackups();
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    })[character]);
 }
 
 async function exportData(format) {

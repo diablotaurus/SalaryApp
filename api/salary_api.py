@@ -51,6 +51,11 @@ class SalaryAPI:
         return queries.get_salary(year, month)
 
     @staticmethod
+    def get_current_period() -> dict:
+        year, month = SalaryService.get_current_period()
+        return {"success": True, "data": {"year": year, "month": month}}
+
+    @staticmethod
     def get_all_salaries() -> dict:
         return queries.get_all_salaries()
 
@@ -105,6 +110,14 @@ class SalaryAPI:
     @staticmethod
     def list_backups() -> dict:
         return maintenance.list_backups()
+
+    @staticmethod
+    def restore_backup(reference: str) -> dict:
+        return maintenance.restore_backup(reference)
+
+    @staticmethod
+    def delete_backup(reference: str) -> dict:
+        return maintenance.delete_backup(reference)
 
     @staticmethod
     def delete_year(year: int) -> dict:

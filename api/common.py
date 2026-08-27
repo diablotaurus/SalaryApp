@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 from typing import Any, Callable
+import logging
 
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
+
+logger = logging.getLogger(__name__)
 
 def execute_with_default_error(action: Callable[[], dict], message: str) -> dict:
     try:
         return action()
     except RECOVERABLE_EXCEPTIONS as exc:
+        logger.exception("Application API operation failed")
         app_exc = to_app_error(exc, message)
         return {
             "success": False,

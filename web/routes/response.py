@@ -4,6 +4,7 @@ Shared API response helpers for web routes.
 from __future__ import annotations
 
 from typing import Any
+import logging
 
 from core.exceptions import (
     BackupError,
@@ -46,6 +47,8 @@ PAYLOAD_STATUS_HINTS = {
     "invalid": 400,
 }
 
+logger = logging.getLogger(__name__)
+
 
 def _normalize_payload(payload: Any, *, is_production: bool) -> dict:
     if not isinstance(payload, dict):
@@ -81,6 +84,7 @@ def status_from_payload(payload: dict) -> int:
 
 
 def payload_from_exception(exc: Exception, *, is_production: bool) -> tuple[dict, int]:
+    logger.exception("Unhandled web API error")
     status = 500
     for exc_type, mapped_status in EXCEPTION_STATUS_MAP.items():
         if isinstance(exc, exc_type):

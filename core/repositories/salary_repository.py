@@ -10,6 +10,8 @@ from datetime import datetime
 from core.database.connection import DatabaseConnection
 from core.models.salary import Salary
 from core.models.year import YearSummary
+from core.repositories.analytics_repository import AnalyticsRepository
+from core.utils.money_values import from_cents, to_cents
 
 
 class SalaryRepository:
@@ -36,29 +38,73 @@ class SalaryRepository:
             - Используется UPSERT (INSERT OR UPDATE) через отдельные запросы
             - Можно оптимизировать через INSERT OR REPLACE, но нужно сохранить created_at
         """
-        conn = DatabaseConnection.get_connection()
+        if not salary.id:
+            return SalaryRepository.upsert(salary)
 
-        # Преобразование дат в ISO формат для хранения в SQLite
-        advance_date = salary.advance_date.date().isoformat() if salary.advance_date else None
-        salary_date = salary.salary_date.date().isoformat() if salary.salary_date else None
-        
-        if salary.id:
-            # Обновление существующей записи
-            conn.execute("""
-                UPDATE salaries 
-                SET year = ?, month = ?, advance = ?, salary = ?, advance_date = ?, salary_date = ?
-                WHERE id = ?
-            """, (salary.year, salary.month, salary.advance, salary.salary, advance_date, salary_date, salary.id))
-        else:
-            # Вставка новой записи
-            cursor = conn.execute("""
-                INSERT INTO salaries (year, month, advance, salary, advance_date, salary_date)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (salary.year, salary.month, salary.advance, salary.salary, advance_date, salary_date))
-            salary.id = cursor.lastrowid
-        
+        conn = DatabaseConnection.get_connection()
+        advance_date = (
+            salary.advance_date.date().isoformat() if salary.advance_date else None
+        )
+        salary_date = (
+            salary.salary_date.date().isoformat() if salary.salary_date else None
+        )
+        cursor = conn.execute(
+            """
+            UPDATE salaries
+            SET year = ?, month = ?, advance = ?, salary = ?,
+                advance_date = ?, salary_date = ?
+            WHERE id = ?
+            RETURNING *
+            """,
+            (
+                salary.year,
+                salary.month,
+                to_cents(salary.advance),
+                to_cents(salary.salary),
+                advance_date,
+                salary_date,
+                salary.id,
+            ),
+        )
+        row = cursor.fetchone()
         conn.commit()
-        return salary
+        return SalaryRepository._row_to_salary(row) if row else salary
+
+    @staticmethod
+    def upsert(salary: Salary) -> Salary:
+        """Atomically insert or update the unique year/month record."""
+        conn = DatabaseConnection.get_connection()
+        advance_date = (
+            salary.advance_date.date().isoformat() if salary.advance_date else None
+        )
+        salary_date = (
+            salary.salary_date.date().isoformat() if salary.salary_date else None
+        )
+        cursor = conn.execute(
+            """
+            INSERT INTO salaries (
+                year, month, advance, salary, advance_date, salary_date
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(year, month) DO UPDATE SET
+                advance = excluded.advance,
+                salary = excluded.salary,
+                advance_date = COALESCE(excluded.advance_date, salaries.advance_date),
+                salary_date = COALESCE(excluded.salary_date, salaries.salary_date)
+            RETURNING *
+            """,
+            (
+                salary.year,
+                salary.month,
+                to_cents(salary.advance),
+                to_cents(salary.salary),
+                advance_date,
+                salary_date,
+            ),
+        )
+        row = cursor.fetchone()
+        conn.commit()
+        return SalaryRepository._row_to_salary(row)
     
     @staticmethod
     def get_by_id(salary_id: int) -> Optional[Salary]:
@@ -189,28 +235,11 @@ class SalaryRepository:
             - Два запроса: один для агрегации, второй для деталей
             - Можно объединить в один запрос с GROUP BY и JOIN, но сложнее читать
         """
-        conn = DatabaseConnection.get_connection()
-        
-        # Запрос агрегированных данных за год
-        cursor = conn.execute("""
-            SELECT 
-                SUM(advance) as total_advance,
-                SUM(salary) as total_salary,
-                COUNT(*) as record_count
-            FROM salaries 
-            WHERE year = ?
-        """, (year,))
-        
-        summary = cursor.fetchone()
-        
-        # Получение детальных записей по месяцам
         records = SalaryRepository.get_by_year(year)
-        
-        # Создание объекта сводки
         year_summary = YearSummary(
             year=year,
-            total_advance=summary['total_advance'] or 0,
-            total_salary=summary['total_salary'] or 0,
+            total_advance=sum(record.advance for record in records),
+            total_salary=sum(record.salary for record in records),
             records=records
         )
         
@@ -325,63 +354,7 @@ class SalaryRepository:
             - Агрегатные функции работают эффективно с индексами
             - Для больших таблиц можно добавить материализованные представления
         """
-        conn = DatabaseConnection.get_connection()
-
-        if year is None:
-            # Общая статистика за все время
-            cursor = conn.execute("""
-                SELECT 
-                    COUNT(*) as total_records,
-                    SUM(advance) as total_advance_all,
-                    SUM(salary) as total_salary_all,
-                    MIN(year) as first_year,
-                    MAX(year) as last_year
-                FROM salaries
-            """)
-            stats = dict(cursor.fetchone())
-
-            # Статистика по годам
-            cursor = conn.execute("""
-                SELECT 
-                    year,
-                    SUM(advance) as advance,
-                    SUM(salary) as salary,
-                    COUNT(*) as months
-                FROM salaries
-                GROUP BY year
-                ORDER BY year DESC
-            """)
-            stats['by_year'] = [dict(row) for row in cursor.fetchall()]
-            return stats
-
-        # Статистика за конкретный год
-        cursor = conn.execute("""
-            SELECT 
-                COUNT(*) as total_records,
-                SUM(advance) as total_advance_all,
-                SUM(salary) as total_salary_all,
-                ? as first_year,
-                ? as last_year
-            FROM salaries
-            WHERE year = ?
-        """, (year, year, year))
-
-        stats = dict(cursor.fetchone())
-
-        # Группировка по годам (в данном случае будет один год)
-        cursor = conn.execute("""
-            SELECT 
-                year,
-                SUM(advance) as advance,
-                SUM(salary) as salary,
-                COUNT(*) as months
-            FROM salaries
-            WHERE year = ?
-            GROUP BY year
-        """, (year,))
-
-        stats['by_year'] = [dict(row) for row in cursor.fetchall()]
-        return stats
+        return AnalyticsRepository.get_statistics(year)
     
     @staticmethod
     def _row_to_salary(row) -> Salary:
@@ -408,8 +381,8 @@ class SalaryRepository:
             id=row['id'],
             year=row['year'],
             month=row['month'],
-            advance=row['advance'],
-            salary=row['salary'],
+            advance=from_cents(row['advance']),
+            salary=from_cents(row['salary']),
             # Преобразование строк дат в datetime объекты
             advance_date=datetime.fromisoformat(row['advance_date']) if has_advance_date and row['advance_date'] else None,
             salary_date=datetime.fromisoformat(row['salary_date']) if has_salary_date and row['salary_date'] else None,

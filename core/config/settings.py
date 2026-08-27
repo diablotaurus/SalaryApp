@@ -51,6 +51,7 @@ class DatabaseConfig:
     backup_retention_days: int = 30  # Дней хранения резервных копий
     
     def __post_init__(self):
+        root_dir = Path(__file__).resolve().parent.parent.parent
         """Динамически определяем путь к БД в зависимости от окружения"""
         if self.path is None:
             # Определяем окружение
@@ -71,7 +72,15 @@ class DatabaseConfig:
 
         # Создаем директорию для базы данных, если её нет
         db_path = Path(self.path)
+        if not db_path.is_absolute():
+            db_path = root_dir / db_path
+        self.path = str(db_path)
+        backup_path = Path(self.backup_dir)
+        if not backup_path.is_absolute():
+            backup_path = root_dir / backup_path
+        self.backup_dir = str(backup_path)
         db_path.parent.mkdir(parents=True, exist_ok=True)
+        backup_path.mkdir(parents=True, exist_ok=True)
 
 
 @dataclass
@@ -86,7 +95,11 @@ class ExportConfig:
             self.available_formats = ["csv", "json", "excel"]
         
         # Создаем директорию для экспорта, если её нет
-        Path(self.export_dir).mkdir(parents=True, exist_ok=True)
+        export_path = Path(self.export_dir)
+        if not export_path.is_absolute():
+            export_path = Path(__file__).resolve().parent.parent.parent / export_path
+        self.export_dir = str(export_path)
+        export_path.mkdir(parents=True, exist_ok=True)
 
 
 @dataclass

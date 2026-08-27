@@ -6,7 +6,6 @@
 """
 
 from typing import Union
-from core.repositories.settings_repository import SettingsRepository
 from core.config.settings import config
 
 
@@ -36,8 +35,7 @@ class MoneyUtils:
             format_amount(12345.67, "$") -> "12 345.67 $"
         """
         if currency is None:
-            # Получение валюты из настроек или использование значения по умолчанию
-            currency = SettingsRepository.get_setting('currency', config.app.currency)
+            currency = config.app.currency
         
         # Форматирование числа с разделителями тысяч
         formatted = f"{amount:,.2f}".replace(',', ' ')

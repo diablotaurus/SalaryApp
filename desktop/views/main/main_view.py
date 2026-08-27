@@ -23,7 +23,6 @@ from desktop.views.constants import (
 )
 from core.utils.money import MoneyUtils
 from core.utils.dates import DateUtils
-from core.repositories.settings_repository import SettingsRepository
 from desktop.views.constants import DEFAULT_ADVANCE_COLOR, DEFAULT_SALARY_COLOR, DEFAULT_TOTAL_COLOR
 
 
@@ -220,15 +219,8 @@ class MainView(BaseView):
         for widget in self.cards_container.winfo_children():
             widget.destroy()
 
-        # Загружаем цвета из настроек (или используем значения по умолчанию)
-        self._advance_color = SettingsRepository.get_setting('advance_color', DEFAULT_ADVANCE_COLOR)
-        self._salary_color = SettingsRepository.get_setting('salary_color', DEFAULT_SALARY_COLOR)
-        self._total_color = SettingsRepository.get_setting('total_color', DEFAULT_TOTAL_COLOR)
-        self._history_layout_mode = self._get_history_layout_mode()
-        self._main_stats_layout_mode = self._get_main_stats_layout_mode()
-        self._month_title_font_size = self._get_font_size_setting('month_title_font_size', DEFAULT_MONTH_TITLE_FONT_SIZE)
-        self._month_total_font_size = self._get_font_size_setting('month_total_font_size', DEFAULT_MONTH_TOTAL_FONT_SIZE)
-        self._month_data_font_size = self._get_font_size_setting('month_data_font_size', DEFAULT_MONTH_DATA_FONT_SIZE)
+        if not hasattr(self, "_history_layout_mode"):
+            self.apply_settings({})
 
         # Проверка на наличие данных
         if not years_data:
@@ -383,26 +375,34 @@ class MainView(BaseView):
                 if idx < 12:  # Всего 12 месяцев
                     self._create_month_cell(months_grid, months[idx], i, j)
 
-    def _get_history_layout_mode(self) -> str:
-        """Получить режим отображения истории с валидацией."""
-        mode = str(SettingsRepository.get_setting('history_layout_mode', DEFAULT_HISTORY_LAYOUT_MODE)).strip().lower()
-        if mode in ("standard", "quarterly"):
-            return mode
-        return DEFAULT_HISTORY_LAYOUT_MODE
+    def apply_settings(self, settings: Dict[str, Any]) -> None:
+        """Применить подготовленные контроллером настройки отображения."""
+        self._advance_color = str(settings.get("advance_color", DEFAULT_ADVANCE_COLOR))
+        self._salary_color = str(settings.get("salary_color", DEFAULT_SALARY_COLOR))
+        self._total_color = str(settings.get("total_color", DEFAULT_TOTAL_COLOR))
 
-    def _get_main_stats_layout_mode(self) -> str:
-        """Получить режим отображения блока статистики на главной вкладке."""
-        mode = str(
-            SettingsRepository.get_setting('main_stats_layout_mode', DEFAULT_MAIN_STATS_LAYOUT_MODE)
-        ).strip().lower()
-        if mode in ("row", "column"):
-            return mode
-        return DEFAULT_MAIN_STATS_LAYOUT_MODE
+        history_mode = str(settings.get("history_layout_mode", DEFAULT_HISTORY_LAYOUT_MODE))
+        self._history_layout_mode = (
+            history_mode if history_mode in {"standard", "quarterly"} else DEFAULT_HISTORY_LAYOUT_MODE
+        )
+
+        stats_mode = str(settings.get("main_stats_layout_mode", DEFAULT_MAIN_STATS_LAYOUT_MODE))
+        self._main_stats_layout_mode = (
+            stats_mode if stats_mode in {"row", "column"} else DEFAULT_MAIN_STATS_LAYOUT_MODE
+        )
+
+        self._month_title_font_size = self._coerce_font_size(
+            settings.get("month_title_font_size"), DEFAULT_MONTH_TITLE_FONT_SIZE
+        )
+        self._month_total_font_size = self._coerce_font_size(
+            settings.get("month_total_font_size"), DEFAULT_MONTH_TOTAL_FONT_SIZE
+        )
+        self._month_data_font_size = self._coerce_font_size(
+            settings.get("month_data_font_size"), DEFAULT_MONTH_DATA_FONT_SIZE
+        )
 
     @staticmethod
-    def _get_font_size_setting(key: str, default: int) -> int:
-        """Безопасно получить размер шрифта из настроек."""
-        raw_value = SettingsRepository.get_setting(key, default)
+    def _coerce_font_size(raw_value: Any, default: int) -> int:
         try:
             value = int(str(raw_value).strip())
         except (TypeError, ValueError):

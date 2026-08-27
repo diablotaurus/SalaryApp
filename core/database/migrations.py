@@ -73,7 +73,6 @@ class MigrationManager:
             "INSERT INTO migrations (name) VALUES (?)",
             (name,)
         )
-        self.conn.commit()
     
     def apply_migrations(self):
         """
@@ -96,14 +95,38 @@ class MigrationManager:
             ("002_add_indices", self._migration_002_add_indices),
             ("003_add_settings", self._migration_003_add_settings),
             ("004_add_payment_dates", self._migration_004_add_payment_dates),
+            ("005_salary_integrity", self._migration_005_salary_integrity),
         ]
         
         # Применение каждой миграции
         for name, migration_func in migrations:
-            if not self._is_migration_applied(name):
+            try:
+                if self._is_migration_applied(name):
+                    continue
+                if name == "005_salary_integrity":
+                    self._backup_before_salary_integrity_migration()
+                self.conn.execute("BEGIN IMMEDIATE")
                 logger.info("Applying migration: %s", name)
-                migration_func()  # Выполнение миграции
-                self._mark_migration_applied(name)  # Отметка как примененной
+                migration_func()
+                self._mark_migration_applied(name)
+                self.conn.commit()
+            except Exception:
+                self.conn.rollback()
+                logger.exception("Migration failed: %s", name)
+                raise
+
+    def _backup_before_salary_integrity_migration(self) -> None:
+        """Back up non-empty databases before the destructive table rebuild."""
+        row_count = self.conn.execute("SELECT COUNT(*) FROM salaries").fetchone()[0]
+        if not row_count:
+            return
+
+        from core.services.backup_service import BackupService
+
+        backup_path = BackupService.create_backup(
+            "Автоматическая копия перед миграцией 005_salary_integrity"
+        )
+        logger.info("Pre-migration backup created: %s", backup_path)
     
     def _migration_001_initial(self):
         """
@@ -125,7 +148,6 @@ class MigrationManager:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        self.conn.commit()
     
     def _migration_002_add_indices(self):
         """
@@ -141,7 +163,6 @@ class MigrationManager:
         self.conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_salaries_year_month ON salaries(year, month)"
         )
-        self.conn.commit()
     
     def _migration_003_add_settings(self):
         """
@@ -166,7 +187,7 @@ class MigrationManager:
         default_settings = [
             ("currency", "руб."),  # Валюта по умолчанию
             ("backup_auto", "1"),  # Автоматическое резервное копирование
-            ("backup_days", "7"),  # Хранение резервных копий (дней)
+            ("backup_days", "30"),  # Хранение резервных копий (дней)
             ("export_default_format", "csv"),  # Формат экспорта по умолчанию
             ("advance_color", "#0d6efd"),  # Цвет для авансов в UI
             ("salary_color", "#198754"),  # Цвет для зарплат в UI
@@ -180,7 +201,6 @@ class MigrationManager:
                 (key, value)
             )
         
-        self.conn.commit()
 
     def _migration_004_add_payment_dates(self):
         """
@@ -206,7 +226,84 @@ class MigrationManager:
         if "salary_date" not in existing_columns:
             self.conn.execute("ALTER TABLE salaries ADD COLUMN salary_date DATE")
 
-        self.conn.commit()
+    def _migration_005_salary_integrity(self):
+        """Store money as integer kopecks and enforce period integrity."""
+        invalid_count = self.conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM salaries
+            WHERE year NOT BETWEEN 2000 AND 2100
+               OR month NOT BETWEEN 1 AND 12
+               OR typeof(advance) NOT IN ('integer', 'real')
+               OR typeof(salary) NOT IN ('integer', 'real')
+               OR advance < 0
+               OR salary < 0
+            """
+        ).fetchone()[0]
+        if invalid_count:
+            raise RuntimeError(
+                "Миграция остановлена: в salaries найдены некорректные строки "
+                f"({invalid_count})."
+            )
+
+        duplicate_count = self.conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM (
+                SELECT year, month
+                FROM salaries
+                GROUP BY year, month
+                HAVING COUNT(*) > 1
+            )
+            """
+        ).fetchone()[0]
+        if duplicate_count:
+            raise RuntimeError(
+                "Миграция остановлена: найдены повторяющиеся месяцы "
+                f"({duplicate_count})."
+            )
+
+        self.conn.execute(
+            """
+            CREATE TABLE salaries_v005 (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                year INTEGER NOT NULL CHECK (year BETWEEN 2000 AND 2100),
+                month INTEGER NOT NULL CHECK (month BETWEEN 1 AND 12),
+                advance INTEGER NOT NULL DEFAULT 0 CHECK (advance >= 0),
+                salary INTEGER NOT NULL DEFAULT 0 CHECK (salary >= 0),
+                advance_date TEXT,
+                salary_date TEXT,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (year, month)
+            )
+            """
+        )
+        self.conn.execute(
+            """
+            INSERT INTO salaries_v005 (
+                id, year, month, advance, salary,
+                advance_date, salary_date, created_at
+            )
+            SELECT
+                id,
+                year,
+                month,
+                CAST(ROUND(advance * 100) AS INTEGER),
+                CAST(ROUND(salary * 100) AS INTEGER),
+                advance_date,
+                salary_date,
+                COALESCE(created_at, CURRENT_TIMESTAMP)
+            FROM salaries
+            """
+        )
+        self.conn.execute("DROP TABLE salaries")
+        self.conn.execute("ALTER TABLE salaries_v005 RENAME TO salaries")
+        self.conn.execute(
+            """
+            CREATE UNIQUE INDEX idx_salaries_year_month
+            ON salaries(year, month)
+            """
+        )
     
     def get_applied_migrations(self) -> list:
         """

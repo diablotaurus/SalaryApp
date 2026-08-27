@@ -22,8 +22,10 @@ class SettingsTabController:
 
     def save_settings(self, settings: Dict[str, Any]) -> bool:
         try:
-            for key, value in settings.items():
-                SettingsAPI.set_setting(key, value)
+            response = SettingsAPI.set_settings(settings)
+            if not response["success"]:
+                self.navigation.show_message("Ошибка", response["message"], "error")
+                return False
             self.navigation.refresh_history()
             self.navigation.show_message("Успех", "Настройки успешно сохранены", "info")
             return True

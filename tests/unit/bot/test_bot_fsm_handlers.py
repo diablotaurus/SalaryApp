@@ -1,6 +1,6 @@
 import asyncio
 
-from bot.main import (
+from bot.handlers.salary import (
     SalaryStates,
     _format_year_table,
     _format_current_year_table,
@@ -107,7 +107,7 @@ def test_process_salary_date_success(monkeypatch):
             },
         }
 
-    monkeypatch.setattr("bot.main.SalaryAPI.add_salary", fake_add_salary)
+    monkeypatch.setattr("bot.handlers.salary.SalaryAPI.add_salary", fake_add_salary)
 
     asyncio.run(process_salary_date(msg, state))
 
@@ -131,7 +131,7 @@ def test_process_salary_date_api_error(monkeypatch):
     def fake_add_salary(*args, **kwargs):
         return {"success": False, "message": "Ошибка валидации"}
 
-    monkeypatch.setattr("bot.main.SalaryAPI.add_salary", fake_add_salary)
+    monkeypatch.setattr("bot.handlers.salary.SalaryAPI.add_salary", fake_add_salary)
 
     asyncio.run(process_salary_date(msg, state))
 
@@ -141,7 +141,7 @@ def test_process_salary_date_api_error(monkeypatch):
 
 def test_format_current_year_table_compact_layout(monkeypatch):
     monkeypatch.setattr(
-        "bot.main.SalaryAPI.get_salaries_by_year",
+        "bot.handlers.salary.SalaryAPI.get_salaries_by_year",
         lambda year: {
             "success": True,
             "data": [
@@ -185,7 +185,7 @@ def test_cmd_current_sends_plain_text(monkeypatch):
     msg = FakeMessage("/current")
     msg.answer = fake_answer
 
-    monkeypatch.setattr("bot.main._format_current_year_table", lambda: "Тестовый вывод")
+    monkeypatch.setattr("bot.handlers.salary._format_current_year_table", lambda: "Тестовый вывод")
 
     asyncio.run(cmd_current(msg))
 
@@ -212,7 +212,7 @@ def test_format_year_table_uses_requested_year(monkeypatch):
             ],
         }
 
-    monkeypatch.setattr("bot.main.SalaryAPI.get_salaries_by_year", fake_get_salaries_by_year)
+    monkeypatch.setattr("bot.handlers.salary.SalaryAPI.get_salaries_by_year", fake_get_salaries_by_year)
 
     result = _format_year_table(2025)
 
@@ -228,7 +228,7 @@ def test_cmd_year_stats_sends_plain_text(monkeypatch):
     msg = FakeMessage("/2025")
     msg.answer = fake_answer
 
-    monkeypatch.setattr("bot.main._format_year_table", lambda year: f"Статистика за {year} год")
+    monkeypatch.setattr("bot.handlers.salary._format_year_table", lambda year: f"Статистика за {year} год")
 
     asyncio.run(cmd_year_stats(msg))
 

@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Mapping
 from core.database.connection import DatabaseConnection
 
 
@@ -17,14 +17,29 @@ class SettingsRepository:
         return row['value'] if row else default
     
     @staticmethod
-    def set_setting(key: str, value: Any):
+    def set_setting(key: str, value: Any) -> None:
         """Установить значение настройки"""
+        SettingsRepository.set_settings({key: value})
+
+    @staticmethod
+    def set_settings(settings: Mapping[str, Any]) -> None:
+        """Атомарно сохранить несколько настроек."""
         conn = DatabaseConnection.get_connection()
-        conn.execute(
-            "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-            (key, str(value))
-        )
-        conn.commit()
+        try:
+            conn.executemany(
+                """
+                INSERT INTO settings (key, value)
+                VALUES (?, ?)
+                ON CONFLICT(key) DO UPDATE SET
+                    value = excluded.value,
+                    updated_at = CURRENT_TIMESTAMP
+                """,
+                [(key, str(value)) for key, value in settings.items()],
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
     
     @staticmethod
     def get_all_settings() -> Dict[str, str]:

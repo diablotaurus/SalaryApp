@@ -14,7 +14,10 @@ def _assert_schema(payload: dict):
 
 def test_delete_year_requires_api_key(monkeypatch):
     monkeypatch.setenv("SALARYAPP_WEB_API_KEY", "secret")
-    response = _client().delete("/api/delete_year?year=2026")
+    response = _client().delete(
+        "/api/delete_year?year=2026",
+        environ_base={"REMOTE_ADDR": "192.0.2.10"},
+    )
     payload = response.get_json()
 
     assert response.status_code == 403
@@ -90,6 +93,15 @@ def test_put_settings_failure_sanitized_in_production(monkeypatch):
     _assert_schema(payload)
     assert payload["success"] is False
     assert payload["error"] is None
+
+
+def test_unknown_setting_is_rejected(temp_db):
+    response = _client().put("/api/settings/theme", json={"value": "clam"})
+    payload = response.get_json()
+
+    assert response.status_code == 400
+    _assert_schema(payload)
+    assert payload["success"] is False
 
 
 def test_post_salary_missing_json_body(monkeypatch):

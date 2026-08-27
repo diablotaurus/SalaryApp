@@ -15,8 +15,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
 import pandas as pd
-from core.database.connection import DatabaseConnection
 from core.config.settings import config
+from core.repositories.analytics_repository import AnalyticsRepository
 from core.services.salary_service import SalaryService
 from core.utils.dates import DateUtils
 
@@ -54,24 +54,7 @@ class ExportService:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filepath = export_dir / f"salary_export_{timestamp}.csv"
         
-        # Получение соединения с базой данных
-        conn = DatabaseConnection.get_connection()
-        
-        # SQL-запрос для получения всех данных о зарплатах
-        # Используются явные имена колонок для предотвращения SQL-инъекций
-        cursor = conn.execute("""
-            SELECT 
-                year,
-                month,
-                advance,
-                advance_date,
-                salary,
-                salary_date,
-                (advance + salary) as total,
-                created_at
-            FROM salaries
-            ORDER BY year DESC, month DESC
-        """)
+        salaries = SalaryService.get_all_salaries()
         
         # Запись данных в CSV файл
         with open(filepath, 'w', newline='', encoding='utf-8') as f:
@@ -84,20 +67,16 @@ class ExportService:
             ])
             
             # Запись данных построчно
-            for row in cursor.fetchall():
-                # Преобразование номера месяца в название (единый источник — DateUtils)
-                month_name = DateUtils.get_month_name(row['month'])
-                
-                # Запись строки данных
+            for salary_record in salaries:
                 writer.writerow([
-                    row['year'],
-                    month_name,
-                    row['advance'],
-                    row['advance_date'],
-                    row['salary'],
-                    row['salary_date'],
-                    row['total'],
-                    row['created_at']
+                    salary_record.year,
+                    DateUtils.get_month_name(salary_record.month),
+                    salary_record.advance,
+                    salary_record.advance_date.date().isoformat() if salary_record.advance_date else "",
+                    salary_record.salary,
+                    salary_record.salary_date.date().isoformat() if salary_record.salary_date else "",
+                    salary_record.total,
+                    salary_record.created_at.isoformat(sep=" ") if salary_record.created_at else "",
                 ])
         
         return str(filepath)
@@ -180,35 +159,31 @@ class ExportService:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filepath = export_dir / f"salary_export_{timestamp}.xlsx"
         
-        conn = DatabaseConnection.get_connection()
-        
-        # 1. Основные данные о зарплатах
-        df_main = pd.read_sql_query("""
-            SELECT 
-                year as 'Год',
-                month as 'Месяц',
-                advance as 'Аванс',
-                advance_date as 'Дата аванса',
-                salary as 'Зарплата',
-                salary_date as 'Дата зарплаты',
-                (advance + salary) as 'Итого',
-                created_at as 'Дата создания'
-            FROM salaries
-            ORDER BY year DESC, month DESC
-        """, conn)
-        
-        # 2. Сводка по годам (агрегированные данные)
-        df_yearly = pd.read_sql_query("""
-            SELECT 
-                year as 'Год',
-                SUM(advance) as 'Сумма авансов',
-                SUM(salary) as 'Сумма зарплат',
-                SUM(advance + salary) as 'Общая сумма',
-                COUNT(*) as 'Количество месяцев'
-            FROM salaries
-            GROUP BY year
-            ORDER BY year DESC
-        """, conn)
+        salaries = SalaryService.get_all_salaries()
+        df_main = pd.DataFrame([
+            {
+                "Год": item.year,
+                "Месяц": item.month,
+                "Аванс": item.advance,
+                "Дата аванса": item.advance_date.date().isoformat() if item.advance_date else "",
+                "Зарплата": item.salary,
+                "Дата зарплаты": item.salary_date.date().isoformat() if item.salary_date else "",
+                "Итого": item.total,
+                "Дата создания": item.created_at.isoformat(sep=" ") if item.created_at else "",
+            }
+            for item in salaries
+        ])
+
+        df_yearly = pd.DataFrame([
+            {
+                "Год": item["year"],
+                "Сумма авансов": item["total_advance"],
+                "Сумма зарплат": item["total_salary"],
+                "Общая сумма": item["total"],
+                "Количество месяцев": item["months_count"],
+            }
+            for item in AnalyticsRepository.get_yearly_totals()
+        ])
         
         # 3. Общая статистика
         stats = SalaryService.get_statistics()

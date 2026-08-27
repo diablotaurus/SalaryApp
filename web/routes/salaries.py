@@ -3,7 +3,6 @@ API routes for salary operations.
 """
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from flask import Blueprint, jsonify, request, send_file
@@ -13,26 +12,6 @@ from core.config.settings import config
 from web.routes.response import finalize_response, payload_from_exception
 
 salaries_bp = Blueprint("salaries_api", __name__)
-
-
-def _is_local_request() -> bool:
-    return request.remote_addr in {"127.0.0.1", "::1"}
-
-
-def _is_authorized_for_dangerous_actions() -> bool:
-    expected_key = os.getenv("SALARYAPP_WEB_API_KEY") or config.app.web_api_key
-    if not expected_key:
-        return _is_local_request()
-    provided_key = request.headers.get("X-API-Key") or request.args.get("api_key")
-    return provided_key == expected_key
-
-
-def _forbidden_response():
-    payload, status = finalize_response(
-        {"success": False, "message": "Forbidden", "error": "forbidden"},
-        is_production=config.app.is_production,
-    )
-    return jsonify(payload), status
 
 
 @salaries_bp.route("/api/salaries", methods=["GET"])
@@ -229,9 +208,6 @@ def export_data():
 
 @salaries_bp.route("/api/backup", methods=["POST"])
 def create_backup():
-    if not _is_authorized_for_dangerous_actions():
-        return _forbidden_response()
-
     try:
         data = request.get_json(silent=True) or {}
         comment = data.get("comment", "")
@@ -256,11 +232,36 @@ def list_backups():
     return jsonify(payload), status
 
 
+@salaries_bp.route("/api/backup/restore", methods=["POST"])
+def restore_backup():
+    try:
+        data = request.get_json(silent=True) or {}
+        reference = str(data.get("filename", "")).strip()
+        payload, status = finalize_response(
+            SalaryAPI.restore_backup(reference),
+            is_production=config.app.is_production,
+        )
+    except Exception as exc:  # fallback at route boundary
+        payload, status = payload_from_exception(exc, is_production=config.app.is_production)
+    return jsonify(payload), status
+
+
+@salaries_bp.route("/api/backup", methods=["DELETE"])
+def delete_backup():
+    try:
+        data = request.get_json(silent=True) or {}
+        reference = str(data.get("filename", "")).strip()
+        payload, status = finalize_response(
+            SalaryAPI.delete_backup(reference),
+            is_production=config.app.is_production,
+        )
+    except Exception as exc:  # fallback at route boundary
+        payload, status = payload_from_exception(exc, is_production=config.app.is_production)
+    return jsonify(payload), status
+
+
 @salaries_bp.route("/api/delete_year", methods=["DELETE"])
 def delete_year():
-    if not _is_authorized_for_dangerous_actions():
-        return _forbidden_response()
-
     try:
         year = request.args.get("year", type=int)
         if year:

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.25 - безопасность и целостность данных</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.25</h1>
+            <p class="subtitle">Безопасность, целостность данных и архитектурные исправления по итогам code review</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 27 августа 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.24 current</p>
+            <p><strong>Новая версия:</strong> 1.2.25 current; скрипт деплоя записывает в production 1.2.25 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> core, API, desktop, Web, Telegram-бот, deploy, тесты и GitHub Actions.</p>
+            <p><strong>Основание:</strong> согласованные исправления после полного code review. Пользователь подтвердил успешную ручную проверку и подготовку релиза.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_05.06.2026_1.2.24.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.25 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>Доступ</strong>Allowlist Telegram и единая защита Web API</div>
+            <div class="summary-item summary-data"><strong>Данные</strong>Копейки, уникальный период и бэкап перед миграцией</div>
+            <div class="summary-item summary-tests"><strong>110 тестов</strong>Модульные, интеграционные и smoke-проверки</div>
+        </div>
+
+        <section class="section" id="overview">
+            <h2>1. Основные результаты</h2>
+            <p>Релиз направлен на защиту персональных данных и устойчивость существующих сценариев. Интерфейсы продолжают использовать общее ядро; исправлены конкретные зависимости между слоями, а опасные операции получили дополнительные проверки.</p>
+            <table>
+                <thead><tr><th>Область</th><th>Проблема до исправления</th><th>Что изменено</th></tr></thead>
+                <tbody>
+                    <tr><td>Telegram / Web</td><td>Отсутствие allowlist бота и неполная защита API.</td><td>Обязательный список Telegram ID и централизованная авторизация внешних API-запросов.</td></tr>
+                    <tr><td>SQLite</td><td>Денежные суммы REAL, отсутствие уникального периода, отдельные чтение и запись при обновлении.</td><td>Целые копейки, UNIQUE(year, month), ограничения и атомарный UPSERT.</td></tr>
+                    <tr><td>Резервные копии</td><td>Копирование файла БД без согласованного SQLite-снимка, недостаточные проверки восстановления.</td><td>SQLite Backup API, проверка содержимого и путей, предварительная копия текущей БД.</td></tr>
+                    <tr><td>Deploy</td><td>Продолжение после ошибок и отсутствие автоматического отката кода.</td><td>Обязательный успешный бэкап и rollback при ошибках обновления.</td></tr>
+                    <tr><td>Архитектура</td><td>View читает настройки из репозитория, сервисы выполняют SQL, bootstrap бота содержит handlers.</td><td>SettingsService, AnalyticsRepository, настройки через контроллеры и отдельный модуль handlers.</td></tr>
+                    <tr><td>Эксплуатация</td><td>Относительные пути, development-сервер для обычного Web-запуска, устаревший BAT.</td><td>Пути от корня проекта, Waitress, UTF-8 и актуальные проверки зависимостей.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section" id="security">
+            <h2>2. Доступ к Telegram и Web API</h2>
+            <h3>Telegram-бот</h3>
+            <ul>
+                <li><span class="change-type added">ADDED</span><code>BotAccessMiddleware</code> проверяет ID отправителя до передачи сообщения обработчикам. Неавторизованные пользователи не получают доступ к операциям с зарплатой.</li>
+                <li>Разрешённые ID читаются из <code>SALARYAPP_BOT_ALLOWED_IDS</code> или <code>BOT_ALLOWED_IDS</code>: переменные окружения имеют приоритет над <code>bot/.env</code>. Поддерживается несколько положительных ID через запятую или точку с запятой.</li>
+                <li>При пустом или некорректном списке бот не запускается. Проверка доступа выполняется до подключения к Telegram.</li>
+                <li>Загрузка токена, прокси и allowlist собрана в <code>bot/config.py</code>. Старый неиспользуемый <code>bot/bot_config.py</code> с шаблонными значениями удалён.</li>
+                <li>В <code>bot/.env.example</code> добавлен пример обязательного списка разрешённых ID. Настоящие токены и персональные ID в релиз не включаются.</li>
+            </ul>
+            <h3>Web API</h3>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Авторизация установлена централизованно через <code>before_request</code> для всех маршрутов <code>/api/</code>, включая чтение данных, настройки, экспорт и операции с резервными копиями.</li>
+                <li>Внешний запрос требует непустого настроенного API-ключа и заголовка <code>X-API-Key</code>. Сравнение выполняется через <code>hmac.compare_digest</code>.</li>
+                <li>Передача ключа в query string больше не поддерживается. Это исключает данный способ попадания ключа в адресную строку и историю URL.</li>
+                <li>Для прямых обращений с <code>127.0.0.1</code> и <code>::1</code> сохранён доступ без ключа. По умолчанию сервер слушает только loopback.</li>
+            </ul>
+            <p class="note"><strong>Граница защиты:</strong> исключение для loopback рассчитано на прямой локальный запуск. Если перед приложением ставится локальный reverse proxy, схему авторизации нужно отдельно пересмотреть. Передача API-ключа по внешней сети также требует защищённого транспорта; этот релиз не настраивает HTTPS.</p>
+        </section>
+
+        <section class="section" id="database">
+            <h2>3. Деньги и целостность SQLite</h2>
+            <ul>
+                <li><span class="change-type added">MIGRATION</span>Добавлена <code>005_salary_integrity</code>. В таблице <code>salaries</code> суммы аванса и зарплаты переводятся из рублей REAL в целые копейки INTEGER.</li>
+                <li>Схема ограничивает год диапазоном 2000-2100, месяц диапазоном 1-12, суммы неотрицательными значениями; комбинация года и месяца уникальна.</li>
+                <li>Перед перестройкой непустой таблицы автоматически создаётся архив резервной копии. Ошибка создания бэкапа прерывает миграцию до изменения таблицы.</li>
+                <li>Проверки некорректных строк и повторяющихся периодов останавливают миграцию. Дубликаты не объединяются и не удаляются автоматически.</li>
+                <li>Каждая миграция выполняется в транзакции с записью её имени после успешного изменения схемы; при исключении выполняется rollback транзакции.</li>
+                <li><code>SalaryRepository.upsert()</code> использует <code>INSERT ... ON CONFLICT ... DO UPDATE ... RETURNING</code>. Параллельная запись одного периода не создаёт несколько строк.</li>
+                <li>Публичные модели и API по-прежнему возвращают рубли. Агрегаты, экспорт и статистика учитывают новое внутреннее представление сумм.</li>
+                <li>В <code>money_values.py</code> добавлены Decimal-нормализация и преобразование в копейки. Отклоняются отрицательные суммы, NaN, бесконечность и значения выше установленного предела; округление до двух знаков выполняется по ROUND_HALF_UP.</li>
+                <li>Соединения остаются thread-local; включены WAL, внешние ключи, busy timeout и <code>synchronous=NORMAL</code>. Web-запрос закрывает своё соединение при завершении контекста.</li>
+            </ul>
+            <p class="result-box"><strong>Проверка совместимости:</strong> миграция выполнена на отдельном SQLite-снимке dev-БД. Сумма до и после преобразования совпала до копейки, тип хранения стал INTEGER. Персональные суммы и содержимое БД в отчёт не включены.</p>
+        </section>
+
+        <section class="section" id="backups">
+            <h2>4. Резервные копии и восстановление</h2>
+            <ul>
+                <li><span class="change-type improved fixed">BACKUP</span>Вместо прямого архивирования открытого файла используется согласованный снимок через SQLite Backup API, включая данные, находящиеся в WAL.</li>
+                <li>Снимок проверяется через <code>PRAGMA quick_check</code> и наличие таблицы <code>salaries</code>. Проверяются ненулевой размер и верхний предел 2 ГиБ.</li>
+                <li>Архив сначала записывается во временный файл, затем публикуется через <code>os.replace</code>. Микросекунды в имени уменьшают риск совпадения имён.</li>
+                <li>Операции восстановления и удаления ограничены каталогом резервных копий, расширением ZIP и префиксом <code>salary_backup_</code>.</li>
+                <li>Для восстановления требуется ровно один DB-файл в корне архива. Извлечение выполняется в заданный временный файл, без <code>extractall</code>; вложенные пути отклоняются.</li>
+                <li>Перед восстановлением создаётся копия текущей БД. Затем применяется SQLite Backup API, закрывается текущее соединение и запускаются миграции восстановленной базы.</li>
+                <li>Метаданные ограничены по размеру; комментарии при создании нормализуются. Список резервных копий содержит необходимые desktop-поля и ISO-даты для Web.</li>
+            </ul>
+            <p>Добавлены тесты восстановления изменённых данных, метаданных, запрета удаления за пределами backup-каталога и отказа от DB-файла во вложенном пути архива.</p>
+        </section>
+
+        <section class="section" id="deploy">
+            <h2>5. Защита ручного deploy</h2>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Отсутствующий или пустой список исключений останавливает процесс до очистки production. Ошибка проверки исключения приводит к пропуску элемента.</li>
+                <li>Результат создания копии production проверяется. При неполном бэкапе обновление не продолжается, в том числе с <code>--yes</code>.</li>
+                <li>Ошибка чтения защищаемого <code>bot/.env</code> прерывает deploy до очистки. Ошибки восстановления защищённых файлов также считаются ошибками обновления.</li>
+                <li>Добавлен <code>rollback_from_backup()</code>: при ошибках очистки, копирования, записи версии или итоговой проверки предпринимается восстановление предыдущего кода из преддеплойного бэкапа.</li>
+                <li>Сохранены проверки направления dev → production через <code>prod.marker</code> и запрет совпадения источника и цели.</li>
+                <li>Итоговая проверка включает все пять обязательных точек входа, конфигурацию, маркер, зависимости и production-файл <code>bot/.env</code>.</li>
+            </ul>
+            <p class="note"><strong>Важно:</strong> deploy обновляет код, а не рабочую БД. Автоматический rollback deploy не является откатом миграции SQLite и не заменяет резервную копию данных. Если восстановление кода само завершится ошибкой, потребуется ручное восстановление из сохранённого каталога бэкапа.</p>
+        </section>
+
+        <section class="section" id="architecture">
+            <h2>6. Разделение ответственности слоёв</h2>
+            <h3>Настройки</h3>
+            <ul>
+                <li><code>SettingsService</code> отвечает за поддерживаемые ключи, значения по умолчанию, диапазоны и нормализацию настроек. API больше не работает с репозиторием настроек напрямую.</li>
+                <li><code>SettingsRepository.set_settings()</code> сохраняет пакет в транзакции. Валидация всего пакета происходит до записи; ошибочный параметр не приводит к частичному сохранению.</li>
+                <li>Контроллер настроек проверяет результат API и не показывает сообщение об успехе при отказе.</li>
+                <li><code>MainView.apply_settings()</code> получает подготовленные значения от контроллера. Прямые чтения SettingsRepository из View удалены.</li>
+                <li>Валюта передаётся через контроллер и presenter в KPI. Утилита форматирования денег больше не читает настройки из БД.</li>
+                <li>Для новых установок срок хранения резервных копий унифицирован на 30 дней. Уже сохранённые пользовательские значения не переписываются.</li>
+            </ul>
+            <h3>Аналитика, экспорт и Telegram</h3>
+            <ul>
+                <li><code>AnalyticsRepository</code> содержит SQL годовых итогов, средних значений, лучших периодов и общей статистики. Сервисы статистики и экспорта используют репозиторный слой.</li>
+                <li>Общее правило среднемесячного дохода перенесено в функцию модели года. <code>YearSummary</code> больше не импортирует <code>StatisticsService</code>; сам сервис использует ту же функцию.</li>
+                <li>CSV и Excel формируются из моделей и агрегатов репозитория, без прямых SQL-запросов в ExportService.</li>
+                <li>Восстановление и удаление копий в desktop выполняются через SalaryAPI. Добавлен фасад получения текущего периода.</li>
+                <li>Команды и FSM бота находятся в <code>bot/handlers/salary.py</code>, состояния используют aiogram v3. <code>bot/main.py</code> отвечает за логирование, конфигурацию, сборку dispatcher и запуск polling.</li>
+            </ul>
+            <p>Изменения устраняют найденные нарушения границ слоёв и дублирование. Это не утверждение о формальном полном соответствии всего репозитория всем принципам SOLID: исторический код и оставшиеся ограничения требуют отдельного контроля при дальнейших изменениях.</p>
+        </section>
+
+        <section class="section" id="web">
+            <h2>7. Web, запуск и обработка ошибок</h2>
+            <ul>
+                <li><span class="change-type changed">SERVER</span>Обычный запуск Web выполняется через Waitress с четырьмя потоками. Flask development-сервер используется только при явно включённом debug.</li>
+                <li>Добавлены API для восстановления и удаления резервной копии. Web-заглушка восстановления заменена запросом к серверу, добавлена кнопка удаления с подтверждением.</li>
+                <li>Имена файлов и комментарии экранируются при построении HTML списка копий. Кнопки имеют подсказки действия.</li>
+                <li>Для API-ошибок 404 и 500 возвращается JSON, а не HTML-страница. Исключения на границах API логируются; ошибки приложения включены в список обрабатываемых исключений.</li>
+                <li>Пути БД, резервных копий и экспорта разрешаются относительно корня проекта, а не текущей рабочей папки процесса.</li>
+                <li><code>run_web.bat</code> переведён из CP1251 в UTF-8, использует кодовую страницу 65001 и проверяет Waitress. При отсутствии зависимостей показывает команду установки, а не выполняет устаревшую установку пакетов.</li>
+                <li>В <code>run_bot.bat</code> путь рабочей папки заключён в кавычки, установка зависимостей вызывается через <code>python -m pip</code>.</li>
+                <li>Логирование бота настраивается при запуске, а не при импорте модуля.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="dependencies">
+            <h2>8. Зависимости и CI</h2>
+            <table>
+                <thead><tr><th>Компонент</th><th>Версия / изменение</th></tr></thead>
+                <tbody>
+                    <tr><td>Flask</td><td>3.1.3</td></tr>
+                    <tr><td>aiogram</td><td>3.31.0</td></tr>
+                    <tr><td>Waitress</td><td>Добавлен, 3.0.2</td></tr>
+                    <tr><td>pytest / Ruff / pip-audit</td><td>8.4.2 / 0.12.12 / 2.10.1 в requirements-dev.txt</td></tr>
+                    <tr><td>GitHub Actions</td><td>Windows, Python 3.11 / 3.12 / 3.13, strict markers и PYTHONUTF8=1.</td></tr>
+                    <tr><td>Контроль качества</td><td>Отдельный job: Ruff E9,F63,F7,F82 и аудит runtime-зависимостей.</td></tr>
+                    <tr><td>Кодировки</td><td>Проверка UTF-8 без BOM теперь включает BAT-файлы.</td></tr>
+                </tbody>
+            </table>
+            <p>Установка объявленных зависимостей дополнительно проверялась в отдельном чистом virtualenv. Аудит <code>pip-audit -r requirements.txt</code> на дату проверки не выявил известных уязвимостей. Это результат проверки по доступной базе advisories, а не гарантия отсутствия любых уязвимостей.</p>
+            <p class="note"><strong>Граница lint-проверки:</strong> CI блокирует критические ошибки выбранных правил Ruff. Полный стилевой Flake8 пока не является зелёным барьером: в исторических файлах остаются замечания к пробелам, длине строк и импортам. Массовое форматирование не включалось в этот релиз.</p>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>9. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>110 тестов успешно; модульные, интеграционные и smoke-тесты.</td></tr>
+                    <tr><td>Деньги и параллельность</td><td>Хранение целых копеек, обновление одного периода, 16 параллельных UPSERT без дубликатов, агрегаты в рублях.</td></tr>
+                    <tr><td>Миграции</td><td>Ограничения, повторный запуск и автоматический бэкап существующей БД перед 005; отдельный прогон на снимке dev-БД.</td></tr>
+                    <tr><td>Настройки</td><td>Валидация ключей и диапазонов, нормализация, отсутствие частичной записи ошибочного пакета.</td></tr>
+                    <tr><td>Безопасность и Web</td><td>Allowlist бота, отказ внешнему API без ключа, запрет ключа в URL, маршруты backup restore/delete, JSON-контракт.</td></tr>
+                    <tr><td>Deploy</td><td>Отказ при ошибке бэкапа с --yes, rollback при ошибке копирования, сохранение маркера и секретов.</td></tr>
+                    <tr><td>Ruff / UTF-8 / Git diff</td><td>Критические правила пройдены, UTF-8 без BOM подтверждён, git diff --check без ошибок пробелов в изменениях.</td></tr>
+                    <tr><td>Waitress smoke</td><td>Сервер запущен на отдельном свободном порту с временной БД; GET /api/years вернул успешный JSON. Проверочный процесс остановлен.</td></tr>
+                    <tr><td>Ручная проверка</td><td>Пользователь подтвердил успешную проверку приложения перед подготовкой версии.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>StartSalary.pyw</code>: сохранён вызов <code>desktop.main.main</code> и настройка startup-логирования.</li>
+                <li><code>run_web.py</code>: сохранён вызов <code>web.bootstrap.main</code>.</li>
+                <li><code>run_bot.py</code>: сохранён запуск <code>bot.main.main</code> через <code>asyncio.run</code>.</li>
+                <li><code>desktop/app.py</code>: проверены импорт App и связи с NavigationController и представлениями.</li>
+                <li><code>bot/main.py</code>: проверены allowlist, миграции, подключение salary-router и dispatcher.</li>
+            </ul>
+            <p>Локальный результат не заменяет отдельный результат GitHub Actions после push. Новые CI jobs запускаются удалённо при публикации коммита.</p>
+        </section>
+
+        <section class="section" id="files">
+            <h2>10. Карта изменённых файлов</h2>
+            <h3>Новые компоненты</h3>
+            <div class="file">bot/config.py; bot/middlewares/__init__.py; bot/middlewares/access.py; bot/handlers/salary.py</div>
+            <div class="file">core/repositories/analytics_repository.py; core/services/settings_service.py; core/utils/money_values.py; web/security.py</div>
+            <div class="file">tests/unit/bot/test_bot_access.py; tests/unit/core/services/test_settings_service.py; tests/unit/scripts/test_deploy_to_prod.py</div>
+            <h3>Обновлённые слои</h3>
+            <div class="file">api/common.py; api/salary_api.py; api/settings_api.py; api/salary_api_modules/maintenance.py</div>
+            <div class="file">core/config/settings.py; core/database/connection.py; core/database/migrations.py; core/exceptions.py; core/models/year.py</div>
+            <div class="file">core/repositories/salary_repository.py; core/repositories/settings_repository.py; core/repositories/year_repository.py</div>
+            <div class="file">core/services/backup_service.py; core/services/export_service.py; core/services/salary_service.py; core/services/statistics_service.py; core/utils/money.py</div>
+            <div class="file">desktop/controllers/main_tab_controller.py; desktop/controllers/report_tab_controller.py; desktop/controllers/settings_tab_controller.py; desktop/presenters/chart_presenter.py</div>
+            <div class="file">desktop/views/main/main_view.py; desktop/views/report/report_view.py; bot/main.py; bot/states.py; bot/handlers/__init__.py; bot/.env.example</div>
+            <div class="file">web/app.py; web/bootstrap.py; web/routes/errors.py; web/routes/response.py; web/routes/salaries.py; web/static/js/settings.js</div>
+            <h3>Инфраструктура и регрессии</h3>
+            <div class="file">scripts/deploy_to_prod.py; scripts/check_encoding.ps1; run_web.bat; run_bot.bat; requirements.txt; requirements-dev.txt; .github/workflows/ci.yml</div>
+            <div class="file">tests/conftest.py; tests/integration/core/database/test_migrations_payment_dates.py; tests/integration/core/repositories/test_salary_repository_crud.py; tests/integration/web/test_api_contracts.py</div>
+            <div class="file">tests/unit/bot/test_bot_fsm_handlers.py; tests/unit/core/services/test_backup_service.py; tests/unit/core/services/test_salary_service_add_salary.py; tests/unit/desktop/controllers/test_tab_controllers.py; tests/unit/web/test_salaries_routes.py</div>
+            <p><strong>Удалён:</strong> <code>bot/bot_config.py</code>. <strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>. Рабочие БД, токены, логи и пользовательские экспорты в коммит не включаются.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>11. Обновление production и ограничения отката</h2>
+            <ol>
+                <li>Остановить desktop, Web и Telegram-бота, работающих с production-БД. Не оставлять процессы старой версии активными во время изменения схемы.</li>
+                <li>Убедиться в наличии актуальной резервной копии рабочей БД и проверить production-файл <code>bot/.env</code>. Если <code>BOT_ALLOWED_IDS</code> уже содержит правильный числовой ID, менять его не нужно.</li>
+                <li>Запустить согласованный скрипт deploy из dev-каталога. Маркер production и защищаемый <code>bot/.env</code> сохраняются. Подготовка этого релиза сама по себе production не обновляет.</li>
+                <li>В Python-окружении production установить зависимости из нового <code>requirements.txt</code> через <code>python -m pip install -r requirements.txt</code>.</li>
+                <li>Первый запуск выполнить для одного интерфейса. Для непустой БД перед <code>005</code> будет создана автоматическая копия; при конфликтных данных или ошибке бэкапа запуск миграции остановится.</li>
+                <li>Проверить историю и суммы, экспорт, резервные копии, Web и Telegram. После этого запускать остальные интерфейсы и автозапуск.</li>
+            </ol>
+            <pre><code># Пример настройки доступа, без реальных идентификаторов
+BOT_ALLOWED_IDS=123456789
+
+# Установка runtime-зависимостей в окружении production
+python -m pip install -r requirements.txt</code></pre>
+            <p class="note"><strong>Обратная совместимость БД:</strong> после <code>005</code> старый код интерпретирует копейки как рубли. Простого возврата файлов версии 1.2.24 недостаточно. Для downgrade необходимо остановить все интерфейсы и согласованно восстановить старый код и домиграционную SQLite-БД. Встроенное восстановление новой версии снова применяет актуальные миграции, поэтому не является инструментом downgrade. Домиграционную копию следует сохранить отдельно до окончания проверки обновления.</p>
+            <p>Автоматическая резервная копия перед восстановлением сохраняет исходные данные, но не отменяет необходимость ручного восстановления при непредвиденном сбое. Не запускать восстановление параллельно с записью данных из других интерфейсов.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.25 · 27.08.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>

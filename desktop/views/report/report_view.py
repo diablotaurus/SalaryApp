@@ -666,7 +666,15 @@ class ReportView(BaseView):
         
         canvas.draw()
 
-    def update_kpi(self, summary, best_month=None, best_year=None, selected_year=None, show_best_year_always=True):
+    def update_kpi(
+        self,
+        summary,
+        best_month=None,
+        best_year=None,
+        selected_year=None,
+        show_best_year_always=True,
+        currency="руб.",
+    ):
         """
         Обновить панель быстрых итогов (KPI).
         
@@ -686,7 +694,8 @@ class ReportView(BaseView):
             best_month,
             best_year,
             selected_year,
-            show_best_year_always
+            show_best_year_always,
+            currency,
         )
 
         # Обновление значений KPI

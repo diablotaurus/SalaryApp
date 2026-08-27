@@ -28,6 +28,7 @@ def check_dependencies() -> bool:
         "openpyxl",  # Для экспорта в Excel
         "matplotlib",  # Для графиков
         "aiogram",  # Для бота (импортируется в salary_api)
+        "waitress",  # Production WSGI server
     ]
     missing_modules = []
 
@@ -87,8 +88,13 @@ def main() -> None:
     port = int(os.getenv("SALARYAPP_WEB_PORT", config.app.web_port))
     debug = _get_bool_env("SALARYAPP_WEB_DEBUG", config.app.web_debug)
 
-    logger.info("Запуск web-приложения...")
-    app.run(host=host, port=port, debug=debug)
+    logger.info("Запуск web-приложения на http://%s:%s", host, port)
+    if debug:
+        app.run(host=host, port=port, debug=True)
+    else:
+        from waitress import serve
+
+        serve(app, host=host, port=port, threads=4)
 
 
 if __name__ == "__main__":

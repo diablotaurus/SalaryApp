@@ -153,7 +153,8 @@ class ChartPresenter:
         best_month: Dict[str, Any],
         best_year: Dict[str, Any],
         selected_year: Any,
-        show_best_year_always: bool
+        show_best_year_always: bool,
+        currency: str,
     ) -> Dict[str, Any]:
         total_amount = 0.0
         avg_monthly = 0.0
@@ -191,8 +192,8 @@ class ChartPresenter:
                 period_value = "—"
 
         return {
-            "total": MoneyUtils.format_kpi_amount(total_amount),
-            "avg": MoneyUtils.format_kpi_amount(avg_monthly),
+            "total": MoneyUtils.format_kpi_amount(total_amount, currency),
+            "avg": MoneyUtils.format_kpi_amount(avg_monthly, currency),
             "records": str(records),
             "best_month": best_month_value,
             "best_year": best_year_value,

@@ -8,7 +8,8 @@
 
 from typing import Dict, Any, Iterable
 from datetime import datetime
-from core.database.connection import DatabaseConnection
+from core.models.year import calculate_average_monthly
+from core.repositories.analytics_repository import AnalyticsRepository
 from core.repositories.salary_repository import SalaryRepository
 from core.repositories.year_repository import YearRepository
 from core.utils.dates import DateUtils
@@ -35,37 +36,7 @@ class StatisticsService:
         Returns:
             float: Среднемесячное значение
         """
-        current = now or datetime.now()
-        totals: list[float] = []
-
-        for record in records or []:
-            advance = float(getattr(record, "advance", 0) or 0)
-            salary = float(getattr(record, "salary", 0) or 0)
-            if salary <= 0:
-                continue
-
-            total = advance + salary
-            if total <= 0:
-                continue
-
-            year = int(getattr(record, "year", 0) or 0)
-            month = int(getattr(record, "month", 0) or 0)
-            salary_date = getattr(record, "salary_date", None)
-
-            # Если дата зарплаты известна, учитываем только после наступления даты выплаты.
-            if salary_date is not None:
-                if salary_date > current:
-                    continue
-            else:
-                # Legacy-режим: без даты считаем закрытыми только прошедшие месяцы.
-                if (year, month) >= (current.year, current.month):
-                    continue
-
-            totals.append(total)
-
-        if not totals:
-            return 0.0
-        return sum(totals) / len(totals)
+        return calculate_average_monthly(records, now)
     
     @staticmethod
     def get_yearly_comparison_dto() -> Dict[str, Any]:
@@ -110,16 +81,7 @@ class StatisticsService:
               общая сумма проецируется на 12 месяцев
             - Это дает более точное сравнение между годами
         """
-        conn = DatabaseConnection.get_connection()
-        # SQL-запрос для получения годовых сумм с количеством месяцев
-        rows = conn.execute("""
-            SELECT year,
-                   SUM(advance + salary) AS total,
-                   COUNT(*) AS months_count
-            FROM salaries
-            GROUP BY year
-            ORDER BY year
-        """).fetchall()
+        rows = AnalyticsRepository.get_yearly_totals(ascending=True)
         
         items = []
         for row in rows:
@@ -160,19 +122,7 @@ class StatisticsService:
             - Полезно для выявления сезонных тенденций
             - Помогает планировать бюджет по месяцам
         """
-        conn = DatabaseConnection.get_connection()
-        cursor = conn.execute("""
-            SELECT
-                month,
-                AVG(advance) as avg_advance,
-                AVG(salary) as avg_salary,
-                AVG(advance + salary) as avg_total
-            FROM salaries
-            GROUP BY month
-            ORDER BY month
-        """)
-        
-        results = cursor.fetchall()
+        results = AnalyticsRepository.get_average_by_month()
         items = []
         for row in results:
             items.append({
@@ -199,25 +149,8 @@ class StatisticsService:
             - best_month: Словарь с данными о лучшем месяце или None
             - best_year: Словарь с данными о лучшем годе или None
         """
-        conn = DatabaseConnection.get_connection()
-        
-        # Поиск лучшего месяца (группировка по году и месяцу)
-        best_month = conn.execute("""
-            SELECT year, month, SUM(advance + salary) AS total
-            FROM salaries
-            GROUP BY year, month
-            ORDER BY total DESC
-            LIMIT 1
-        """).fetchone()
-        
-        # Поиск лучшего года (группировка по году)
-        best_year = conn.execute("""
-            SELECT year, SUM(advance + salary) AS total
-            FROM salaries
-            GROUP BY year
-            ORDER BY total DESC
-            LIMIT 1
-        """).fetchone()
+        best_month = AnalyticsRepository.get_best_month()
+        best_year = AnalyticsRepository.get_best_year()
         
         # Инициализация результата
         result = {"best_month": None, "best_year": None}

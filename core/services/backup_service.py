@@ -1,290 +1,263 @@
-"""
-Сервис для работы с резервными копиями базы данных.
+"""Consistent and path-safe SQLite backup management."""
+from __future__ import annotations
 
-Обеспечивает создание, восстановление, удаление и управление резервными копиями.
-Резервные копии хранятся в ZIP-архивах с метаданными и автоматически очищаются по истечении срока хранения.
-"""
-
+import json
 import logging
+import os
 import shutil
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import List, Dict, Any
+import sqlite3
+import tempfile
 import zipfile
-from core.database.connection import DatabaseConnection
+from datetime import datetime, timedelta
+from pathlib import Path, PurePosixPath
+from typing import Any, Dict, List
+
 from core.config.settings import config
+from core.database.connection import DatabaseConnection
+from core.database.migrations import apply_all_migrations
+from core.exceptions import BackupError
 
 logger = logging.getLogger(__name__)
 
+BACKUP_PREFIX = "salary_backup_"
+DATABASE_MEMBER = "salary.db"
+MAX_DATABASE_SIZE = 2 * 1024 * 1024 * 1024
+
 
 class BackupService:
-    """Сервис для создания и управления резервными копиями базы данных"""
-    
+    """Create, inspect, restore, and delete SQLite backup archives."""
+
+    @staticmethod
+    def _backup_dir() -> Path:
+        backup_dir = Path(config.db.backup_dir).resolve()
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        return backup_dir
+
+    @staticmethod
+    def _resolve_backup_path(backup_path: str | Path, *, must_exist: bool) -> Path:
+        backup_dir = BackupService._backup_dir()
+        candidate = Path(backup_path)
+        if not candidate.is_absolute():
+            direct_candidate = backup_dir / candidate
+            candidate = (
+                direct_candidate
+                if direct_candidate.exists()
+                else candidate.resolve(strict=False)
+            )
+        candidate = candidate.resolve(strict=False)
+
+        if (
+            candidate.parent != backup_dir
+            or candidate.suffix.lower() != ".zip"
+            or not candidate.name.startswith(BACKUP_PREFIX)
+        ):
+            raise BackupError(
+                f"Недопустимый путь резервной копии: {candidate}",
+                user_message="Выбран недопустимый файл резервной копии",
+            )
+        if must_exist and not candidate.is_file():
+            raise FileNotFoundError(candidate)
+        return candidate
+
+    @staticmethod
+    def _validate_database(database_path: Path) -> None:
+        if not database_path.is_file() or database_path.stat().st_size == 0:
+            raise BackupError("Backup database is empty")
+        if database_path.stat().st_size > MAX_DATABASE_SIZE:
+            raise BackupError("Backup database exceeds the allowed size")
+
+        uri = f"{database_path.resolve().as_uri()}?mode=ro"
+        connection = sqlite3.connect(uri, uri=True)
+        try:
+            result = connection.execute("PRAGMA quick_check").fetchone()
+            if not result or result[0] != "ok":
+                raise BackupError(f"SQLite quick_check failed: {result}")
+            table = connection.execute(
+                """
+                SELECT 1
+                FROM sqlite_master
+                WHERE type = 'table' AND name = 'salaries'
+                """
+            ).fetchone()
+            if table is None:
+                raise BackupError("Backup database has no salaries table")
+        finally:
+            connection.close()
+
+    @staticmethod
+    def _create_database_snapshot(snapshot_path: Path) -> None:
+        source = DatabaseConnection.get_connection()
+        destination = sqlite3.connect(str(snapshot_path))
+        try:
+            source.backup(destination)
+        finally:
+            destination.close()
+        BackupService._validate_database(snapshot_path)
+
     @staticmethod
     def create_backup(comment: str = "") -> str:
-        """
-        Создать резервную копию базы данных.
-        
-        Args:
-            comment: Комментарий к резервной копии (для истории)
-            
-        Returns:
-            str: Путь к созданной резервной копии
-            
-        Процесс создания:
-            1. Создается ZIP-архив с базой данных
-            2. Добавляются метаданные (дата, комментарий, версия приложения)
-            3. Автоматически очищаются старые резервные копии
-            
-        Безопасность:
-            - Проверка существования файла базы данных
-            - Архивирование с использованием DEFLATE сжатия
-            - Хранение только в разрешенной директории
-        """
-        # Создание директории для резервных копий если не существует
-        backup_dir = Path(config.db.backup_dir)
-        backup_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Генерация имени файла с временной меткой
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_filename = f"salary_backup_{timestamp}.zip"
-        backup_path = backup_dir / backup_filename
-        
-        # Создание ZIP архива с базой данных
-        with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Добавление файла базы данных в архив
-            db_path = Path(config.db.path)
-            if db_path.exists():
-                zipf.write(db_path, db_path.name)
-            
-            # Создание метаданных резервной копии
-            metadata = {
-                'backup_date': datetime.now().isoformat(),  # Дата создания в ISO формате
-                'comment': comment,  # Пользовательский комментарий
-                'app_version': config.app.version,  # Версия приложения для совместимости
-                'database_size': db_path.stat().st_size if db_path.exists() else 0  # Размер БД
-            }
-            
-            # Запись метаданных в файл внутри архива
-            import json
-            metadata_str = json.dumps(metadata, ensure_ascii=False, indent=2)
-            zipf.writestr('backup_info.json', metadata_str)
-        
-        # Автоматическая очистка старых резервных копий
-        BackupService._cleanup_old_backups()
-        
-        return str(backup_path)
-    
+        backup_dir = BackupService._backup_dir()
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        backup_path = backup_dir / f"{BACKUP_PREFIX}{timestamp}.zip"
+        temporary_archive = backup_path.with_suffix(".zip.tmp")
+
+        normalized_comment = str(comment or "").strip()[:500]
+        try:
+            with tempfile.TemporaryDirectory(dir=backup_dir) as temporary_dir:
+                snapshot_path = Path(temporary_dir) / DATABASE_MEMBER
+                BackupService._create_database_snapshot(snapshot_path)
+                metadata = {
+                    "backup_date": datetime.now().isoformat(),
+                    "comment": normalized_comment,
+                    "app_version": config.app.version,
+                    "database_size": snapshot_path.stat().st_size,
+                }
+
+                with zipfile.ZipFile(
+                    temporary_archive, "w", zipfile.ZIP_DEFLATED
+                ) as archive:
+                    archive.write(snapshot_path, DATABASE_MEMBER)
+                    archive.writestr(
+                        "backup_info.json",
+                        json.dumps(metadata, ensure_ascii=False, indent=2),
+                    )
+            os.replace(temporary_archive, backup_path)
+            BackupService._cleanup_old_backups()
+            return str(backup_path)
+        except Exception as exc:
+            temporary_archive.unlink(missing_ok=True)
+            if isinstance(exc, BackupError):
+                raise
+            raise BackupError(
+                f"Failed to create backup: {exc}",
+                user_message="Не удалось создать резервную копию",
+            ) from exc
+
     @staticmethod
-    def _cleanup_old_backups():
-        """
-        Удалить старые резервные копии согласно настройкам хранения.
-        
-        Политика хранения:
-            - Хранение резервных копий заданное количество дней (по умолчанию 30)
-            - Удаление происходит при создании новой резервной копии
-            - Проверяется дата в имени файла (формат YYYYMMDD)
-            
-        Особенности:
-            - Удаляются только файлы с паттерном 'salary_backup_*.zip'
-            - Ошибки при удалении логируются, но не прерывают выполнение
-        """
-        backup_dir = Path(config.db.backup_dir)
-        if not backup_dir.exists():
-            return
-        
-        # Получение срока хранения из конфигурации
-        retention_days = config.db.backup_retention_days
-        cutoff_date = datetime.now() - timedelta(days=retention_days)
-        
-        # Обработка всех файлов резервных копий
-        for backup_file in backup_dir.glob("*.zip"):
+    def _cleanup_old_backups() -> None:
+        backup_dir = BackupService._backup_dir()
+        cutoff_date = datetime.now() - timedelta(
+            days=config.db.backup_retention_days
+        )
+        for backup_file in backup_dir.glob(f"{BACKUP_PREFIX}*.zip"):
             try:
-                # Извлечение даты из имени файла (формат: salary_backup_YYYYMMDD_HHMMSS.zip)
-                filename = backup_file.stem  # Имя файла без расширения
-                if filename.startswith("salary_backup_"):
-                    # Извлечение даты (первые 8 цифр после префикса)
-                    date_str = filename[14:22]  # YYYYMMDD
-                    file_date = datetime.strptime(date_str, "%Y%m%d")
-                    
-                    # Удаление если файл старше срока хранения
-                    if file_date < cutoff_date:
-                        backup_file.unlink()
-                        logger.info("Deleted old backup: %s", backup_file)
-            except Exception:
+                date_str = backup_file.stem[len(BACKUP_PREFIX) :][:8]
+                if datetime.strptime(date_str, "%Y%m%d") < cutoff_date:
+                    backup_file.unlink()
+                    logger.info("Deleted old backup: %s", backup_file)
+            except (OSError, ValueError):
                 logger.exception("Error processing backup file %s", backup_file)
-    
+
+    @staticmethod
+    def _read_metadata(backup_file: Path) -> dict[str, Any]:
+        with zipfile.ZipFile(backup_file, "r") as archive:
+            if "backup_info.json" not in archive.namelist():
+                return {}
+            metadata_member = archive.getinfo("backup_info.json")
+            if metadata_member.file_size > 64 * 1024:
+                raise BackupError("Backup metadata is too large")
+            with archive.open(metadata_member) as metadata_file:
+                metadata = json.load(metadata_file)
+                return metadata if isinstance(metadata, dict) else {}
+
     @staticmethod
     def list_backups() -> List[Dict[str, Any]]:
-        """
-        Получить список всех доступных резервных копий.
-        
-        Returns:
-            List[Dict[str, Any]]: Список резервных копий с метаданными
-            
-        Метаданные каждой копии:
-            - filename: Имя файла
-            - path: Полный путь к файлу
-            - size: Размер файла в байтах
-            - created: Дата создания файла
-            - modified: Дата последнего изменения
-            
-        Сортировка:
-            - По умолчанию отсортированы по дате создания (новые сверху)
-        """
-        backup_dir = Path(config.db.backup_dir)
-        if not backup_dir.exists():
-            return []
-        
-        backups = []
-        # Получение всех ZIP файлов, отсортированных по дате изменения (новые первые)
-        for backup_file in sorted(backup_dir.glob("*.zip"), reverse=True):
-            try:
-                file_info = backup_file.stat()
-                backups.append({
-                    'filename': backup_file.name,
-                    'path': str(backup_file),
-                    'size': file_info.st_size,  # Размер в байтах
-                    'created': datetime.fromtimestamp(file_info.st_ctime),  # Дата создания
-                    'modified': datetime.fromtimestamp(file_info.st_mtime)   # Дата изменения
-                })
-            except Exception:
-                logger.exception("Error reading backup info for %s", backup_file)
-
+        backups: list[dict[str, Any]] = []
+        for backup_file in sorted(
+            BackupService._backup_dir().glob(f"{BACKUP_PREFIX}*.zip"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        ):
+            info = BackupService.get_backup_info(str(backup_file))
+            if info:
+                backups.append(info)
         return backups
-    
+
+    @staticmethod
+    def _extract_database(backup_file: Path, destination: Path) -> None:
+        with zipfile.ZipFile(backup_file, "r") as archive:
+            database_members = [
+                member
+                for member in archive.infolist()
+                if member.filename.lower().endswith(".db")
+            ]
+            if len(database_members) != 1:
+                raise BackupError("Backup must contain exactly one database file")
+
+            member = database_members[0]
+            member_path = PurePosixPath(member.filename)
+            if member_path.name != member.filename or member.is_dir():
+                raise BackupError("Unsafe database member path in backup")
+            if member.file_size <= 0 or member.file_size > MAX_DATABASE_SIZE:
+                raise BackupError("Invalid database size in backup")
+
+            with archive.open(member, "r") as source, destination.open("wb") as target:
+                shutil.copyfileobj(source, target, length=1024 * 1024)
+
     @staticmethod
     def restore_backup(backup_path: str) -> bool:
-        """
-        Восстановить базу данных из резервной копии.
-        
-        Args:
-            backup_path: Путь к файлу резервной копии
-            
-        Returns:
-            bool: True если восстановление успешно, False в случае ошибки
-            
-        Процесс восстановления:
-            1. Закрытие текущих соединений с БД
-            2. Создание резервной копии текущей базы (на случай отката)
-            3. Распаковка резервной копии
-            4. Замена текущей базы данных
-            
-        Меры предосторожности:
-            - Создается временная копия текущей базы перед восстановлением
-            - В случае ошибки можно восстановить предыдущее состояние
-            - Проверка наличия файла базы данных в архиве
-        """
         try:
-            backup_file = Path(backup_path)
-            if not backup_file.exists():
-                return False
-            
-            # Закрытие текущего соединения с БД для избежания блокировок
+            backup_file = BackupService._resolve_backup_path(
+                backup_path, must_exist=True
+            )
+            with tempfile.TemporaryDirectory(
+                dir=BackupService._backup_dir()
+            ) as temporary_dir:
+                restored_database = Path(temporary_dir) / DATABASE_MEMBER
+                BackupService._extract_database(backup_file, restored_database)
+                BackupService._validate_database(restored_database)
+
+                BackupService.create_backup(
+                    "Автоматическая копия перед восстановлением"
+                )
+                source = sqlite3.connect(str(restored_database))
+                target = DatabaseConnection.get_connection()
+                try:
+                    source.backup(target)
+                finally:
+                    source.close()
+
             DatabaseConnection.close_connection()
-            
-            # Создание резервной копии текущей базы данных перед восстановлением
-            current_db = Path(config.db.path)
-            if current_db.exists():
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                temp_backup = current_db.parent / f"salary_pre_restore_{timestamp}.bak"
-                shutil.copy2(current_db, temp_backup)  # Копирование с сохранением метаданных
-            
-            # Распаковка резервной копии
-            with zipfile.ZipFile(backup_file, 'r') as zipf:
-                # Поиск файла базы данных в архиве
-                db_files = [f for f in zipf.namelist() if f.endswith('.db')]
-                if not db_files:
-                    return False
-                
-                # Извлечение базы данных из архива
-                zipf.extract(db_files[0], current_db.parent)
-                
-                # Переименование если имя файла отличается от ожидаемого
-                extracted_db = current_db.parent / db_files[0]
-                if extracted_db != current_db:
-                    if current_db.exists():
-                        current_db.unlink()  # Удаление старой базы
-                    extracted_db.rename(current_db)  # Переименование извлеченной базы
-            
+            apply_all_migrations()
             return True
-        except Exception:
+        except (BackupError, FileNotFoundError, OSError, sqlite3.Error, zipfile.BadZipFile):
             logger.exception("Error restoring backup")
             return False
-        finally:
-            # Восстановление соединения с базой данных
-            DatabaseConnection.get_connection()
-    
+
     @staticmethod
     def delete_backup(backup_path: str) -> bool:
-        """
-        Удалить резервную копию.
-        
-        Args:
-            backup_path: Путь к файлу резервной копии
-            
-        Returns:
-            bool: True если удаление успешно, False в случае ошибки
-            
-        Безопасность:
-            - Проверка существования файла перед удалением
-            - Обработка исключений при удалении
-            - Логирование ошибок
-        """
         try:
-            backup_file = Path(backup_path)
-            if backup_file.exists():
-                backup_file.unlink()
-                return True
-            return False
-        except Exception:
+            backup_file = BackupService._resolve_backup_path(
+                backup_path, must_exist=True
+            )
+            backup_file.unlink()
+            return True
+        except (BackupError, FileNotFoundError, OSError):
             logger.exception("Error deleting backup")
             return False
-    
+
     @staticmethod
     def get_backup_info(backup_path: str) -> Dict[str, Any]:
-        """
-        Получить подробную информацию о резервной копии.
-        
-        Args:
-            backup_path: Путь к файлу резервной копии
-            
-        Returns:
-            Dict[str, Any]: Словарь с информацией о резервной копии
-            
-        Информация включает:
-            - Основные метаданные файла (размер, даты)
-            - Метаданные из backup_info.json (если есть)
-            - Размер в мегабайтах для удобства чтения
-        """
         try:
-            backup_file = Path(backup_path)
-            if not backup_file.exists():
-                return {}
-            
-            # Получение базовой информации о файле
+            backup_file = BackupService._resolve_backup_path(
+                backup_path, must_exist=True
+            )
             file_info = backup_file.stat()
-            info = {
-                'filename': backup_file.name,
-                'path': str(backup_file),
-                'size': file_info.st_size,  # Размер в байтах
-                'size_mb': round(file_info.st_size / (1024 * 1024), 2),  # Размер в МБ
-                'created': datetime.fromtimestamp(file_info.st_ctime),  # Дата создания
-                'modified': datetime.fromtimestamp(file_info.st_mtime)   # Дата изменения
+            created = datetime.fromtimestamp(file_info.st_ctime)
+            modified = datetime.fromtimestamp(file_info.st_mtime)
+            info: dict[str, Any] = {
+                "filename": backup_file.name,
+                "path": str(backup_file),
+                "size": file_info.st_size,
+                "size_bytes": file_info.st_size,
+                "size_mb": round(file_info.st_size / (1024 * 1024), 2),
+                "created": created,
+                "modified": modified,
+                "created_at": created.isoformat(),
+                "modified_at": modified.isoformat(),
             }
-            
-            # Чтение дополнительных метаданных из архива
-            try:
-                with zipfile.ZipFile(backup_file, 'r') as zipf:
-                    if 'backup_info.json' in zipf.namelist():
-                        import json
-                        with zipf.open('backup_info.json') as f:
-                            metadata = json.load(f)
-                            info.update(metadata)  # Добавление метаданных в общую информацию
-            except Exception:
-                pass  # Если не удалось прочитать метаданные, продолжаем без них
-
+            info.update(BackupService._read_metadata(backup_file))
             return info
-        except Exception:
+        except (BackupError, FileNotFoundError, OSError, ValueError, zipfile.BadZipFile):
             logger.exception("Error getting backup info")
             return {}

@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 from api.salary_api import SalaryAPI
 from api.settings_api import SettingsAPI
+from core.config.settings import config
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
 
 
@@ -57,11 +58,14 @@ class ReportTabController:
         best_month = None
         best_year = None
         show_best_year_always = True
+        currency = config.app.currency
 
-        settings_response = SettingsAPI.get_setting("show_best_year_always", True)
+        settings_response = SettingsAPI.get_settings()
         if isinstance(settings_response, dict) and settings_response.get("success"):
-            raw_value = settings_response.get("data", {}).get("value", True)
+            settings = settings_response.get("data", {})
+            raw_value = settings.get("show_best_year_always", "1")
             show_best_year_always = str(raw_value).lower() in ("true", "1", "yes", "y")
+            currency = str(settings.get("currency", currency))
 
         stats_response = SalaryAPI.get_statistics(selected_year)
         if isinstance(stats_response, dict) and stats_response.get("success"):
@@ -98,6 +102,7 @@ class ReportTabController:
                 best_year,
                 selected_year,
                 show_best_year_always=show_best_year,
+                currency=currency,
             )
 
     def on_year_selected(self, _year: int):

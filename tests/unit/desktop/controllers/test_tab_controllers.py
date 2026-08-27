@@ -93,7 +93,13 @@ def test_report_tab_controller_refresh_reports(monkeypatch):
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_growth_rate_dto", lambda: {"success": True, "data": []})
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_average_by_month_dto", lambda: {"success": True, "data": []})
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_statistics", lambda year=None: {"success": True, "data": {}})
-    monkeypatch.setattr("api.settings_api.SettingsAPI.get_setting", lambda key, default=None: {"success": True, "data": {"value": True}})
+    monkeypatch.setattr(
+        "api.settings_api.SettingsAPI.get_settings",
+        lambda: {
+            "success": True,
+            "data": {"show_best_year_always": "1", "currency": "руб."},
+        },
+    )
     monkeypatch.setattr(
         "api.salary_api.SalaryAPI.get_best_periods",
         lambda: {"success": True, "data": {"best_month": None, "best_year": None}},
@@ -110,16 +116,16 @@ def test_settings_tab_controller_save_settings(monkeypatch):
     controller = SettingsTabController(nav)
     saved = {}
 
-    def fake_set_setting(key, value):
-        saved[key] = value
+    def fake_set_settings(settings):
+        saved.update(settings)
         return {"success": True}
 
-    monkeypatch.setattr("api.settings_api.SettingsAPI.set_setting", fake_set_setting)
+    monkeypatch.setattr("api.settings_api.SettingsAPI.set_settings", fake_set_settings)
 
-    ok = controller.save_settings({"currency": "rub", "theme": "clam"})
+    ok = controller.save_settings({"currency": "rub", "export_format": "csv"})
 
     assert ok is True
-    assert saved == {"currency": "rub", "theme": "clam"}
+    assert saved == {"currency": "rub", "export_format": "csv"}
 
 
 def test_main_tab_controller_create_auto_backup_on_close_enabled(monkeypatch):
@@ -129,18 +135,20 @@ def test_main_tab_controller_create_auto_backup_on_close_enabled(monkeypatch):
 
     def fake_get_setting(key, default=None):
         if key == "backup_auto":
-            return "1"
-        if key == "backup_days":
-            return "7"
-        return default
+            value = "1"
+        elif key == "backup_days":
+            value = "7"
+        else:
+            value = default
+        return {"success": True, "data": {"key": key, "value": value}}
 
     def fake_create_backup(comment=""):
         called["value"] = True
         assert comment == "auto_on_close"
-        return "db/backup/salary_backup_test.zip"
+        return {"success": True, "data": {"filepath": "db/backup/salary_backup_test.zip"}}
 
-    monkeypatch.setattr("desktop.controllers.main_tab_controller.SettingsRepository.get_setting", fake_get_setting)
-    monkeypatch.setattr("desktop.controllers.main_tab_controller.BackupService.create_backup", fake_create_backup)
+    monkeypatch.setattr("desktop.controllers.main_tab_controller.SettingsAPI.get_setting", fake_get_setting)
+    monkeypatch.setattr("desktop.controllers.main_tab_controller.SalaryAPI.create_backup", fake_create_backup)
 
     ok = controller.create_auto_backup_on_close()
 

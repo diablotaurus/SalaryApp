@@ -5,6 +5,14 @@ from core.services.export_service import ExportService
 from api.common import execute_with_default_error, failure, success
 
 
+def _resolve_listed_backup(reference: str) -> str | None:
+    """Resolve either a listed filename or its full safe path."""
+    for backup in BackupService.list_backups():
+        if reference in {backup.get("filename"), backup.get("path")}:
+            return str(backup["path"])
+    return None
+
+
 def export_data(format_type: str = "csv") -> dict:
     def _action() -> dict:
         if format_type == "csv":
@@ -47,3 +55,27 @@ def list_backups() -> dict:
         _action,
         "Ошибка при получении списка резервных копий",
     )
+
+
+def restore_backup(reference: str) -> dict:
+    def _action() -> dict:
+        backup_path = _resolve_listed_backup(reference)
+        if not backup_path:
+            return failure("Резервная копия не найдена", error="not found")
+        if not BackupService.restore_backup(backup_path):
+            return failure("Не удалось восстановить резервную копию", error="restore failed")
+        return success(message="База данных успешно восстановлена")
+
+    return execute_with_default_error(_action, "Ошибка при восстановлении резервной копии")
+
+
+def delete_backup(reference: str) -> dict:
+    def _action() -> dict:
+        backup_path = _resolve_listed_backup(reference)
+        if not backup_path:
+            return failure("Резервная копия не найдена", error="not found")
+        if not BackupService.delete_backup(backup_path):
+            return failure("Не удалось удалить резервную копию", error="delete failed")
+        return success(message="Резервная копия удалена")
+
+    return execute_with_default_error(_action, "Ошибка при удалении резервной копии")

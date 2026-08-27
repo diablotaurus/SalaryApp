@@ -114,7 +114,7 @@ def should_exclude(path: Path, patterns: list[str], root_path: Path) -> bool:
                 return True
         return False
     except Exception:
-        return False
+        return True
 
 
 def read_clean_version(source_path: Path) -> str:
@@ -151,13 +151,15 @@ def snapshot_protected(prod_path: Path) -> dict[str, bytes]:
                 saved[rel] = target.read_bytes()
                 print_success(f"Сохранён защищаемый файл: {rel}")
             except Exception as exc:
-                print_warning(f"Не удалось сохранить {rel}: {exc}")
+                raise RuntimeError(
+                    f"Не удалось сохранить защищаемый файл {rel}: {exc}"
+                ) from exc
     if not saved:
         print_info("Защищаемые файлы не найдены (нечего сохранять)")
     return saved
 
 
-def restore_protected(prod_path: Path, saved: dict[str, bytes], dry_run: bool) -> None:
+def restore_protected(prod_path: Path, saved: dict[str, bytes], dry_run: bool) -> bool:
     """Вернуть защищаемые файлы на место после копирования."""
     for rel, data in saved.items():
         target = prod_path / rel
@@ -170,9 +172,11 @@ def restore_protected(prod_path: Path, saved: dict[str, bytes], dry_run: bool) -
             print_success(f"Восстановлен защищаемый файл: {rel}")
         except Exception as exc:
             print_error(f"Ошибка восстановления {rel}: {exc}")
+            return False
+    return True
 
 
-def create_backup_before_update(prod_path: Path, dry_run: bool) -> bool:
+def create_backup_before_update(prod_path: Path, dry_run: bool) -> Path | None:
     """Создать резервную копию текущего прода в prod/.backup/<версия>_<дата>/."""
     print_header("Шаг 1. Резервная копия текущего прода")
 
@@ -188,15 +192,16 @@ def create_backup_before_update(prod_path: Path, dry_run: bool) -> bool:
 
     if dry_run:
         print_info("[dry-run] Резервная копия не создаётся")
-        return True
+        return backup_dir
 
     try:
         backup_dir.mkdir(parents=True, exist_ok=True)
     except Exception as exc:
         print_error(f"Ошибка создания каталога резервной копии: {exc}")
-        return False
+        return None
 
     copied = 0
+    errors: list[str] = []
     for item in prod_path.iterdir():
         if item.name in backup_exclude or item.is_symlink():
             continue
@@ -209,7 +214,17 @@ def create_backup_before_update(prod_path: Path, dry_run: bool) -> bool:
                 shutil.copytree(item, target, dirs_exist_ok=True)
                 copied += sum(1 for _ in item.rglob("*") if _.is_file())
         except Exception as exc:
-            print_error(f"Ошибка копирования {item.name}: {exc}")
+            message = f"Ошибка копирования {item.name}: {exc}"
+            errors.append(message)
+            print_error(message)
+
+    if errors:
+        print_error("Резервная копия неполная. Деплой остановлен.")
+        try:
+            shutil.rmtree(backup_dir)
+        except OSError:
+            print_warning(f"Не удалось удалить неполный бэкап: {backup_dir}")
+        return None
 
     info = (
         f"Резервная копия версии: {version}\n"
@@ -219,10 +234,15 @@ def create_backup_before_update(prod_path: Path, dry_run: bool) -> bool:
     try:
         (backup_dir / "_backup_info.txt").write_text(info, encoding="utf-8")
     except Exception:
-        pass
+        print_error("Не удалось записать сведения о резервной копии")
+        try:
+            shutil.rmtree(backup_dir)
+        except OSError:
+            print_warning(f"Не удалось удалить неполный бэкап: {backup_dir}")
+        return None
 
     print_success(f"Резервная копия создана: скопировано файлов ~{copied}")
-    return True
+    return backup_dir
 
 
 def clean_prod_directory(prod_path: Path, dry_run: bool) -> bool:
@@ -304,26 +324,69 @@ def copy_with_exclusions(src_dir: Path, dst_dir: Path, patterns: list[str], dry_
     return copied, skipped, errors
 
 
-def write_prod_version(prod_path: Path, clean_version: str, dry_run: bool) -> None:
+def write_prod_version(prod_path: Path, clean_version: str, dry_run: bool) -> bool:
     """Записать очищенную версию (без 'current') в prod/version.txt."""
     if clean_version == "unknown":
         print_warning("Версия не определена — version.txt прода не изменяется")
-        return
+        return False
     if dry_run:
         print_info(f"[dry-run] Записал бы в version.txt: {clean_version}")
-        return
+        return True
     try:
         (prod_path / "version.txt").write_text(clean_version, encoding="utf-8")
         print_success(f"version.txt прода установлен в: {clean_version}")
+        return True
     except Exception as exc:
         print_error(f"Ошибка записи version.txt: {exc}")
+        return False
+
+
+def rollback_from_backup(
+    prod_path: Path,
+    backup_dir: Path,
+    saved_protected: dict[str, bytes],
+) -> bool:
+    """Restore production code from the verified pre-deploy backup."""
+    print_header("АВТОМАТИЧЕСКИЙ ОТКАТ")
+    if not backup_dir.is_dir():
+        print_error(f"Каталог отката не найден: {backup_dir}")
+        return False
+
+    if not clean_prod_directory(prod_path, dry_run=False):
+        print_error("Не удалось очистить частично обновлённый код перед откатом")
+        return False
+
+    errors: list[str] = []
+    for item in backup_dir.iterdir():
+        if item.name == "_backup_info.txt":
+            continue
+        try:
+            target = prod_path / item.name
+            if item.is_file():
+                shutil.copy2(item, target)
+            elif item.is_dir():
+                shutil.copytree(item, target, dirs_exist_ok=True)
+        except Exception as exc:
+            errors.append(f"{item.name}: {exc}")
+            print_error(f"Ошибка отката {item.name}: {exc}")
+
+    protected_ok = restore_protected(prod_path, saved_protected, dry_run=False)
+    if errors or not protected_ok:
+        print_error("Автоматический откат завершился с ошибками")
+        return False
+
+    print_success("Предыдущая версия production восстановлена")
+    return True
 
 
 def verify_copy_success(prod_path: Path) -> tuple[int, int]:
     """Проверить, что ключевые файлы на месте."""
     checks = [
         (prod_path / "StartSalary.pyw", "Точка входа desktop"),
-        (prod_path / "desktop" / "app.py", "Код приложения"),
+        (prod_path / "run_web.py", "Точка входа web"),
+        (prod_path / "run_bot.py", "Точка входа Telegram-бота"),
+        (prod_path / "desktop" / "app.py", "Главное desktop-приложение"),
+        (prod_path / "bot" / "main.py", "Главный модуль Telegram-бота"),
         (prod_path / "core" / "config" / "settings.py", "Конфигурация"),
         (prod_path / "prod.marker", "Маркер production"),
         (prod_path / "requirements.txt", "Зависимости"),
@@ -385,6 +448,10 @@ def main() -> int:
         )
         return 1
 
+    backup_dir: Path | None = None
+    saved_protected: dict[str, bytes] = {}
+    production_modified = False
+
     try:
         title = "ДЕПЛОЙ PRODUCTION SalaryApp" + (" [DRY-RUN]" if args.dry_run else "")
         print_header(title)
@@ -423,6 +490,10 @@ def main() -> int:
 
         clean_version = read_clean_version(source_path)
         prod_version = read_prod_version(prod_path)
+        patterns = read_exclude_patterns(EXCLUDE_FILE)
+        if not patterns:
+            print_error("Список исключений пуст или недоступен. Деплой остановлен.")
+            return 1
         print_info(f"Версия прода сейчас: {prod_version}")
         print_info(f"Будет установлена:  {clean_version}")
         print()
@@ -435,11 +506,10 @@ def main() -> int:
             print()
 
         # --- Шаг 1: бэкап ---
-        if not create_backup_before_update(prod_path, args.dry_run):
-            if args.yes or input("Бэкап не создан. Продолжить? (y/n): ").strip().lower() != "y":
-                if not args.yes:
-                    print("Деплой отменён.")
-                    return 1
+        backup_dir = create_backup_before_update(prod_path, args.dry_run)
+        if backup_dir is None:
+            print_error("Бэкап не создан. Продолжение небезопасно.")
+            return 1
 
         # --- Снимок защищаемых файлов ---
         print()
@@ -448,26 +518,37 @@ def main() -> int:
         # --- Шаг 2: очистка ---
         print()
         clean_ok = clean_prod_directory(prod_path, args.dry_run)
+        production_modified = not args.dry_run
         if not clean_ok and not args.dry_run:
-            print_warning("При очистке были ошибки (см. выше).")
+            print_error("Очистка завершилась с ошибками. Запускаю откат.")
+            rollback_from_backup(prod_path, backup_dir, saved_protected)
+            return 1
 
         # --- Шаг 3: копирование ---
         print()
         print_header("Шаг 3. Копирование current -> prod")
-        patterns = read_exclude_patterns(EXCLUDE_FILE)
         copied, skipped, errors = copy_with_exclusions(source_path, prod_path, patterns, args.dry_run)
         print_info(f"Скопировано файлов: {copied}")
         print_info(f"Пропущено (исключения): {skipped}")
         if errors:
-            print_warning(f"Ошибок при копировании: {len(errors)}")
+            print_error(f"Ошибок при копировании: {len(errors)}. Запускаю откат.")
+            if not args.dry_run:
+                rollback_from_backup(prod_path, backup_dir, saved_protected)
+            return 1
 
         # --- Шаг 4: version.txt ---
         print()
         print_header("Шаг 4. Версия и восстановление секретов")
-        write_prod_version(prod_path, clean_version, args.dry_run)
+        if not write_prod_version(prod_path, clean_version, args.dry_run):
+            if not args.dry_run:
+                rollback_from_backup(prod_path, backup_dir, saved_protected)
+            return 1
 
         # --- Шаг 5: восстановление bot/.env ---
-        restore_protected(prod_path, saved_protected, args.dry_run)
+        if not restore_protected(prod_path, saved_protected, args.dry_run):
+            if not args.dry_run:
+                rollback_from_backup(prod_path, backup_dir, saved_protected)
+            return 1
 
         # --- Итог ---
         print()
@@ -487,11 +568,14 @@ def main() -> int:
         else:
             print_warning("ДЕПЛОЙ ЗАВЕРШЁН С ПРЕДУПРЕЖДЕНИЯМИ.")
             print(f"Проверки пройдены: {passed}/{total}; ошибок копирования: {len(errors)}")
+            rollback_from_backup(prod_path, backup_dir, saved_protected)
         return 0 if success else 1
 
     except Exception as exc:
         print_error(f"Критическая ошибка: {exc}")
         traceback.print_exc()
+        if production_modified and backup_dir is not None:
+            rollback_from_backup(prod_path, backup_dir, saved_protected)
         return 1
 
 
