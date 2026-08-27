@@ -76,6 +76,10 @@ def test_main_tab_controller_refresh_history(monkeypatch):
         "api.salary_api.SalaryAPI.get_all_grouped_by_year",
         lambda: {"success": True, "data": [{"year": 2026}]},
     )
+    monkeypatch.setattr(
+        "api.settings_api.SettingsAPI.get_settings",
+        lambda: {"success": True, "data": {}},
+    )
 
     controller.refresh_history()
 

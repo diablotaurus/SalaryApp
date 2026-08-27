@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.26 - изоляция unit-теста от БД</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code { font-family: Consolas, 'Courier New', monospace; background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; background: #d4edda; color: #155724; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.26</h1>
+            <p class="subtitle">Корректирующий релиз: независимость unit-теста истории от локальной базы данных</p>
+        </header>
+        <div class="meta">
+            <p><strong>Дата:</strong> 27 августа 2026 г.</p>
+            <p><strong>Версия:</strong> 1.2.25 current → 1.2.26 current.</p>
+            <p><strong>Основание:</strong> согласованное исправление сбоя GitHub Actions после публикации 1.2.25.</p>
+            <p><strong>Область изменений:</strong> один существующий unit-тест, version.txt и два HTML-changelog.</p>
+            <p><strong>Связанные отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_27.08.2026_1.2.25.html">изменения приложения в 1.2.25</a>.</p>
+        </div>
+        <div class="version-display">SalaryApp v.1.2.26 current</div>
+
+        <section class="section" id="cause">
+            <h2>1. Обнаруженная проблема</h2>
+            <p>После публикации коммита <code>96231a9</code> локальная проверка и GitHub Actions дали разные результаты. В рабочем каталоге прошли 110 тестов, а на чистых Windows runner с Python 3.11, 3.12 и 3.13 прошли 109 тестов и завершился ошибкой один и тот же сценарий:</p>
+            <pre><code>test_main_tab_controller_refresh_history
+sqlite3.OperationalError: no such table: settings</code></pre>
+            <p>Результат исходного запуска сохранён в <a href="https://github.com/diablotaurus/SalaryApp/actions/runs/33072894405">GitHub Actions для версии 1.2.25</a>. Проверки критических правил Ruff и runtime-зависимостей в этом запуске прошли; отдельная проверка кодировок тоже была успешной.</p>
+            <ol>
+                <li>Контроллер истории получает данные зарплаты через <code>SalaryAPI</code>, затем настройки через <code>SettingsAPI.get_settings()</code>.</li>
+                <li>В unit-тесте был подменён только запрос зарплаты. Запрос настроек проходил через сервис и репозиторий в настоящую SQLite-БД.</li>
+                <li>Существующая локальная таблица <code>settings</code> скрывала зависимость теста от окружения. Чистая копия репозитория не содержит пользовательскую БД.</li>
+                <li>При повторении проверки с пустой SQLite-БД в памяти ошибка воспроизвелась. Временная подмена API настроек устранила сбой без изменения приложения.</li>
+            </ol>
+            <p class="note"><strong>Вывод:</strong> это дефект изоляции unit-теста. Для его исправления не нужно включать рабочую БД в Git, создавать production-данные в CI или отключать проверку.</p>
+        </section>
+
+        <section class="section" id="fix">
+            <h2>2. Выполненное исправление</h2>
+            <p><span class="change-type">FIXED</span>В существующий тест добавлена подмена API настроек через уже используемый <code>monkeypatch</code>:</p>
+            <pre><code>monkeypatch.setattr(
+    "api.settings_api.SettingsAPI.get_settings",
+    lambda: {"success": True, "data": {}},
+)</code></pre>
+            <ul>
+                <li>Ответ сохраняет реальный контракт API: признак успеха и словарь настроек. Пустой словарь достаточен для существующего сценария проверки отображения истории.</li>
+                <li>Существующая проверка результата <code>display_years</code> сохранена. Тест не удалён, не пропущен и не помечен ожидаемо падающим.</li>
+                <li>Подмена ограничена временем выполнения теста и автоматически отменяется pytest.</li>
+                <li>Использован тот же подход, что в соседнем тесте аналитики. Новые функции, методы и классы в проект не добавлены.</li>
+            </ul>
+            <p class="result-box"><strong>Разделение ответственности:</strong> unit-тест контроллера изолирован на границе API. Проверки реальных настроек, репозиториев и миграций остаются в своих тестах с временными БД. Рабочая логика MVC и публичные контракты не изменены.</p>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>3. Предрелизные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат и условия</th></tr></thead>
+                <tbody>
+                    <tr><td>Исправленный unit-тест</td><td>Успешен при диагностической подмене DatabaseConnection.get_connection, которая вызывает AssertionError при любом обращении. Попыток подключения к SQLite не было.</td></tr>
+                    <tr><td>Полный pytest</td><td>110 тестов успешно в чистой временной копии файлов Git-индекса. Пользовательские БД, bot/.env и локальные резервные копии в неё не переносились.</td></tr>
+                    <tr><td>Условия локального запуска</td><td>Использован установленный локальный Python с UTF-8 и текущими зависимостями. Чистота исходников не означает создание нового virtualenv; отдельные среды Python 3.11, 3.12 и 3.13 проверяет GitHub Actions после push.</td></tr>
+                    <tr><td>Ruff</td><td>Критические правила E9,F63,F7,F82 успешно проверены в чистой копии исходников.</td></tr>
+                    <tr><td>Кодировки и Git</td><td>Изменённые файлы в UTF-8 без BOM; git diff --check без ошибок пробелов.</td></tr>
+                    <tr><td>HTML</td><td>Проверены структура тегов, существование локальных ссылок и якорей. Визуальный браузерный просмотр не выполнялся.</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Пять обязательных точек входа:</strong> проверены <code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>desktop/app.py</code> и <code>bot/main.py</code>. Импорты выполняются, приложение читает версию <code>1.2.26 current</code>. Контракты вызовов сохранены; рабочие GUI, Web-сервер и Telegram polling при этой проверке не запускались.</p>
+            <p>Статус удалённого запуска появляется только после публикации коммита и не подменяется локальным результатом. Актуальные результаты доступны в <a href="https://github.com/diablotaurus/SalaryApp/actions/workflows/ci.yml">CI</a> и <a href="https://github.com/diablotaurus/SalaryApp/actions">списке GitHub Actions</a>. Workflow и набор обязательных проверок в этом релизе не менялись.</p>
+        </section>
+
+        <section class="section" id="files">
+            <h2>4. Состав релиза</h2>
+            <table>
+                <thead><tr><th>Файл</th><th>Изменение</th></tr></thead>
+                <tbody>
+                    <tr><td><code>tests/unit/desktop/controllers/test_tab_controllers.py</code></td><td>Добавлена подмена SettingsAPI.get_settings в существующий тест истории.</td></tr>
+                    <tr><td><code>version.txt</code></td><td>Версия повышена до 1.2.26 current согласно правилу повышения при каждом коммите.</td></tr>
+                    <tr><td><code>docs/changelog_27.08.2026_1.2.26.html</code></td><td>Этот подробный отчёт о причине, исправлении, проверках и границах изменений.</td></tr>
+                    <tr><td><code>docs/changelog.html</code></td><td>Краткий отчёт и ссылка на новый документ; вся предыдущая история сохранена.</td></tr>
+                </tbody>
+            </table>
+            <p>Код приложения, схема БД, зависимости, скрипт деплоя и конфигурация CI не изменены. Релиз не содержит персональных данных, токенов или локальных путей production. Исторический отчёт 1.2.25 сохранён без переписывания его результатов.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>5. Совместимость и обновление</h2>
+            <ul>
+                <li>По сравнению с 1.2.25 этот релиз не меняет пользовательские сценарии, настройки и формат хранения данных.</li>
+                <li>Новые миграции не добавлены. Если 1.2.25 уже установлена и её миграции выполнены, дополнительного преобразования БД нет.</li>
+                <li>При обновлении с 1.2.24 или более ранней версии сохраняется порядок перехода из <a href="changelog_27.08.2026_1.2.25.html#upgrade">отчёта 1.2.25</a>: остановить процессы, сохранить резервную копию, обновить зависимости и выполнять первый запуск одного интерфейса.</li>
+            </ul>
+            <p class="note"><strong>Откат:</strong> ограничение после миграции 005 остаётся в силе. Нельзя запускать код 1.2.24 на БД, в которой суммы уже хранятся в копейках. Для такого возврата нужны согласованные старый код и домиграционная БД.</p>
+            <p><strong>Production не обновлялся.</strong> Подготовка отчётов, commit и push не запускают ручной deploy.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.26 · 27.08.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>

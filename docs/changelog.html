@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.25</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.26</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -37,37 +37,36 @@
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.25</h1>
-            <p class="subtitle">Краткий отчёт: безопасность, целостность данных, резервные копии и архитектурные исправления по итогам code review</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.26</h1>
+            <p class="subtitle">Краткий отчёт: устранение зависимости unit-теста от рабочей БД и проверка в чистой копии проекта</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.25</p>
+            <p><strong>Версия:</strong> v.1.2.26</p>
             <p><strong>Дата:</strong> 27 августа 2026 г.</p>
-            <p><strong>Проверки:</strong> 110 тестов; критический Ruff; UTF-8 без BOM; аудит зависимостей. Ручная проверка подтверждена пользователем.</p>
-            <p><strong>Подробный отчёт:</strong> <a href="changelog_27.08.2026_1.2.25.html">docs/changelog_27.08.2026_1.2.25.html</a></p>
+            <p><strong>Предрелизные проверки:</strong> 110 тестов в чистой копии исходников; запрет обращения исправленного теста к SQLite; критический Ruff; UTF-8 без BOM; пять точек входа.</p>
+            <p><strong>Подробный отчёт:</strong> <a href="changelog_27.08.2026_1.2.26.html">docs/changelog_27.08.2026_1.2.26.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.25 current</div>
+        <div class="version-display">SalaryApp v.1.2.26 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type added">SECURITY</span>Telegram-бот допускает только пользователей из <code>BOT_ALLOWED_IDS</code>. Внешние запросы ко всем Web API требуют <code>X-API-Key</code>; ключ в URL не принимается.</li>
-                <li><span class="change-type fixed">DATA</span>Миграция <code>005_salary_integrity</code>: хранение денег в целых копейках, уникальный год/месяц, ограничения и атомарный UPSERT. Перед изменением непустой БД создаётся резервная копия.</li>
-                <li><span class="change-type improved">BACKUP</span>Согласованный SQLite-снимок, проверка архива и БД, ограничение путей, автоматический бэкап перед восстановлением.</li>
-                <li><span class="change-type fixed">DEPLOY</span>Неполный бэкап останавливает обновление, включая <code>--yes</code>. Ошибки очистки, копирования и итоговой проверки запускают откат кода.</li>
-                <li><span class="change-type refactored">MVC</span>Добавлены <code>SettingsService</code> и <code>AnalyticsRepository</code>, настройки передаются во View контроллером, команды бота вынесены из bootstrap.</li>
-                <li><span class="change-type changed">WEB</span>Обычный запуск через Waitress, рабочие восстановление и удаление резервных копий, JSON-ошибки API и логирование.</li>
-                <li><span class="change-type improved">QUALITY</span>Абсолютные runtime-пути, UTF-8 для BAT-файлов, обновлённые зависимости, Python 3.13 в CI, Ruff и pip-audit.</li>
+                <li><span class="change-type fixed">TEST</span>В <code>test_main_tab_controller_refresh_history</code> добавлена подмена <code>SettingsAPI.get_settings</code>. Unit-тест больше не зависит от таблицы <code>settings</code> в локальной БД.</li>
+                <li><span class="change-type improved">CHECK</span>Исправление проверено отдельно с запретом подключения к SQLite; полный набор из 110 тестов выполнен в чистой временной копии исходников без dev-БД и <code>bot/.env</code>.</li>
+                <li><span class="change-type changed">SCOPE</span>Код приложения, миграции, зависимости и workflow не менялись. Новые функции и классы не добавлены; тесты не отключались.</li>
             </ul>
-            <p><strong>Перед обновлением:</strong> остановите desktop, Web и бота; обновите зависимости. Имеющийся production-файл <code>bot/.env</code> сохраняется скриптом деплоя. Production в рамках подготовки этого релиза не обновлялся.</p>
+            <p><strong>Причина отдельного релиза:</strong> после публикации 1.2.25 GitHub Actions выявил один неизолированный тест: 109 успешных и один сбой на Python 3.11, 3.12 и 3.13. Локальная таблица настроек скрывала проблему. Подробности исправления и ссылка на исходный CI приведены в новом отчёте.</p>
+            <p><strong>Изменения приложения из 1.2.25:</strong> безопасность Telegram и Web, деньги в копейках, резервные копии, rollback деплоя, разделение слоёв и обновлённые зависимости сохранены. Полный перечень находится в <a href="changelog_27.08.2026_1.2.25.html">предыдущем отчёте</a>.</p>
+            <p><strong>Публикация:</strong> результат удалённого запуска проверяется после push в <a href="https://github.com/diablotaurus/SalaryApp/actions/workflows/ci.yml">GitHub Actions</a>. Production при подготовке релиза не обновлялся.</p>
             <p><strong>Важно:</strong> после миграции <code>005</code> нельзя запускать старый код на новой БД. Для возврата к прежней версии потребуется согласованное восстановление кода и домиграционной БД. Подробности и ограничения приведены в <a href="changelog_27.08.2026_1.2.25.html#upgrade">инструкции по обновлению</a>.</p>
         </div>
 
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_27.08.2026_1.2.26.html">27-08-2026</a> - v.1.2.26 - изоляция unit-теста истории от БД, проверка чистой копии и корректирующий релиз (подробный отчёт)</li>
                 <li><a href="changelog_27.08.2026_1.2.25.html">27-08-2026</a> - v.1.2.25 - безопасность, целостность БД, резервные копии, rollback деплоя, архитектура и CI (подробный отчёт)</li>
                 <li><a href="changelog_05.06.2026_1.2.24.html">05-06-2026</a> — v.1.2.24 — полировка desktop-интерфейса: окно «О программе», единые диалоги, блок истории (подробный отчет)</li>
                 <li><a href="changelog_04.06.2026_1.2.23.html">04-06-2026</a> — v.1.2.23 — CI (GitHub Actions) и бейджи в README (подробный отчет)</li>
