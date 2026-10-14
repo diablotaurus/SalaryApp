@@ -9,6 +9,7 @@ import logging
 
 from core.config.settings import config
 from core.database.migrations import apply_all_migrations
+from core.utils.logging_setup import configure_file_logging
 from web.app import create_app
 
 logger = logging.getLogger(__name__)
@@ -71,12 +72,14 @@ def check_dependencies() -> bool:
 
 
 def main() -> None:
-    if not logging.getLogger().handlers:
-        logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    # Лог в файл: production запускается через pythonw без консоли
+    configure_file_logging(config.logging.web_log_file, console=True)
 
     if not check_dependencies():
-        logger.info("Нажмите любую клавишу для выхода...")
-        input()
+        # Ждём нажатия, только если есть консоль (у pythonw её нет — input() упал бы)
+        if sys.stdin is not None and sys.stdin.isatty():
+            logger.info("Нажмите Enter для выхода...")
+            input()
         sys.exit(1)
 
     logger.info("Применение миграций базы данных...")

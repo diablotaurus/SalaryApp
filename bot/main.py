@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from logging.handlers import RotatingFileHandler
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
@@ -14,6 +13,7 @@ from bot.handlers import salary_router
 from bot.middlewares import BotAccessMiddleware
 from core.config.settings import config
 from core.database.migrations import apply_all_migrations
+from core.utils.logging_setup import configure_file_logging
 
 
 logger = logging.getLogger(__name__)
@@ -21,18 +21,7 @@ logger = logging.getLogger(__name__)
 
 def _setup_logging() -> None:
     """Configure rotating file logging when the bot process starts."""
-    handler = RotatingFileHandler(
-        filename=str(config.logging.bot_log_file),
-        maxBytes=5 * 1024 * 1024,
-        backupCount=3,
-        encoding="utf-8",
-    )
-    handler.setFormatter(logging.Formatter(str(config.logging.format)))
-
-    root = logging.getLogger()
-    root.setLevel(getattr(logging, str(config.logging.level).upper(), logging.INFO))
-    root.handlers.clear()
-    root.addHandler(handler)
+    configure_file_logging(config.logging.bot_log_file)
 
 
 def _load_bot_token() -> str:

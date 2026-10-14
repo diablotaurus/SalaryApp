@@ -110,6 +110,7 @@ class LoggingConfig:
     app_log_file: str = "logs/app.log"
     startup_log_file: str = "logs/startup.log"
     bot_log_file: str = "logs/bot.log"
+    web_log_file: str = "logs/web.log"
 
     def __post_init__(self):
         """Инициализация путей логирования с учетом корневой директории"""
@@ -118,11 +119,13 @@ class LoggingConfig:
         self.app_log_file = str(self._resolve_path(root_dir, self.app_log_file))
         self.startup_log_file = str(self._resolve_path(root_dir, self.startup_log_file))
         self.bot_log_file = str(self._resolve_path(root_dir, self.bot_log_file))
+        self.web_log_file = str(self._resolve_path(root_dir, self.web_log_file))
 
         # Создаем директории для логов
         Path(self.app_log_file).parent.mkdir(parents=True, exist_ok=True)
         Path(self.startup_log_file).parent.mkdir(parents=True, exist_ok=True)
         Path(self.bot_log_file).parent.mkdir(parents=True, exist_ok=True)
+        Path(self.web_log_file).parent.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def _resolve_path(root_dir: Path, value: str) -> Path:

@@ -6,6 +6,7 @@
 Запуск (из корня репозитория или двойным кликом по scripts/deploy_to_prod.bat):
     python scripts/deploy_to_prod.py            # реальный деплой
     python scripts/deploy_to_prod.py --dry-run  # показать план, ничего не меняя
+    python scripts/deploy_to_prod.py --restart-services  # + перезапустить web и бота
     python scripts/deploy_to_prod.py "D:\\другой\\prod"  # другой каталог цели
 
 Что делает (по шагам):
@@ -17,6 +18,8 @@
     6. Запись очищенной версии (без суффикса "current") в prod/version.txt.
     7. Восстановление prod/bot/.env.
     8. Проверки и итог.
+    9. С --restart-services — перезапуск задач SalaryAppWeb/SalaryAppBot,
+       без флага — напоминание, если они работают на старом коде.
 
 ГАРАНТИИ БЕЗОПАСНОСТИ:
     - Папка db (символическая ссылка на реальную БД) никогда не копируется и не удаляется.
@@ -30,6 +33,7 @@ import argparse
 import fnmatch
 import os
 import shutil
+import subprocess
 import sys
 import traceback
 from datetime import datetime
@@ -57,6 +61,10 @@ PRESERVE_TOP = {".backup", "db", "prod.marker", "exports", "logs", "nppBackup"}
 
 # Защищаемые секреты: снимаются перед очисткой и возвращаются после копирования.
 PROTECTED_RELATIVE = ["bot/.env"]
+
+# Задачи Планировщика, которые запускают фоновые сервисы из production-каталога
+# (создаются локальными скриптами автозапуска на ПК с production).
+SERVICE_TASKS = ("SalaryAppWeb", "SalaryAppBot")
 # =================================================================
 
 
@@ -426,6 +434,84 @@ def resolve_prod_dir(cli_value: str | None) -> Path | None:
     return None
 
 
+def _run_powershell(script: str) -> str:
+    """Выполнить команду PowerShell и вернуть её вывод (единая точка — подменяется в тестах)."""
+    result = subprocess.run(
+        ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    return result.stdout.strip()
+
+
+def get_task_state(task_name: str) -> str | None:
+    """Состояние задачи Планировщика (Running, Ready, Disabled...) или None, если её нет."""
+    try:
+        state = _run_powershell(
+            f"(Get-ScheduledTask -TaskName '{task_name}' -ErrorAction SilentlyContinue).State"
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return state or None
+
+
+def restart_services(dry_run: bool) -> bool:
+    """
+    Перезапустить фоновые сервисы прода (web, бот), чтобы они взяли новый код.
+
+    Работающие процессы держат старый код в памяти, а шаблоны и статику web
+    читает уже новые с диска. Отключённые и отсутствующие задачи не трогаются.
+    """
+    print_header("Перезапуск фоновых сервисов")
+    all_ok = True
+    for task in SERVICE_TASKS:
+        state = get_task_state(task)
+        if state is None:
+            print_warning(f"{task}: задача не найдена — пропущена")
+            continue
+        if state == "Disabled":
+            print_info(f"{task}: задача отключена — не трогаю")
+            continue
+        if dry_run:
+            print_info(f"[dry-run] Перезапустил бы {task} (сейчас: {state})")
+            continue
+        try:
+            # Ждём фактической остановки: при политике IgnoreNew запуск
+            # поверх ещё работающего экземпляра был бы проигнорирован.
+            new_state = _run_powershell(
+                f"$t = '{task}'; Stop-ScheduledTask -TaskName $t; $i = 0; "
+                "while ((Get-ScheduledTask -TaskName $t).State -eq 'Running' -and $i -lt 40) "
+                "{ Start-Sleep -Milliseconds 250; $i++ }; "
+                "Start-ScheduledTask -TaskName $t; Start-Sleep -Seconds 2; "
+                "(Get-ScheduledTask -TaskName $t).State"
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            new_state = f"ошибка: {exc}"
+        if new_state == "Running":
+            print_success(f"{task}: перезапущена")
+        else:
+            print_error(f"{task}: не удалось перезапустить (состояние: {new_state or 'неизвестно'})")
+            all_ok = False
+    return all_ok
+
+
+def remind_about_running_services() -> None:
+    """Напомнить, что работающие сервисы остались на старом коде."""
+    running = [task for task in SERVICE_TASKS if get_task_state(task) == "Running"]
+    if not running:
+        return
+    print()
+    print_warning(
+        "Работающие сервисы продолжают выполнять СТАРЫЙ код из памяти: "
+        + ", ".join(running)
+    )
+    print("    Перезапустите их, чтобы применить изменения web/бота:")
+    print("      python scripts/deploy_to_prod.py --restart-services --yes   (повторный деплой)")
+    for task in running:
+        print(f"      Stop-ScheduledTask {task}; Start-ScheduledTask {task}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Деплой SalaryApp из current в production.")
     parser.add_argument("destination", nargs="?", default=None,
@@ -435,6 +521,9 @@ def main() -> int:
                         help="Показать план, ничего не меняя.")
     parser.add_argument("--yes", action="store_true",
                         help="Не спрашивать подтверждений (для автоматизации).")
+    parser.add_argument("--restart-services", action="store_true",
+                        help="После успешного деплоя перезапустить задачи Планировщика "
+                             f"{', '.join(SERVICE_TASKS)} (web и бот возьмут новый код).")
     args = parser.parse_args()
 
     source_path = SOURCE_DIR
@@ -556,6 +645,9 @@ def main() -> int:
         if args.dry_run:
             print_success("DRY-RUN завершён. Изменения НЕ вносились.")
             print_info("Для реального деплоя запустите без --dry-run.")
+            if args.restart_services:
+                print()
+                restart_services(dry_run=True)
             return 0
 
         passed, total = verify_copy_success(prod_path)
@@ -565,6 +657,13 @@ def main() -> int:
             print_success("ДЕПЛОЙ ЗАВЕРШЁН УСПЕШНО!")
             print(f"Резервная копия предыдущей версии — в {prod_path / '.backup'}")
             print("Запустите приложение из прода и проверьте заголовок (РЕАЛЬНАЯ БАЗА ДАННЫХ).")
+            if args.restart_services:
+                print()
+                if not restart_services(dry_run=False):
+                    print_warning("Код обновлён, но не все сервисы перезапущены — см. выше.")
+                    return 1
+            else:
+                remind_about_running_services()
         else:
             print_warning("ДЕПЛОЙ ЗАВЕРШЁН С ПРЕДУПРЕЖДЕНИЯМИ.")
             print(f"Проверки пройдены: {passed}/{total}; ошибок копирования: {len(errors)}")

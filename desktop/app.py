@@ -4,6 +4,7 @@
 Содержит класс App - главное окно приложения, реализует интерфейс на основе вкладок
 и координирует взаимодействие между контроллерами и представлениями.
 """
+import logging
 import os
 import tkinter as tk
 from tkinter import messagebox, ttk
@@ -12,6 +13,8 @@ from core.config.settings import config
 from desktop.controllers.navigation_controller import NavigationController
 from desktop.views.constants import (
     DIALOG_TITLE_CONFIRM,
+    DIALOG_TITLE_ERROR,
+    ERROR_UNEXPECTED,
     WINDOW_MAIN_DEFAULT_HEIGHT,
     WINDOW_MAIN_DEFAULT_WIDTH,
     WINDOW_MAIN_MIN_HEIGHT,
@@ -29,6 +32,16 @@ CLOSE_CONFIRM_TEXT = (
     "\u0445\u043e\u0442\u0438\u0442\u0435 \u0437\u0430\u043a\u0440\u044b\u0442\u044c "
     "\u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435?"
 )
+
+logger = logging.getLogger(__name__)
+
+
+def _desktop_log_file() -> str:
+    """\u0424\u0430\u0439\u043b, \u0432 \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0441\u0435\u0439\u0447\u0430\u0441 \u043f\u0438\u0448\u0435\u0442 \u0436\u0443\u0440\u043d\u0430\u043b desktop (\u043d\u0430\u0441\u0442\u0440\u0430\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u043f\u0440\u0438 \u0441\u0442\u0430\u0440\u0442\u0435)."""
+    for handler in logging.getLogger().handlers:
+        if isinstance(handler, logging.FileHandler):
+            return handler.baseFilename
+    return str(config.logging.startup_log_file)
 
 
 class App(tk.Tk):
@@ -131,6 +144,26 @@ class App(tk.Tk):
             self.navigation_controller.refresh_reports()
         elif tab_index == 2:  # Вкладка настроек.
             self.navigation_controller.refresh_settings()
+
+    def report_callback_exception(self, exc_type, exc_value, exc_traceback):
+        """
+        Необработанная ошибка в обработчике Tk (кнопка, клавиша, диалог).
+
+        По умолчанию Tk печатает её в консоль, которой у pythonw нет, и ошибка
+        пропадала бесследно. Теперь она пишется в журнал и показывается пользователю.
+        """
+        logger.error(
+            "Необработанная ошибка в интерфейсе",
+            exc_info=(exc_type, exc_value, exc_traceback),
+        )
+        try:
+            messagebox.showerror(
+                DIALOG_TITLE_ERROR,
+                ERROR_UNEXPECTED.format(error=exc_value, log_file=_desktop_log_file()),
+            )
+        except tk.TclError:
+            # Окно уже закрывается — ошибка всё равно записана в журнал
+            pass
 
     def show_message(self, title: str, message: str, message_type: str = "info"):
         """

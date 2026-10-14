@@ -69,6 +69,10 @@ ERROR_NO_YEAR_MONTH = "Пожалуйста, выберите год и меся
 ERROR_NEGATIVE_AMOUNTS = "Суммы не могут быть отрицательными"
 ERROR_INVALID_FORMAT = "Некорректный формат суммы: {error}"
 ERROR_SAVE_FAILED = "Не удалось сохранить данные: {error}"
+ERROR_UNEXPECTED = (
+    "Произошла непредвиденная ошибка:\n{error}\n\n"
+    "Подробности записаны в журнал:\n{log_file}"
+)
 
 # Сообщения об успехе
 SUCCESS_TITLE = "Успех"
