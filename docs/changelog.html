@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.27</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.28</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -37,34 +37,35 @@
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.27</h1>
-            <p class="subtitle">Краткий отчёт: стабильный Telegram-бот, подсказки на графике и ускорение desktop-интерфейса</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.28</h1>
+            <p class="subtitle">Краткий отчёт: надёжность данных, сворачивание лет на «Главной», вдвое более быстрый запуск и удобство эксплуатации</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.27</p>
-            <p><strong>Дата:</strong> 14 октября 2026 г.</p>
-            <p><strong>Предрелизные проверки:</strong> 155 тестов; попиксельное сравнение главной вкладки до и после изменений; замеры скорости на копии production-БД; критический Ruff; UTF-8 без BOM; точки входа.</p>
-            <p><strong>Подробный отчёт:</strong> <a href="changelog_14.10.2026_1.2.27.html">docs/changelog_14.10.2026_1.2.27.html</a></p>
+            <p><strong>Версия:</strong> v.1.2.28</p>
+            <p><strong>Дата:</strong> 15 октября 2026 г.</p>
+            <p><strong>Предрелизные проверки:</strong> 208 тестов; попиксельное сравнение главной вкладки и сверка Excel-экспорта с прежней версией; замеры скорости на копии production-БД; критический Ruff; UTF-8 без BOM; точки входа.</p>
+            <p><strong>Подробный отчёт:</strong> <a href="changelog_15.10.2026_1.2.28.html">docs/changelog_15.10.2026_1.2.28.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.27 current</div>
+        <div class="version-display">SalaryApp v.1.2.28 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type fixed">BOT</span>Бот больше не падает по кругу при недоступном прокси: <code>TELEGRAM_PROXY</code> принимает несколько адресов в порядке приоритета, откат на прямое подключение удалён.</li>
-                <li><span class="change-type added">CHART</span>На графике «Помесячные данные» при наведении на столбец показывается подсказка с месяцем, годом и суммой.</li>
-                <li><span class="change-type improved">SPEED</span>Вкладки перерисовываются только при изменении данных; ячейка месяца рисуется на одном Canvas вместо ~11 виджетов; «Аналитика» строится при первом открытии.</li>
-                <li><span class="change-type fixed">FIX</span>На крупных шрифтах строка «Зарплата» в ячейке месяца больше не обрезается.</li>
+                <li><span class="change-type fixed">DATA</span>Ошибка ввода суммы больше не превращается молча в 0; срок хранения копий из настроек применяется ко всем копиям; стёртая в форме дата выплаты стирается из базы.</li>
+                <li><span class="change-type added">UI</span>Годы на «Главной» сворачиваются (при запуске развёрнут текущий), в режиме «по кварталам» карточки раскладываются плиткой; полоса прокрутки видна только при необходимости, колёсико не сдвигает короткое содержимое.</li>
+                <li><span class="change-type improved">SPEED</span>Экспорт в Excel без pandas, тяжёлые библиотеки не загружаются при запуске desktop, бота и web.</li>
+                <li><span class="change-type fixed">OPS</span>Лог web в файл, ошибки интерфейса desktop пишутся в журнал и показываются, деплой умеет перезапускать web и бота (<code>--restart-services</code>).</li>
             </ul>
-            <p><strong>Скорость (копия production-БД, 4 года):</strong> переключение на «Главную» 2.4–3.0 с → ~0.2 с, на «Аналитику» 0.4–0.6 с → ~0.1 с, запуск ~4.6 с → ~2.0–2.4 с. Первое открытие «Аналитики» за сеанс занимает ~1.3 с.</p>
-            <p><strong>Совместимость:</strong> схема БД, Web и зависимости не менялись, миграций нет. Внешний вид главной вкладки на текущих размерах шрифтов совпадает с прежним до пикселя.</p>
+            <p><strong>Скорость (копия production-БД, 4 года):</strong> запуск desktop 2.1–2.4 с → 0.8–0.9 с, перестройка после сохранения месяца ~0.6 с → ~0.27 с.</p>
+            <p><strong>Совместимость:</strong> схема БД не менялась, миграций и новых зависимостей нет; pandas удалён из зависимостей. Развёрнутый год на «Главной» выглядит как раньше.</p>
         </div>
 
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_15.10.2026_1.2.28.html">15-10-2026</a> - v.1.2.28 - надёжность данных, сворачивание лет на «Главной», запуск вдвое быстрее, лог web и перезапуск сервисов при деплое (подробный отчёт)</li>
                 <li><a href="changelog_14.10.2026_1.2.27.html">14-10-2026</a> - v.1.2.27 - несколько прокси для бота без падений, подсказки на графике, ускорение запуска и вкладок desktop (подробный отчёт)</li>
                 <li><a href="changelog_27.08.2026_1.2.26.html">27-08-2026</a> - v.1.2.26 - изоляция unit-теста истории от БД, проверка чистой копии и корректирующий релиз (подробный отчёт)</li>
                 <li><a href="changelog_27.08.2026_1.2.25.html">27-08-2026</a> - v.1.2.25 - безопасность, целостность БД, резервные копии, rollback деплоя, архитектура и CI (подробный отчёт)</li>

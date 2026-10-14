@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.28 - надёжность данных, сворачивание лет и быстрый запуск</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.28</h1>
+            <p class="subtitle">Надёжность данных, сворачивание лет на «Главной», вдвое более быстрый запуск и удобство эксплуатации</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 15 октября 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.27 current</p>
+            <p><strong>Новая версия:</strong> 1.2.28 current; скрипт деплоя записывает в production 1.2.28 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> ядро (суммы, даты, бэкапы, экспорт), desktop, web-запуск, Telegram-бот (логирование), скрипт деплоя, зависимости, тесты. Схема БД не менялась, миграций нет.</p>
+            <p><strong>Основание:</strong> полный code review 1.2.27 и согласованные с пользователем пакеты исправлений: А (данные), Б (эксплуатация), В (скорость), а также идеи пользователя по главной вкладке. Пользователь проверил каждый шаг вручную.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_14.10.2026_1.2.27.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.28 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>Данные</strong>Опечатка больше не обнуляет сумму</div>
+            <div class="summary-item summary-data"><strong>Запуск ~0.9 с</strong>Было 2.1–2.4 с</div>
+            <div class="summary-item summary-tests"><strong>208 тестов</strong>+53 к версии 1.2.27</div>
+        </div>
+
+        <section class="section" id="overview">
+            <h2>1. Основные результаты</h2>
+            <table>
+                <thead><tr><th>Область</th><th>Проблема до исправления</th><th>Что изменено</th></tr></thead>
+                <tbody>
+                    <tr><td>Ввод сумм (desktop)</td><td>Ошибка ввода (опечатка, неразрывный пробел из банковского приложения, «12,345.67») молча превращалась в 0 и затирала сохранённую сумму.</td><td>Строгий разбор с понятной ошибкой; поддержка неразрывных пробелов и форматов с разделителем тысяч.</td></tr>
+                    <tr><td>Резервные копии</td><td>Настройка «хранить копии N дней» учитывалась только при закрытии приложения; остальные копии чистили всё старше 30 дней.</td><td>Срок хранения из настроек применяется ко всем копиям.</td></tr>
+                    <tr><td>Даты выплат</td><td>Стёртую в форме дату нельзя было убрать из базы.</td><td>Пустое поле в форме стирает дату; бот и API без поля даты оставляют прежнюю.</td></tr>
+                    <tr><td>«Главная»</td><td>Все годы разворачивались целиком; полоса прокрутки видна всегда; колёсико сдвигало короткое содержимое.</td><td>Сворачивание лет, раскладка плиткой, полоса прокрутки только при необходимости.</td></tr>
+                    <tr><td>Скорость</td><td>pandas (~0.6 с) грузился при каждом запуске desktop, бота и web ради одного экспорта в Excel.</td><td>Экспорт через openpyxl, загружаемый только при экспорте; pandas удалён из зависимостей.</td></tr>
+                    <tr><td>Эксплуатация</td><td>Логи web-сервера и ошибки интерфейса desktop терялись (pythonw без консоли); деплой не перезапускал web и бота.</td><td>Лог web в файл, перехват ошибок desktop, флаг деплоя <code>--restart-services</code>.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section" id="data">
+            <h2>2. Надёжность данных</h2>
+            <h3>Ввод сумм</h3>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span><code>MoneyUtils.parse_amount</code> при любой ошибке возвращал 0.0, и диалог ввода сохранял ноль поверх настоящей суммы месяца без предупреждения. Теперь неоднозначный или некорректный ввод даёт сообщение с названием поля, например «аванс «87432,7l» — ожидается число, например 87 432,71», и ничего не сохраняется.</li>
+                <li>Понимаются пробелы любого вида, включая неразрывные (так вставляются суммы из банковских приложений), и форматы <code>12,345.67</code> / <code>12.345,67</code>: десятичный разделитель — правый.</li>
+                <li>Отклоняются опечатки, <code>87.432.71</code>, больше двух знаков после разделителя (<code>12,345</code>, вероятно, тысячи), <code>nan</code>, <code>1e3</code>. Пустое поле по-прежнему означает 0.</li>
+                <li>Web-форма отдельного исправления не потребовала: поля сумм имеют <code>type="number" required min="0" step="0.01"</code>, и браузер сам не отправляет некорректные значения (проверено на dev-сервере).</li>
+            </ul>
+            <h3>Срок хранения резервных копий</h3>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Сервис бэкапов сам читает настройку <code>backup_days</code> и применяет её ко всем копиям: ручным, из web, при закрытии и автоматическим перед восстановлением. Раньше при сроке, например, 90 дней любая ручная копия удаляла всё старше 30.</li>
+                <li>Убрана временная подмена глобального конфига в контроллере desktop. Если настройку прочитать нельзя, используется значение из конфигурации.</li>
+            </ul>
+            <h3>Очистка дат выплат</h3>
+            <ul>
+                <li><span class="change-type changed">CHANGED</span>Формы desktop и web подставляют сохранённые даты в поля, поэтому пустое поле означает, что пользователь стёр дату, и теперь она стирается из базы. <code>None</code> (бот при ответе «-», API-запрос без поля даты) оставляет прежнюю дату.</li>
+                <li>Прежнее поведение «пустая дата не затирает сохранённую» было закреплено тестом; решение изменить его согласовано с пользователем, тест заменён тремя новыми.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="main-tab">
+            <h2>3. Вкладка «Главная»</h2>
+            <h3>Сворачивание лет</h3>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Клик по стрелке ▶/▼ или году сворачивает и разворачивает карточку. Свёрнутый год показывает заголовок, кнопки «Редактировать»/«Удалить год» и строку итогов.</li>
+                <li>Сетка месяцев строится при первом разворачивании, затем только скрывается: повторное разворачивание мгновенное.</li>
+                <li>При запуске развёрнут текущий год, а если за него ещё нет данных, — последний год с данными. Выбор пользователя сохраняется до закрытия приложения; впервые появившийся текущий год разворачивается сам.</li>
+                <li>Развёрнутый год выглядит как раньше (сравнение скриншотов до пикселя).</li>
+            </ul>
+            <h3>Раскладка плиткой (режим «по кварталам»)</h3>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Каждая следующая карточка встаёт в более короткую колонку: свёрнутые годы выстраиваются по порядку рядом с развёрнутым, без пустот. Идея пользователя.</li>
+                <li>Карточка, по которой кликнули, не меняет колонку; порядок лет сверху вниз сохраняется. Стандартный режим не изменился.</li>
+            </ul>
+            <h3>Полоса прокрутки и колёсико</h3>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Полоса прокрутки видна только тогда, когда карточки не помещаются (виджет <code>AutoHideScrollbar</code>). При видимой полосе вид совпадает с прежним до пикселя.</li>
+                <li><span class="change-type fixed">FIXED</span>Если содержимое короче окна, Tk разрешал двигать его внутри окна, и колёсико вверх сдвигало карточки вниз, оставляя пустоту сверху. Ошибка была и раньше и стала заметна со свёрнутыми годами. Область прокрутки теперь не меньше видимой высоты.</li>
+                <li>Стрелки рисуются шрифтом Segoe UI Symbol (в обычном шрифте ▶ мельче ▼); фон области прокрутки совпадает с панелью.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="performance">
+            <h2>4. Скорость</h2>
+            <p>Замеры на копии production-БД (4 года данных), одним и тем же скриптом. Копия создавалась через SQLite Backup API в режиме только чтения и удалялась после замеров.</p>
+            <table>
+                <thead><tr><th>Действие</th><th>1.2.27</th><th>1.2.28</th></tr></thead>
+                <tbody>
+                    <tr><td>Запуск desktop до готового окна</td><td>2.1–2.4 с</td><td><strong>0.8–0.9 с</strong></td></tr>
+                    <tr><td>Переход на «Главную»</td><td>~0.18 с</td><td>~0.11 с</td></tr>
+                    <tr><td>Перестройка после сохранения месяца</td><td>~0.6 с</td><td>~0.27 с</td></tr>
+                    <tr><td>Экспорт в Excel по кнопке</td><td>~0.55 с</td><td>~0.6 с</td></tr>
+                </tbody>
+            </table>
+            <ul>
+                <li><span class="change-type changed">CHANGED</span>Экспорт в Excel пишется напрямую через openpyxl; pandas удалён из зависимостей, <code>run_web.bat</code> и README. Цепочка «контроллер → API → экспорт» загружала pandas при каждом запуске desktop, бота и web.</li>
+                <li>openpyxl сам загружается около 0.7 с, поэтому импортируется только в момент экспорта, а не при запуске.</li>
+                <li>Файл сверен с прежним ячейка в ячейку: те же листы, значения, типы и оформление заголовков. «Итого» округлено до копеек (раньше шум float раздувал ширину колонки).</li>
+                <li>Проверка зависимостей web при старте использует <code>importlib.util.find_spec</code> и больше не загружает openpyxl и matplotlib только ради проверки наличия.</li>
+                <li>Свёрнутые годы ускоряют запуск и перестройку: время запуска почти не растёт с длиной истории.</li>
+            </ul>
+            <p class="note"><strong>Production:</strong> pandas можно не удалять из установленного Python — он больше не загружается. Новых зависимостей нет.</p>
+        </section>
+
+        <section class="section" id="operations">
+            <h2>5. Эксплуатация</h2>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Web пишет лог в <code>logs/web.log</code> с ротацией (5 МБ × 3). В production web запускается через pythonw без консоли, и раньше его логи и ошибки терялись. Проверено запуском dev-сервера через pythonw.</li>
+                <li>Настройка логирования web и бота вынесена в общий помощник <code>core/utils/logging_setup.py</code>; у бота поведение прежнее.</li>
+                <li><span class="change-type fixed">FIXED</span>Необработанная ошибка в обработчике интерфейса desktop (кнопка, диалог) записывается в журнал с трассировкой и показывается пользователю с путём к журналу. Раньше Tk печатал её в отсутствующую консоль.</li>
+                <li><span class="change-type added">ADDED</span>Деплой: флаг <code>--restart-services</code> перезапускает задачи Планировщика <code>SalaryAppWeb</code> и <code>SalaryAppBot</code> и проверяет состояние <code>Running</code>. Скрипт дожидается фактической остановки (при политике IgnoreNew запуск поверх работающего экземпляра игнорируется), пропускает отсутствующие и отключённые задачи. При сбое — код 1 без отката кода. Без флага — напоминание о сервисах, работающих на старом коде. <code>DEPLOY.md</code> дополнен.</li>
+                <li>Если web не хватает зависимостей, ожидание нажатия клавиши выполняется только при наличии консоли (под pythonw <code>input()</code> падал сам).</li>
+            </ul>
+        </section>
+
+        <section class="section" id="side-fixes">
+            <h2>6. Найдено и исправлено попутно</h2>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Экспорт в Excel на пустой базе падал: суммы <code>NULL</code> складывались как <code>None + None</code>. Теперь создаётся файл с заголовками и нулями.</li>
+                <li><span class="change-type fixed">FIXED</span>Тесты с окном Tk иногда пропускались: повторное создание <code>Tk()</code> на Windows нестабильно. Теперь одно окно на весь прогон (<code>tests/unit/desktop/conftest.py</code>).</li>
+                <li>Определение текущего периода в контроллере главной вкладки вынесено в общий метод (было продублировано).</li>
+            </ul>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>7. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>208 тестов успешно (в 1.2.27 было 155); полный прогон стабилен при повторах.</td></tr>
+                    <tr><td>Данные</td><td>Форматы сумм и отказ на неоднозначном вводе; срок хранения копий (тест падает на прежнем коде); очистка одной и обеих дат, сохранение даты при <code>None</code>.</td></tr>
+                    <tr><td>«Главная»</td><td>Свёрнутый год не строит сетку; выбор переживает перестройку; правило года по умолчанию; раскладка плиткой по сценарию пользователя; кликнутая карточка остаётся в колонке; полоса прокрутки скрывается и возвращается; колёсико не сдвигает короткое содержимое (тест на показанном окне падает без исправления).</td></tr>
+                    <tr><td>Экспорт</td><td>Листы, значения, стиль заголовков, пустая база; файл сверен с прежней версией ячейка в ячейку на копии production-БД.</td></tr>
+                    <tr><td>Скорость запуска</td><td>Импорт desktop, бота и web не загружает pandas, openpyxl (и matplotlib для desktop/web); тест падает на прежнем коде во всех трёх случаях.</td></tr>
+                    <tr><td>Эксплуатация</td><td>Помощник логирования (в т. ч. без консоли); перехват ошибок desktop; 5 сценариев перезапуска сервисов с подменой PowerShell; чтение состояния задач проверено на реальном Планировщике.</td></tr>
+                    <tr><td>Внешний вид</td><td>Попиксельное сравнение скриншотов главной вкладки до и после на копии production-БД (оба режима истории).</td></tr>
+                    <tr><td>Ruff / UTF-8 / git diff</td><td>Критические правила CI пройдены; изменённые файлы в UTF-8 без BOM; <code>git diff --check</code> без ошибок.</td></tr>
+                    <tr><td>Ручная проверка</td><td>Пользователь проверил каждое изменение в dev-версии.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>StartSalary.pyw</code> и <code>run_bot.py</code> не менялись; desktop запускался на копии production-БД.</li>
+                <li><code>run_web.py</code> не менялся; <code>web/bootstrap.py</code>: лог в файл и проверка зависимостей без импорта, dev-сервер запускался через pythonw.</li>
+                <li><code>desktop/app.py</code>: добавлен перехват ошибок обработчиков, остальное без изменений.</li>
+                <li><code>bot/main.py</code>: логирование через общий помощник; порядок запуска прежний. Бот локально не запускался, чтобы не конфликтовать с production-ботом по токену.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="files">
+            <h2>8. Карта изменённых файлов</h2>
+            <h3>Новые компоненты</h3>
+            <div class="file">core/utils/logging_setup.py; desktop/widgets/auto_hide_scrollbar.py</div>
+            <div class="file">tests/unit/desktop/conftest.py; tests/unit/desktop/test_app_errors.py; tests/unit/desktop/views/test_main_view_collapse.py; tests/unit/desktop/widgets/test_auto_hide_scrollbar.py; tests/unit/core/utils/test_logging_setup.py</div>
+            <h3>Обновлённые файлы</h3>
+            <div class="file">core/utils/money.py; core/services/salary_service.py; core/repositories/salary_repository.py; core/services/backup_service.py; core/services/export_service.py; core/config/settings.py</div>
+            <div class="file">desktop/app.py; desktop/controllers/main_tab_controller.py; desktop/views/main/main_view.py; desktop/views/dialogs/salary_dialog.py; desktop/views/constants/texts.py; desktop/views/constants/numbers.py</div>
+            <div class="file">bot/main.py; web/bootstrap.py; scripts/deploy_to_prod.py; scripts/DEPLOY.md; requirements.txt; run_web.bat; README.md</div>
+            <div class="file">tests/unit/core/services/test_backup_service.py; test_export_service.py; test_salary_service_add_salary.py; tests/unit/core/utils/test_money_utils.py; tests/unit/desktop/controllers/test_tab_controllers.py; tests/unit/desktop/test_startup_imports.py; tests/unit/desktop/views/test_month_cell.py; tests/unit/scripts/test_deploy_to_prod.py</div>
+            <p><strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>. Рабочие БД, токены, логи и пользовательские экспорты в коммит не включаются.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>9. Обновление production</h2>
+            <ol>
+                <li>Закрыть desktop-приложение production.</li>
+                <li>Запустить деплой с перезапуском сервисов: web и бот изменились (логирование), и без перезапуска продолжили бы работать на старом коде.</li>
+                <li>Проверить заголовок окна desktop (1.2.28), появление <code>logs/web.log</code> и подключение бота в <code>logs/bot.log</code>.</li>
+            </ol>
+            <pre><code>python scripts/deploy_to_prod.py --restart-services</code></pre>
+            <p class="note"><strong>Совместимость:</strong> схема БД не менялась, миграций нет, новых зависимостей нет. Возврат к 1.2.27 возможен обычным деплоем предыдущего кода (pandas в production-окружении для этого должен оставаться установленным).</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.28 · 15.10.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>
