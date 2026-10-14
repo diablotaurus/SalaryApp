@@ -19,11 +19,12 @@ from desktop.views.constants import (
     DEFAULT_HISTORY_LAYOUT_MODE, DEFAULT_MAIN_STATS_LAYOUT_MODE,
     DEFAULT_MONTH_TITLE_FONT_SIZE, DEFAULT_MONTH_TOTAL_FONT_SIZE, DEFAULT_MONTH_DATA_FONT_SIZE,
     CARD_BUTTON_WIDTH, FONT_YEAR_TITLE, FONT_CARD_STATS, FONT_CARD_SECTION,
-    FONT_NO_DATA, FONT_MONTH_NO_DATA
+    FONT_NO_DATA
 )
 from core.utils.money import MoneyUtils
 from core.utils.dates import DateUtils
 from desktop.views.constants import DEFAULT_ADVANCE_COLOR, DEFAULT_SALARY_COLOR, DEFAULT_TOTAL_COLOR
+from desktop.views.main.month_cell import MonthCell, MonthCellStyle
 
 
 class MainView(BaseView):
@@ -232,6 +233,9 @@ class MainView(BaseView):
         # Сортируем годы по убыванию (новые сверху), не изменяя переданный список
         years_data = sorted(years_data, key=lambda x: x['year'], reverse=True)
 
+        # Шрифты и цвета ячеек месяцев — один раз на всю отрисовку
+        self._cell_style = self._create_cell_style()
+
         # Сбрасываем сетку карточек перед применением нового режима отображения.
         # Иначе после режима 2-колонок при возврате к 1 колонке ширина делится пополам.
         for col in range(2):
@@ -373,7 +377,24 @@ class MainView(BaseView):
             for j in range(cols_count):
                 idx = i * cols_count + j
                 if idx < 12:  # Всего 12 месяцев
-                    self._create_month_cell(months_grid, months[idx], i, j)
+                    MonthCell(months_grid, months[idx], self._cell_style).grid(
+                        row=i, column=j, padx=2, pady=2, sticky="nsew"
+                    )
+
+    def _create_cell_style(self) -> MonthCellStyle:
+        """Собрать шрифты и цвета ячеек месяцев из текущих настроек отображения."""
+        # Цвет фона под тему, чтобы ячейки сливались с карточкой
+        bg = ttk.Style().lookup("TFrame", "background") or self.winfo_toplevel().cget("bg")
+        return MonthCellStyle.create(
+            self,
+            background=bg,
+            title_size=self._month_title_font_size,
+            data_size=self._month_data_font_size,
+            total_size=self._month_total_font_size,
+            advance_color=self._advance_color,
+            salary_color=self._salary_color,
+            total_color=self._total_color,
+        )
 
     def apply_settings(self, settings: Dict[str, Any]) -> None:
         """Применить подготовленные контроллером настройки отображения."""
@@ -408,92 +429,6 @@ class MainView(BaseView):
         except (TypeError, ValueError):
             value = default
         return max(7, min(24, value))
-
-    def _create_month_cell(self, parent, month_info: Dict[str, Any], row: int, col: int):
-        """
-        Создать ячейку месяца в сетке.
-
-        Args:
-            parent: Родительский виджет (сетка месяцев)
-            month_info: Данные месяца (название, суммы, даты)
-            row: Строка в сетке
-            col: Столбец в сетке
-
-        Визуальное представление:
-            - Месяц с данными: суммы аванса и зарплаты с цветным оформлением
-            - Месяц без данных: серый текст "Нет данных"
-        """
-        # Получаем цвет фона для совместимости с темой
-        style = ttk.Style()
-        bg = style.lookup("TFrame", "background") or self.winfo_toplevel().cget("bg")
-
-        # Фрейм ячейки с тонкой рамкой
-        cell = tk.Frame(parent, relief="solid", borderwidth=1, bg=bg)
-        cell.grid(row=row, column=col, padx=2, pady=2, sticky="nsew")
-
-        # Название месяца жирным шрифтом
-        month_label = tk.Label(cell, text=month_info['month_name'],
-                               font=('Segoe UI', self._month_title_font_size, 'bold'), bg=bg)
-        month_label.pack(anchor=tk.CENTER, pady=(2, 1))
-
-        if month_info['has_data']:
-            # Таблица выплат (аванс/зарплата) и итог за месяц
-            self._create_payments_table(cell, month_info, bg)
-
-            total_label = tk.Label(
-                cell,
-                text=f"Итого: {MoneyUtils.format_amount(month_info['total'], '')}",
-                font=('Segoe UI', self._month_total_font_size, 'bold'),
-                fg=self._total_color,
-                bg=bg
-            )
-            total_label.pack(side=tk.BOTTOM, anchor=tk.CENTER, pady=(3, 2))
-        else:
-            # Нет данных за этот месяц
-            no_data_label = tk.Label(cell, text="Нет данных", font=FONT_MONTH_NO_DATA, fg='gray', bg=bg)
-            no_data_label.pack(expand=True, anchor=tk.CENTER)
-
-    def _create_payments_table(self, cell, month_info: Dict[str, Any], bg):
-        """
-        Построить компактную таблицу выплат месяца: строки «Аванс»/«Зарплата»
-        с датой и суммой. Зона выплат имеет фиксированную высоту (до 2 строк),
-        чтобы строка «Итого» не сдвигалась между ячейками.
-        """
-        advance = month_info['advance']
-        salary = month_info['salary']
-        advance_date = month_info.get('advance_date') or ""
-        salary_date = month_info.get('salary_date') or ""
-
-        # Фиксированная по высоте зона выплат (до 2 строк)
-        payments_area_height = max(44, 2 * (self._month_data_font_size + 9) + 4)
-        payments_area = tk.Frame(cell, bg=bg, height=payments_area_height)
-        payments_area.pack(fill=tk.X, padx=4, pady=(0, 2))
-        payments_area.pack_propagate(False)
-
-        payments_frame = tk.Frame(payments_area, bg=bg)
-        payments_frame.pack(fill=tk.X, anchor="n")
-        # Колонки: название выплаты, дата (растягивается), сумма (растягивается)
-        payments_frame.grid_columnconfigure(0, weight=0, minsize=54)
-        payments_frame.grid_columnconfigure(1, weight=1, minsize=52)
-        payments_frame.grid_columnconfigure(2, weight=1, minsize=56)
-
-        data_row = 0
-        if advance > 0:
-            self._add_payment_row(payments_frame, data_row, "Аванс", advance_date, advance, self._advance_color, bg)
-            data_row += 1
-        if salary > 0:
-            self._add_payment_row(payments_frame, data_row, "Зарплата", salary_date, salary, self._salary_color, bg)
-
-    def _add_payment_row(self, parent, row: int, name: str, date: str, amount: float, color: str, bg):
-        """Добавить строку выплаты «Название | Дата | Сумма» в таблицу выплат."""
-        font = ('Segoe UI', self._month_data_font_size)
-
-        tk.Label(parent, text=name, font=font, fg=color, bg=bg).grid(
-            row=row, column=0, sticky="w")
-        tk.Label(parent, text=date or "-", font=font, fg=color, bg=bg).grid(
-            row=row, column=1, sticky="e", padx=(2, 1))
-        tk.Label(parent, text=MoneyUtils.format_amount(amount, ''), font=font, fg=color, bg=bg).grid(
-            row=row, column=2, sticky="e", padx=(1, 1))
 
     def _show_about(self):
         """Открыть модальное окно «О программе»."""
