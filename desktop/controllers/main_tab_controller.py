@@ -8,6 +8,7 @@ from api.settings_api import SettingsAPI
 from core.config.settings import config
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
 from core.utils.dates import DateUtils
+from desktop.controllers.render_cache import RenderCache
 from desktop.views.dialogs.backup_dialog import BackupDialog
 from desktop.views.dialogs.export_dialog import ExportDialog
 from desktop.views.dialogs.salary_dialog import SalaryDialog
@@ -19,6 +20,7 @@ class MainTabController:
     def __init__(self, navigation: Any):
         self.navigation = navigation
         self.app = navigation.app
+        self._history_cache = RenderCache()
 
     def add_data(self):
         period_response = SalaryAPI.get_current_period()
@@ -70,9 +72,14 @@ class MainTabController:
             if response["success"]:
                 settings_response = SettingsAPI.get_settings()
                 settings = settings_response.get("data", {}) if settings_response.get("success") else {}
+                # Перестройка карточек дорогая: пропускаем, если данные и настройки не менялись.
+                render_key = (response["data"], settings)
+                if self._history_cache.is_current(render_key):
+                    return
                 if hasattr(self.app.main_view, "apply_settings"):
                     self.app.main_view.apply_settings(settings)
                 self.app.main_view.display_years(response["data"])
+                self._history_cache.remember(render_key)
             else:
                 self.navigation.show_message("Ошибка", response["message"], "error")
         except RECOVERABLE_EXCEPTIONS as exc:

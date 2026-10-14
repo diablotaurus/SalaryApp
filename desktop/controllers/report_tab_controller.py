@@ -6,12 +6,14 @@ from api.salary_api import SalaryAPI
 from api.settings_api import SettingsAPI
 from core.config.settings import config
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
+from desktop.controllers.render_cache import RenderCache
 
 
 class ReportTabController:
     def __init__(self, navigation: Any):
         self.navigation = navigation
         self.app = navigation.app
+        self._charts_cache = RenderCache()
 
     def refresh_reports(self):
         try:
@@ -21,39 +23,48 @@ class ReportTabController:
                 self.app.report_view.update_years_list(years)
                 if years:
                     self.load_chart_data()
+                else:
+                    self._charts_cache.invalidate()
             else:
+                self._charts_cache.invalidate()
                 self.app.report_view.update_years_list([])
         except RECOVERABLE_EXCEPTIONS as exc:
+            self._charts_cache.invalidate()
             app_exc = to_app_error(exc, "Не удалось обновить аналитику")
             self.navigation.show_message("Ошибка", app_exc.user_message, "error")
             self.app.report_view.update_years_list([])
 
+    @staticmethod
+    def _response_data(response: Any) -> Any:
+        return response["data"] if response and response.get("success") else None
+
     def load_chart_data(self):
         selected_year = self.app.report_view.get_selected_year()
 
-        monthly_response = SalaryAPI.get_monthly_series_dto(selected_year)
-        self.app.report_view.update_monthly_chart(
-            monthly_response["data"] if monthly_response and monthly_response.get("success") else None
-        )
+        # Сначала собираем все данные (это дёшево), затем перерисовываем графики,
+        # только если данные изменились с прошлой отрисовки.
+        charts = {
+            "monthly": self._response_data(SalaryAPI.get_monthly_series_dto(selected_year)),
+            "yearly": self._response_data(SalaryAPI.get_yearly_comparison_dto()),
+            "growth": self._response_data(SalaryAPI.get_growth_rate_dto()),
+            "average": self._response_data(SalaryAPI.get_average_by_month_dto()),
+        }
+        kpi = self._load_kpi_data(selected_year)
 
-        yearly_response = SalaryAPI.get_yearly_comparison_dto()
-        self.app.report_view.update_yearly_chart(
-            yearly_response["data"] if yearly_response and yearly_response.get("success") else None
-        )
+        render_key = (selected_year, charts, kpi)
+        if self._charts_cache.is_current(render_key):
+            return
 
-        growth_response = SalaryAPI.get_growth_rate_dto()
-        self.app.report_view.update_growth_chart(
-            growth_response["data"] if growth_response and growth_response.get("success") else None
-        )
+        self.app.report_view.update_monthly_chart(charts["monthly"])
+        self.app.report_view.update_yearly_chart(charts["yearly"])
+        self.app.report_view.update_growth_chart(charts["growth"])
+        self.app.report_view.update_average_chart(charts["average"])
+        self.app.report_view.update_kpi(**kpi)
 
-        avg_response = SalaryAPI.get_average_by_month_dto()
-        self.app.report_view.update_average_chart(
-            avg_response["data"] if avg_response and avg_response.get("success") else None
-        )
+        self._charts_cache.remember(render_key)
 
-        self._load_kpi_data(selected_year)
-
-    def _load_kpi_data(self, selected_year: Optional[int]):
+    def _load_kpi_data(self, selected_year: Optional[int]) -> dict[str, Any]:
+        """Собрать аргументы для панели KPI (без обращения к представлению)."""
         summary = None
         best_month = None
         best_year = None
@@ -95,15 +106,14 @@ class ReportTabController:
                 best_year = best_response.get("data", {}).get("best_year")
 
         show_best_year = show_best_year_always or not selected_year
-        if hasattr(self.app, "report_view"):
-            self.app.report_view.update_kpi(
-                summary,
-                best_month,
-                best_year,
-                selected_year,
-                show_best_year_always=show_best_year,
-                currency=currency,
-            )
+        return {
+            "summary": summary,
+            "best_month": best_month,
+            "best_year": best_year,
+            "selected_year": selected_year,
+            "show_best_year_always": show_best_year,
+            "currency": currency,
+        }
 
     def on_year_selected(self, _year: int):
         self.load_chart_data()

@@ -229,8 +229,8 @@ class MainView(BaseView):
             no_data_label.pack(pady=50)
             return
 
-        # Сортируем годы по убыванию (новые сверху)
-        years_data.sort(key=lambda x: x['year'], reverse=True)
+        # Сортируем годы по убыванию (новые сверху), не изменяя переданный список
+        years_data = sorted(years_data, key=lambda x: x['year'], reverse=True)
 
         # Сбрасываем сетку карточек перед применением нового режима отображения.
         # Иначе после режима 2-колонок при возврате к 1 колонке ширина делится пополам.
