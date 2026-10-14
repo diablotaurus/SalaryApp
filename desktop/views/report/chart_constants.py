@@ -1,0 +1,11 @@
+"""Presentation constants for report chart tooltips."""
+
+TOOLTIP_FONT_SIZE = 10
+TOOLTIP_OFFSET_PX = 12
+TOOLTIP_MARGIN_PX = 6
+TOOLTIP_ZORDER = 20
+TOOLTIP_BACKGROUND = "#ffffff"
+TOOLTIP_BORDER = "#9ca3af"
+TOOLTIP_TEXT_COLOR = "#202124"
+TOOLTIP_BORDER_WIDTH = 0.8
+TOOLTIP_BOX_STYLE = "round,pad=0.5,rounding_size=0.2"

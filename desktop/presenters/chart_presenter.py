@@ -17,6 +17,12 @@ class ChartPresenter:
             result.append(avg)
         return result
 
+    @staticmethod
+    def _format_monthly_tooltip(item: Dict[str, Any], label: str, amount: float) -> str:
+        month = DateUtils.get_month_name(int(item["month"]), short=False)
+        value = MoneyUtils.format_amount(amount, currency="руб.")
+        return f"{month} {int(item['year'])}\n{label}: {value}"
+
     def prepare_monthly_dto(self, dto: Dict[str, Any]) -> Dict[str, Any]:
         items = dto.get("items", [])
         if not items:
@@ -34,6 +40,10 @@ class ChartPresenter:
                 "is_all_years": True,
                 "labels": labels,
                 "values": values,
+                "tooltips": [
+                    self._format_monthly_tooltip(item, "Итого", value)
+                    for item, value in zip(items, values)
+                ],
                 "label": "Итого",
                 "color": "#4BC0C0",
                 "tick_positions": tick_positions,
@@ -46,15 +56,21 @@ class ChartPresenter:
         advances = [float(i.get("advance", 0) or 0) for i in items]
         salaries = [float(i.get("salary", 0) or 0) for i in items]
         totals = [float(i.get("total", 0) or 0) for i in items]
+        datasets = [
+            {"label": "Аванс", "data": advances, "backgroundColor": "#FF6384"},
+            {"label": "Зарплата", "data": salaries, "backgroundColor": "#36A2EB"},
+            {"label": "Итого", "data": totals, "backgroundColor": "#4BC0C0"},
+        ]
+        for dataset in datasets:
+            dataset["tooltips"] = [
+                self._format_monthly_tooltip(item, dataset["label"], value)
+                for item, value in zip(items, dataset["data"])
+            ]
         return {
             "has_data": True,
             "is_all_years": False,
             "labels": labels,
-            "datasets": [
-                {"label": "Аванс", "data": advances, "backgroundColor": "#FF6384"},
-                {"label": "Зарплата", "data": salaries, "backgroundColor": "#36A2EB"},
-                {"label": "Итого", "data": totals, "backgroundColor": "#4BC0C0"}
-            ]
+            "datasets": datasets
         }
 
     @staticmethod

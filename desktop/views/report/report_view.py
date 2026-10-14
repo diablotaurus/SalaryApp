@@ -20,6 +20,7 @@ except ImportError:
 
 from desktop.views.base_view import BaseView
 from desktop.presenters import ChartPresenter
+from desktop.views.report.bar_chart_tooltip import BarChartTooltip
 from desktop.views.constants import (
     PADX_DEFAULT, PADY_DEFAULT,
     TEXT_CHART_SETTINGS, TEXT_REFRESH_CHARTS, TEXT_ALL_YEARS, TEXT_YEAR,
@@ -236,11 +237,14 @@ class ReportView(BaseView):
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)
         
+        tooltip = BarChartTooltip(ax, canvas, canvas.get_tk_widget())
+
         # Сохранение объектов графика для последующего обновления
         self.charts['monthly'] = {
             'fig': fig,
             'ax': ax,
-            'canvas': canvas
+            'canvas': canvas,
+            'tooltip': tooltip
         }
     
     def _create_yearly_chart(self, parent):
@@ -386,6 +390,10 @@ class ReportView(BaseView):
         chart = self.charts['monthly']
         ax = chart['ax']
         canvas = chart['canvas']
+        tooltip = chart.get('tooltip')
+        tooltip_items = []
+        if tooltip is not None:
+            tooltip.clear()
         
         # Очистка графика перед обновлением
         ax.clear()
@@ -412,7 +420,8 @@ class ReportView(BaseView):
                     # График для всех лет (один набор данных)
                     values = model.get("values", [])
                     color = model.get("color", default_colors[2])
-                    ax.bar(x, values, 0.6, color=color, alpha=0.75, label=model.get("label", "Итого"))
+                    bars = ax.bar(x, values, 0.6, color=color, alpha=0.75, label=model.get("label", "Итого"))
+                    tooltip_items.extend(zip(bars, model.get("tooltips", [])))
 
                     # Линия тренда (скользящее среднее)
                     trend = model.get("trend", [])
@@ -440,7 +449,7 @@ class ReportView(BaseView):
                         values = dataset.get("data", [])
                         label = dataset.get("label", "")
                         color = dataset.get("backgroundColor", default_colors[i] if i < len(default_colors) else f"C{i}")
-                        ax.bar(
+                        bars = ax.bar(
                             [pos + i * width for pos in x],
                             values,
                             width,
@@ -448,6 +457,7 @@ class ReportView(BaseView):
                             color=color,
                             alpha=0.7
                         )
+                        tooltip_items.extend(zip(bars, dataset.get("tooltips", [])))
                     ax.set_xticks([pos + width for pos in x])
                     ax.set_xticklabels(labels, rotation=0)
                     ax.legend()
@@ -471,6 +481,9 @@ class ReportView(BaseView):
                    transform=ax.transAxes, fontsize=12)
             ax.set_title(CHART_MONTHLY_TITLE, fontsize=14, fontweight='bold')
         
+        if tooltip is not None:
+            tooltip.set_items(tooltip_items)
+
         # Перерисовка холста
         canvas.draw()
     
