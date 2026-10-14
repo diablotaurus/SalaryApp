@@ -3,9 +3,10 @@ import tkinter as tk
 import pytest
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def tk_root():
-    # Одно окно на модуль: многократное создание Tk() подряд на Windows нестабильно.
+    # Одно окно на весь прогон: многократное создание Tk() подряд на Windows
+    # нестабильно (повторный Tk() иногда падает с TclError, и тесты пропускались).
     try:
         window = tk.Tk()
     except tk.TclError:

@@ -138,6 +138,30 @@ def test_toggled_card_stays_in_its_column(root):
     assert left == sorted(left, reverse=True) and right == sorted(right, reverse=True)
 
 
+def test_wheel_does_not_shift_content_that_fits(root):
+    # Если содержимое короче окна, Tk разрешал двигать его внутри окна:
+    # колёсико вверх сдвигало карточки вниз, оставляя пустоту сверху.
+    root.geometry("1600x1400")
+    view = _view(root)
+    view.pack(fill="both", expand=True)
+    view.display_years(_years(2025, 2026), default_expanded_year=2026)
+    # Окно нужно показать: у скрытого окна холст имеет высоту 1 px,
+    # и «короткого» содержимого не бывает.
+    root.deiconify()
+    try:
+        root.update()
+        assert view.canvas.winfo_height() > view.cards_container.winfo_reqheight()
+
+        for delta in (120, 120, 120, -120, -120):
+            view._on_mouse_scroll(SimpleNamespace(delta=delta))
+        root.update()
+
+        assert view.canvas.canvasy(0) == 0
+        assert view.scrollbar.grid_info() == {}  # прокручивать нечего — полосы нет
+    finally:
+        root.withdraw()
+
+
 def test_month_grid_receives_mouse_wheel_after_lazy_build(root):
     view = _view(root)
     view.display_years(_years(2025, 2026), default_expanded_year=2026)

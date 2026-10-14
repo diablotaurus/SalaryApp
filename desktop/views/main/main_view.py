@@ -26,6 +26,7 @@ from core.utils.money import MoneyUtils
 from core.utils.dates import DateUtils
 from desktop.views.constants import DEFAULT_ADVANCE_COLOR, DEFAULT_SALARY_COLOR, DEFAULT_TOTAL_COLOR
 from desktop.views.main.month_cell import MonthCell, MonthCellStyle
+from desktop.widgets.auto_hide_scrollbar import AutoHideScrollbar
 
 
 class MainView(BaseView):
@@ -121,7 +122,8 @@ class MainView(BaseView):
             highlightthickness=0,
             bg=ttk.Style().lookup("TFrame", "background") or None,
         )
-        scrollbar = ttk.Scrollbar(history_frame, orient="vertical", command=self.canvas.yview)
+        # Полоса прокрутки видна, только когда карточки не помещаются
+        self.scrollbar = AutoHideScrollbar(history_frame, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
 
         # Создаем окно в Canvas для scrollable_frame
@@ -137,24 +139,40 @@ class MainView(BaseView):
             # Устанавливаем ширину прокручиваемой области равной ширине Canvas
             self.canvas.itemconfig(self.scrollable_frame_id, width=event.width)
             # Обновляем область прокрутки
-            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+            self._update_scroll_region()
 
         # Привязываем обработчики событий
-        self.scrollable_frame.bind("<Configure>",
-            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        self.scrollable_frame.bind("<Configure>", lambda e: self._update_scroll_region())
         self.canvas.bind("<Configure>", configure_scrollable_frame)
 
-        self.canvas.configure(yscrollcommand=scrollbar.set)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
-        # Размещаем Canvas и Scrollbar
-        self.canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        # Размещаем Canvas и Scrollbar (grid нужен AutoHideScrollbar для скрытия)
+        history_frame.grid_rowconfigure(0, weight=1)
+        history_frame.grid_columnconfigure(0, weight=1)
+        self.canvas.grid(row=0, column=0, sticky="nsew")
+        self.scrollbar.grid(row=0, column=1, sticky="ns")
 
         # Привязываем прокрутку колесиком мыши
         self._bind_mouse_scroll(self.canvas)
 
         # Инициализируем контейнер для карточек годов
         self.cards_container = self.scrollable_frame
+
+    def _update_scroll_region(self) -> None:
+        """
+        Обновить область прокрутки под содержимое.
+
+        Высота области не меньше видимой высоты Canvas: если содержимое
+        короче окна, Tk разрешает двигать его внутри окна, и колёсико
+        сдвигало карточки вниз, оставляя пустоту сверху.
+        """
+        bbox = self.canvas.bbox("all")
+        if not bbox:
+            return
+        _x1, _y1, x2, y2 = bbox
+        height = max(y2, self.canvas.winfo_height())
+        self.canvas.configure(scrollregion=(0, 0, x2, height))
 
     def _bind_mouse_scroll(self, widget):
         """
