@@ -11,6 +11,10 @@ class _DummyView:
         self.kpi_args = None
         self.display_calls = 0
         self.selected_year = None
+        self.built = False
+
+    def ensure_built(self):
+        self.built = True
 
     def display_years(self, data):
         self.display_calls += 1
@@ -20,6 +24,7 @@ class _DummyView:
         self.stats = data
 
     def update_years_list(self, years):
+        assert self.built, "вкладка должна быть построена до обновления"
         self.years = years
 
     def get_selected_year(self):

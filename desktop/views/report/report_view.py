@@ -7,16 +7,6 @@
 
 import tkinter as tk
 from tkinter import ttk
-try:
-    # Попытка импорта matplotlib с использованием TkAgg бэкенда
-    import matplotlib
-    matplotlib.use('TkAgg')  # Использование Tk-совместимого бэкенда
-    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-    from matplotlib.figure import Figure
-    MATPLOTLIB_AVAILABLE = True
-except ImportError:
-    # Если matplotlib не установлен, отключаем графики
-    MATPLOTLIB_AVAILABLE = False
 
 from desktop.views.base_view import BaseView
 from desktop.presenters import ChartPresenter
@@ -30,34 +20,83 @@ from desktop.views.constants import (
     CHART_MONTHLY_TITLE, CHART_YEARLY_TITLE, CHART_GROWTH_TITLE, CHART_AVERAGE_TITLE,
     AXIS_X_MONTHS, AXIS_X_YEARS, AXIS_X_PERIODS, AXIS_Y_AMOUNT, AXIS_Y_TOTAL,
     AXIS_Y_GROWTH, AXIS_Y_AVERAGE,
-    ERROR_NO_MATPLOTLIB, TEXT_NO_DATA,
+    ERROR_NO_MATPLOTLIB, TEXT_NO_DATA, TEXT_LOADING_CHARTS,
     COMBOBOX_WIDTH
 )
 
 
+def _load_matplotlib():
+    """
+    Загрузить matplotlib с Tk-бэкендом.
+
+    Импорт тяжёлый (~1 с), поэтому выполняется только при первом открытии
+    вкладки аналитики, а не при запуске приложения.
+
+    Returns:
+        (FigureCanvasTkAgg, Figure) или None, если matplotlib не установлен.
+    """
+    try:
+        import matplotlib
+        matplotlib.use('TkAgg')  # Использование Tk-совместимого бэкенда
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+        from matplotlib.figure import Figure
+    except ImportError:
+        return None
+    return FigureCanvasTkAgg, Figure
+
+
 class ReportView(BaseView):
     """Класс вкладки аналитики с графиками и KPI-метриками"""
-    
+
     def __init__(self, parent, controller):
         """
         Инициализация представления аналитики.
-        
+
         Args:
             parent: Родительский виджет
             controller: Контроллер навигации
         """
         self.charts = {}  # Словарь для хранения объектов графиков
         self.presenter = ChartPresenter()  # Presenter для подготовки данных графиков
+        self._is_built = False
         super().__init__(parent, controller)
-    
+
     def _create_widgets(self):
+        """
+        Создать лёгкую заглушку вкладки.
+
+        Графики и панели строятся при первом показе вкладки (см. ensure_built),
+        чтобы не замедлять запуск приложения.
+        """
+        self._loading_label = ttk.Label(self, text=TEXT_LOADING_CHARTS, font=('Segoe UI', 10))
+        self._loading_label.pack(expand=True)
+
+    @property
+    def is_built(self) -> bool:
+        """Построено ли содержимое вкладки."""
+        return self._is_built
+
+    def ensure_built(self):
+        """Построить содержимое вкладки при первом обращении (повторные вызовы ничего не делают)."""
+        if self._is_built:
+            return
+        self._is_built = True
+        # Показываем «Загрузка графиков…» на время импорта matplotlib и построения графиков
+        self.update_idletasks()
+        try:
+            self._build_widgets()
+        finally:
+            self._loading_label.destroy()
+
+    def _build_widgets(self):
         """Создание всех виджетов вкладки аналитики"""
         # Основной контейнер
         main_container = ttk.Frame(self)
         main_container.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
-        
+
         # Проверка доступности matplotlib
-        if not MATPLOTLIB_AVAILABLE:
+        backend = _load_matplotlib()
+        if backend is None:
             # Показать сообщение об ошибке если matplotlib не установлен
             error_frame = ttk.Frame(main_container)
             error_frame.pack(fill=tk.BOTH, expand=True)
@@ -70,7 +109,8 @@ class ReportView(BaseView):
             )
             error_label.pack(expand=True)
             return
-        
+        self._figure_canvas_cls, self._figure_cls = backend
+
         # Верхняя панель: управление и KPI
         top_row = ttk.Frame(main_container)
         top_row.pack(fill=tk.X)
@@ -214,7 +254,7 @@ class ReportView(BaseView):
         frame.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
         
         # Создание фигуры matplotlib с оптимальным размером
-        fig = Figure(figsize=(8, 4.7), dpi=100)
+        fig = self._figure_cls(figsize=(8, 4.7), dpi=100)
         ax = fig.add_subplot(111)
         
         # Настройка заголовка и подписей осей
@@ -227,7 +267,7 @@ class ReportView(BaseView):
         fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
         
         # Создание холста для отображения графика в Tkinter
-        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas = self._figure_canvas_cls(fig, master=frame)
         canvas.draw()
         
         # Использование grid для контроля размера
@@ -256,7 +296,7 @@ class ReportView(BaseView):
         frame = ttk.Frame(parent)
         frame.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
         
-        fig = Figure(figsize=(8, 5), dpi=100)
+        fig = self._figure_cls(figsize=(8, 5), dpi=100)
         ax = fig.add_subplot(111)
         
         ax.set_title(CHART_YEARLY_TITLE, fontsize=14, fontweight='bold')
@@ -267,7 +307,7 @@ class ReportView(BaseView):
         # Уменьшение пустых полей
         fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
 
-        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas = self._figure_canvas_cls(fig, master=frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
@@ -287,7 +327,7 @@ class ReportView(BaseView):
         frame = ttk.Frame(parent)
         frame.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
         
-        fig = Figure(figsize=(8, 5), dpi=100)
+        fig = self._figure_cls(figsize=(8, 5), dpi=100)
         ax = fig.add_subplot(111)
         
         ax.set_title(CHART_GROWTH_TITLE, fontsize=14, fontweight='bold')
@@ -298,7 +338,7 @@ class ReportView(BaseView):
         
         fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
 
-        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas = self._figure_canvas_cls(fig, master=frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
@@ -318,7 +358,7 @@ class ReportView(BaseView):
         frame = ttk.Frame(parent)
         frame.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
         
-        fig = Figure(figsize=(8, 5), dpi=100)
+        fig = self._figure_cls(figsize=(8, 5), dpi=100)
         ax = fig.add_subplot(111)
         
         ax.set_title(CHART_AVERAGE_TITLE, fontsize=14, fontweight='bold')
@@ -328,7 +368,7 @@ class ReportView(BaseView):
         
         fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
 
-        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas = self._figure_canvas_cls(fig, master=frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         

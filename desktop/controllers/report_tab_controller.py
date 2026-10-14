@@ -16,6 +16,8 @@ class ReportTabController:
         self._charts_cache = RenderCache()
 
     def refresh_reports(self):
+        # Вкладка строится лениво при первом обновлении (ускоряет запуск приложения).
+        self.app.report_view.ensure_built()
         try:
             years_response = SalaryAPI.get_years()
             if years_response and years_response.get("success"):
