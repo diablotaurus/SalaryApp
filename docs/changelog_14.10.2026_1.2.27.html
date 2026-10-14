@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.27 - стабильный бот и быстрый desktop</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.27</h1>
+            <p class="subtitle">Стабильный Telegram-бот, подсказки на графике и ускорение desktop-интерфейса</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 14 октября 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.26 current</p>
+            <p><strong>Новая версия:</strong> 1.2.27 current; скрипт деплоя записывает в production 1.2.27 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> Telegram-бот, desktop (главная вкладка, аналитика, контроллеры), тесты, правила проекта. Web, ядро, API, БД и зависимости не менялись.</p>
+            <p><strong>Основание:</strong> разбор постоянных падений бота и согласованные с пользователем улучшения П1, П3, П4 по скорости desktop. Пользователь подтвердил ручную проверку каждого шага и подготовку релиза.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_27.08.2026_1.2.26.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.27 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>Бот</strong>Несколько прокси, без падений по кругу</div>
+            <div class="summary-item summary-data"><strong>Desktop</strong>Запуск и вкладки в разы быстрее</div>
+            <div class="summary-item summary-tests"><strong>155 тестов</strong>+45 к версии 1.2.26</div>
+        </div>
+
+        <section class="section" id="overview">
+            <h2>1. Основные результаты</h2>
+            <table>
+                <thead><tr><th>Область</th><th>Проблема до исправления</th><th>Что изменено</th></tr></thead>
+                <tbody>
+                    <tr><td>Telegram-бот</td><td>При недоступном прокси бот переходил на прямое подключение, которое на этом ПК не работает, завершался с ошибкой и перезапускался Планировщиком по кругу.</td><td>Список прокси в порядке приоритета, выбор первого отвечающего; прямое подключение только если прокси не задан вовсе.</td></tr>
+                    <tr><td>Аналитика</td><td>На графике «Помесячные данные» точное значение столбца можно было только прикинуть по оси.</td><td>Всплывающая подсказка с месяцем, годом и суммой при наведении на столбец.</td></tr>
+                    <tr><td>Переключение вкладок</td><td>Каждое переключение перестраивало вкладку целиком, даже без изменений данных: «Главная» 2.4–3.0 с с миганием, «Аналитика» 0.4–0.6 с.</td><td>Перерисовка только при изменении данных или настроек.</td></tr>
+                    <tr><td>Главная вкладка</td><td>Ячейка месяца состояла из ~11 виджетов (~530 на 4 года): Tk тратил ~1 с на показ вкладки и ~1.6 с на первую отрисовку окна.</td><td>Ячейка рисуется на одном Canvas, внешний вид прежний.</td></tr>
+                    <tr><td>Запуск</td><td>matplotlib и 4 графика загружались при старте, даже если аналитику не открывали.</td><td>Вкладка «Аналитика» строится при первом открытии.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section" id="bot">
+            <h2>2. Telegram-бот: несколько прокси без отката на прямое подключение</h2>
+            <h3>Причина падений</h3>
+            <p>На этом ПК Telegram доступен только через локальный SOCKS5-прокси. Если прокси в момент запуска не отвечал, <code>bot/main.py</code> переходил на прямое подключение. Оно не устанавливалось (около 21 с ожидания соединения в Windows), polling останавливался, процесс завершался с кодом 1, и задача Планировщика <code>SalaryAppBot</code> с перезапуском при сбое запускала бота снова. Получался бесконечный цикл падений.</p>
+            <h3>Что изменено</h3>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Откат на прямое подключение при заданном прокси удалён. Если сейчас не отвечает ни один прокси, бот использует предпочтительный и ждёт его восстановления: aiogram сам повторяет попытки, процесс не завершается.</li>
+                <li><span class="change-type added">ADDED</span><code>TELEGRAM_PROXY</code> принимает несколько адресов через запятую или точку с запятой в порядке приоритета. Пустые значения и повторы отбрасываются (<code>load_proxies()</code> в <code>bot/config.py</code>).</li>
+                <li>При запуске прокси проверяются по очереди запросом <code>get_me</code> с таймаутом 8 с; используется первый ответивший. В лог пишется, через какой прокси установлено подключение, и какие прокси недоступны.</li>
+                <li>Прямое подключение по-прежнему используется, если прокси не задан вовсе.</li>
+                <li><code>load_proxy()</code> сохранён для обратной совместимости и возвращает первый прокси из списка.</li>
+                <li><code>bot/.env.example</code> описывает формат с несколькими прокси.</li>
+                <li><span class="change-type added">TEST</span>Добавлены тесты на старый ключ <code>ALLOWED_USER_IDS</code> и приоритет канонического <code>BOT_ALLOWED_IDS</code>.</li>
+            </ul>
+            <pre><code># bot/.env: предпочтительный (более стабильный) прокси первым
+TELEGRAM_PROXY=socks5://192.168.0.8:10820,socks5://192.168.0.8:10808</code></pre>
+            <p class="result-box"><strong>Проверка в production:</strong> исправление развёрнуто 14.10.2026 до оформления релиза, в production-файле <code>bot/.env</code> задан список из двух прокси. После перезапуска лог показал подключение через <code>10820</code> и начало polling. Позднее была кратковременная потеря связи с Telegram: бот восстановил соединение сам примерно через 11 с, без завершения процесса.</p>
+        </section>
+
+        <section class="section" id="tooltips">
+            <h2>3. Подсказки на графике «Помесячные данные»</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span>При наведении курсора на столбец показывается подсказка: месяц, год и сумма с подписью ряда («Аванс», «Зарплата» или «Итого»).</li>
+                <li>Работает в обоих режимах графика: за один год (три ряда) и за все годы (итог по месяцам).</li>
+                <li>Текст подсказок готовит <code>ChartPresenter</code>; привязку к столбцам и показ выполняет новый класс <code>BarChartTooltip</code> через события matplotlib. Подсказка не выходит за край графика и скрывается при уходе курсора.</li>
+                <li>Оформление вынесено в константы <code>chart_constants.py</code>.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="performance">
+            <h2>4. Ускорение desktop-интерфейса</h2>
+            <p>Замеры выполнены на копии production-БД (4 года данных) на рабочем ПК. Копия создавалась через SQLite Backup API в режиме только чтения и удалялась после замеров; рабочая БД не изменялась.</p>
+            <table>
+                <thead><tr><th>Действие</th><th>1.2.26</th><th>1.2.27</th></tr></thead>
+                <tbody>
+                    <tr><td>Переключение на «Главную»</td><td>2.4–3.0 с, с миганием</td><td>~0.2 с</td></tr>
+                    <tr><td>Переключение на «Аналитику»</td><td>0.4–0.6 с</td><td>~0.1 с</td></tr>
+                    <tr><td>Запуск до готового окна</td><td>~4.6 с</td><td>~2.0–2.4 с</td></tr>
+                    <tr><td>Первое открытие «Аналитики» за сеанс</td><td>~0.5 с</td><td>~1.3 с (один раз за сеанс)</td></tr>
+                </tbody>
+            </table>
+            <p>Чтение данных из БД для вкладок занимает около 1 мс; основное время уходило на интерфейс. Изменения выполнены тремя согласованными шагами.</p>
+
+            <h3>П1. Перерисовка только при изменении данных</h3>
+            <ul>
+                <li><span class="change-type added">ADDED</span><code>RenderCache</code> (<code>desktop/controllers/render_cache.py</code>) запоминает данные последней отрисовки.</li>
+                <li><code>MainTabController.refresh_history</code> читает данные и настройки при каждом переключении и перестраивает карточки только при их изменении.</li>
+                <li><code>ReportTabController.load_chart_data</code> сначала собирает данные четырёх графиков и KPI, затем перерисовывает только при их изменении или смене года.</li>
+                <li>Записи, добавленные через бота или Web, по-прежнему появляются: данные читаются при каждом переключении. После ввода, удаления, восстановления из бэкапа и сохранения настроек вкладки перерисовываются как раньше.</li>
+                <li><code>MainView.display_years</code> больше не сортирует переданный список на месте.</li>
+            </ul>
+
+            <h3>П3. Ячейка месяца на одном Canvas</h3>
+            <ul>
+                <li><span class="change-type refactored">REFACTORED</span>Новый класс <code>MonthCell</code> (<code>desktop/views/main/month_cell.py</code>) рисует название месяца, строки «Аванс»/«Зарплата» с датой и суммой, «Итого» и «Нет данных» на одном Canvas вместо ~11 виджетов.</li>
+                <li>Раскладка повторяет прежнюю: поля tk.Label, отступы pack/grid и деление свободной ширины между колонками даты и суммы. Шрифты и цвета из настроек создаются один раз на отрисовку (<code>MonthCellStyle</code>).</li>
+                <li>Три прежних метода сборки ячейки в <code>MainView</code> удалены.</li>
+                <li><span class="change-type fixed">FIXED</span>Высота зоны выплат считается по реальной высоте двух строк. Прежняя формула от размера шрифта в пунктах занижала её, и на крупных шрифтах (от 12 pt) строка «Зарплата» обрезалась снизу.</li>
+            </ul>
+            <p class="result-box"><strong>Проверка внешнего вида:</strong> скриншоты главной вкладки до и после изменения сравнивались попиксельно на копии production-БД в стандартном режиме и режиме «по кварталам». На текущих размерах шрифтов (9/10/10 pt) отличий нет. На крупных шрифтах единственное отличие: строка «Зарплата» видна целиком.</p>
+            <p class="note"><strong>Ограничение:</strong> при максимальном размере шрифтов (18 pt) в стандартном режиме шесть ячеек в ряд не помещаются в ширину окна ни в старой, ни в новой версии. В новой версии сумма обрезается правым краем ячейки. При крупных шрифтах рекомендуется режим «по кварталам».</p>
+
+            <h3>П4. Вкладка «Аналитика» строится при первом открытии</h3>
+            <ul>
+                <li><span class="change-type changed">CHANGED</span>При создании <code>ReportView</code> показывает только надпись «Загрузка графиков…». matplotlib импортируется, а панели и графики строятся в <code>ensure_built()</code> при первом обращении к вкладке.</li>
+                <li><code>ReportTabController.refresh_reports</code> достраивает вкладку перед обновлением данных.</li>
+                <li>Если «Аналитику» в текущем сеансе ещё не открывали, удаление года или восстановление из бэкапа один раз займёт примерно на 1 с дольше: после этих операций аналитика обновляется сразу.</li>
+                <li><span class="change-type added">TEST</span>Тест проверяет, что импорт <code>desktop.app</code> не загружает matplotlib. Это защищает скорость запуска от случайных будущих правок.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="rules">
+            <h2>5. Правила проекта</h2>
+            <ul>
+                <li><span class="change-type changed">CHANGED</span>Правило №3 в <code>AGENTS.md</code> приведено к действующей договорённости: версия в <code>version.txt</code> повышается и релизный changelog создаётся только при подготовке релиза по явному указанию пользователя. Обычные коммиты версию не меняют.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>6. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>155 тестов успешно (в 1.2.26 было 110).</td></tr>
+                    <tr><td>Бот</td><td>Разбор списка прокси; выбор прокси без отката на прямое подключение, когда ни один не отвечает; allowlist со старым ключом.</td></tr>
+                    <tr><td>Подсказки графика</td><td>Тексты подсказок в presenter; показ, позиционирование у края и скрытие подсказки.</td></tr>
+                    <tr><td>Кэш отрисовки</td><td>Пропуск перестройки при тех же данных; перерисовка при новых данных, смене настроек и смене года.</td></tr>
+                    <tr><td>Ячейка месяца</td><td>Содержимое, пропуск нулевой выплаты, «-» вместо пустой даты, «Нет данных»; строки выплат не наезжают на «Итого» на шрифтах 9, 12 и 18 pt. Тесты с окном Tk пропускаются, если графическая среда недоступна.</td></tr>
+                    <tr><td>Ленивая аналитика</td><td>Вкладка строится до обновления данных; импорт приложения не загружает matplotlib; скриншот вкладки после первого открытия на копии production-БД.</td></tr>
+                    <tr><td>Ruff / UTF-8</td><td>Критические правила CI (E9, F63, F7, F82) пройдены; изменённые и новые файлы в UTF-8 без BOM, окончания строк LF.</td></tr>
+                    <tr><td>GitHub Actions</td><td>Успешны для уже опубликованных коммитов релиза. Результат для релизного коммита проверяется после push.</td></tr>
+                    <tr><td>Ручная проверка</td><td>Пользователь проверил работу desktop после каждого шага и бота в production.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code> и <code>desktop/app.py</code> не менялись; desktop-приложение запускалось при проверках.</li>
+                <li><code>bot/main.py</code>: изменён только выбор прокси в <code>_create_bot</code>; порядок запуска (логирование, allowlist, миграции, dispatcher, polling) сохранён.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="files">
+            <h2>7. Карта изменённых файлов</h2>
+            <h3>Новые компоненты</h3>
+            <div class="file">desktop/controllers/render_cache.py; desktop/views/main/month_cell.py; desktop/views/report/bar_chart_tooltip.py</div>
+            <div class="file">tests/unit/desktop/test_startup_imports.py; tests/unit/desktop/views/test_month_cell.py; tests/unit/desktop/views/test_bar_chart_tooltip.py; tests/unit/desktop/presenters/test_chart_presenter_tooltips.py</div>
+            <h3>Обновлённые файлы</h3>
+            <div class="file">bot/config.py; bot/main.py; bot/.env.example</div>
+            <div class="file">desktop/controllers/main_tab_controller.py; desktop/controllers/report_tab_controller.py; desktop/presenters/chart_presenter.py</div>
+            <div class="file">desktop/views/main/main_view.py; desktop/views/report/report_view.py; desktop/views/report/chart_constants.py; desktop/views/constants/texts.py</div>
+            <div class="file">tests/unit/bot/test_bot_access.py; tests/unit/desktop/controllers/test_tab_controllers.py; AGENTS.md</div>
+            <p><strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>. Рабочие БД, токены, логи и пользовательские экспорты в коммит не включаются.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>8. Обновление production</h2>
+            <ol>
+                <li>Закрыть desktop-приложение production.</li>
+                <li>Запустить согласованный скрипт deploy из dev-каталога. Маркер production и защищаемый <code>bot/.env</code> сохраняются.</li>
+                <li>Для бота: в production-файле <code>bot/.env</code> должен быть задан <code>TELEGRAM_PROXY</code> со списком прокси (уже сделано 14.10.2026). Код бота в этом релизе тот же, что уже работает в production, поэтому перезапуск бота не обязателен.</li>
+                <li>Web не менялся, перезапуск <code>SalaryAppWeb</code> не нужен.</li>
+            </ol>
+            <p class="note"><strong>Совместимость:</strong> схема БД и зависимости не менялись, миграций нет. Возврат к 1.2.26 возможен обычным деплоем предыдущего кода; нужно только учесть, что старый бот снова будет переходить на прямое подключение при недоступном прокси.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.27 · 14.10.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>
