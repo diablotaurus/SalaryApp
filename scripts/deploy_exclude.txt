@@ -29,6 +29,8 @@ env/*
 .claude/*
 .mypy_cache
 .mypy_cache/*
+.ruff_cache
+.ruff_cache/*
 htmlcov
 htmlcov/*
 build
