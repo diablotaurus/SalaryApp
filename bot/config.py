@@ -38,15 +38,38 @@ def load_bot_token() -> str:
     return token.strip()
 
 
-def load_proxy() -> str | None:
+def load_proxies() -> list[str]:
+    """
+    Список адресов прокси для Telegram (предпочтительный — первым).
+
+    Значение TELEGRAM_PROXY может содержать несколько прокси через запятую или
+    точку с запятой, например:
+        TELEGRAM_PROXY=socks5://192.168.0.8:10820,socks5://192.168.0.8:10808
+
+    Returns:
+        list[str]: Прокси в порядке приоритета (пустой список — прямое подключение).
+    """
     values = _read_env_file()
-    proxy = (
+    raw = (
         os.getenv("SALARYAPP_TELEGRAM_PROXY")
         or os.getenv("TELEGRAM_PROXY")
         or values.get("SALARYAPP_TELEGRAM_PROXY")
         or values.get("TELEGRAM_PROXY")
+        or ""
     )
-    return proxy.strip() if proxy and proxy.strip() else None
+
+    proxies: list[str] = []
+    for item in raw.replace(";", ",").split(","):
+        value = item.strip()
+        if value and value not in proxies:
+            proxies.append(value)
+    return proxies
+
+
+def load_proxy() -> str | None:
+    """Первый (предпочтительный) прокси из списка — для обратной совместимости."""
+    proxies = load_proxies()
+    return proxies[0] if proxies else None
 
 
 def load_allowed_user_ids() -> frozenset[int]:
@@ -54,8 +77,10 @@ def load_allowed_user_ids() -> frozenset[int]:
     raw_value = (
         os.getenv("SALARYAPP_BOT_ALLOWED_IDS")
         or os.getenv("BOT_ALLOWED_IDS")
+        or os.getenv("ALLOWED_USER_IDS")
         or values.get("SALARYAPP_BOT_ALLOWED_IDS")
         or values.get("BOT_ALLOWED_IDS")
+        or values.get("ALLOWED_USER_IDS")
         or ""
     )
 

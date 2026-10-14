@@ -4,13 +4,12 @@ from __future__ import annotations
 import asyncio
 import logging
 from logging.handlers import RotatingFileHandler
-from typing import Optional
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from bot.config import load_allowed_user_ids, load_bot_token, load_proxy
+from bot.config import load_allowed_user_ids, load_bot_token, load_proxies
 from bot.handlers import salary_router
 from bot.middlewares import BotAccessMiddleware
 from core.config.settings import config
@@ -41,25 +40,44 @@ def _load_bot_token() -> str:
     return load_bot_token()
 
 
-def _load_proxy() -> Optional[str]:
+def _load_proxies() -> list[str]:
     """Backward-compatible wrapper around bot configuration."""
-    return load_proxy()
+    return load_proxies()
 
 
 async def _create_bot(token: str) -> Bot:
-    """Create a bot, falling back to a direct connection if proxy setup fails."""
-    proxy = _load_proxy()
-    if proxy:
+    """
+    Создать бота с учётом прокси.
+
+    Если задан(ы) прокси (TELEGRAM_PROXY, можно несколько через запятую —
+    предпочтительный первым), выбираем первый отвечающий. Если сейчас не отвечает
+    ни один — используем предпочтительный и ждём его восстановления (aiogram сам
+    повторяет попытки). Прямое подключение — только если прокси не задан вовсе.
+
+    ВАЖНО: на этом ПК Telegram доступен только через прокси, поэтому откат на прямое
+    подключение исключён — он приводил к падению процесса и зацикленному перезапуску.
+    """
+    proxies = _load_proxies()
+    if not proxies:
+        logger.info("Telegram: прямое подключение (прокси не задан)")
+        return Bot(token=token)
+
+    # Пробуем прокси по приоритету; берём первый отвечающий.
+    for proxy in proxies:
         bot = Bot(token=token, session=AiohttpSession(proxy=proxy))
         try:
-            await asyncio.wait_for(bot.get_me(), timeout=10)
+            await asyncio.wait_for(bot.get_me(), timeout=8)
             logger.info("Telegram: подключение через прокси %s", proxy)
             return bot
         except Exception as exc:
-            logger.warning("Прокси %s недоступен (%s), подключаюсь напрямую", proxy, exc)
+            logger.warning("Прокси %s недоступен (%s), пробую следующий", proxy, exc)
             await bot.session.close()
 
-    return Bot(token=token)
+    # Ни один прокси не ответил сейчас — используем предпочтительный и ждём,
+    # пока он поднимется (НЕ уходим напрямую, чтобы не падать в цикле).
+    primary = proxies[0]
+    logger.warning("Ни один прокси не ответил; использую %s и жду восстановления", primary)
+    return Bot(token=token, session=AiohttpSession(proxy=primary))
 
 
 async def main() -> None:
