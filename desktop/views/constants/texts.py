@@ -22,6 +22,11 @@ CONFIRM_DELETE_YEAR = "Вы уверены, что хотите удалить �
 # --- Тексты для главного окна ---
 TEXT_ACTIONS = "Действия"
 TEXT_HISTORY_TITLE = "История заработной платы"
+TEXT_MONTHS_SECTION = "Помесячная разбивка:"
+# Стрелки сворачивания карточки года (клик по заголовку года).
+# Рисуются шрифтом FONT_YEAR_ARROW: в нём ▶ и ▼ одного размера.
+ARROW_YEAR_EXPANDED = "▼"
+ARROW_YEAR_COLLAPSED = "▶"
 TEXT_STATISTICS_TITLE = "Общая статистика"
 
 # Тексты кнопок главного окна

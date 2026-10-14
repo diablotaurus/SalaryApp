@@ -21,12 +21,28 @@ class MainTabController:
         self.app = navigation.app
         self._history_cache = RenderCache()
 
-    def add_data(self):
+    @staticmethod
+    def _current_period() -> tuple[int, int]:
+        """Текущий год и месяц (через API, при сбое — по системной дате)."""
         period_response = SalaryAPI.get_current_period()
         period = period_response.get("data", {}) if period_response.get("success") else {}
         fallback_year, fallback_month = DateUtils.get_current_period()
-        current_year = int(period.get("year", fallback_year))
-        current_month = int(period.get("month", fallback_month))
+        return int(period.get("year", fallback_year)), int(period.get("month", fallback_month))
+
+    @classmethod
+    def _default_expanded_year(cls, years_data: List[Dict[str, Any]]) -> Optional[int]:
+        """
+        Год, развёрнутый при первом показе истории: текущий,
+        а если за него ещё нет данных — последний год с данными.
+        """
+        years = {int(item["year"]) for item in years_data}
+        if not years:
+            return None
+        current_year, _ = cls._current_period()
+        return current_year if current_year in years else max(years)
+
+    def add_data(self):
+        current_year, current_month = self._current_period()
         dialog = SalaryDialog(self.app, self.navigation, current_year, current_month)
         dialog.grab_set()
 
@@ -77,7 +93,10 @@ class MainTabController:
                     return
                 if hasattr(self.app.main_view, "apply_settings"):
                     self.app.main_view.apply_settings(settings)
-                self.app.main_view.display_years(response["data"])
+                self.app.main_view.display_years(
+                    response["data"],
+                    default_expanded_year=self._default_expanded_year(response["data"]),
+                )
                 self._history_cache.remember(render_key)
             else:
                 self.navigation.show_message("Ошибка", response["message"], "error")

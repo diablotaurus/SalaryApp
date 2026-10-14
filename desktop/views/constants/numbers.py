@@ -17,6 +17,7 @@ CARD_BUTTON_WIDTH = 16
 
 # Шрифты карточек истории (вкладка «Главная»)
 FONT_YEAR_TITLE = ('Segoe UI', 14, 'bold')      # Заголовок года в карточке
+FONT_YEAR_ARROW = ('Segoe UI Symbol', 12)       # Стрелка ▶/▼ сворачивания года
 FONT_CARD_STATS = ('Segoe UI', 10)              # Строки статистики года
 FONT_CARD_SECTION = ('Segoe UI', 11, 'bold')    # Подзаголовок «Помесячная разбивка»
 FONT_NO_DATA = ('Segoe UI', 12)                 # Сообщение «Нет данных» (вся вкладка)

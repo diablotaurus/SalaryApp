@@ -7,18 +7,19 @@
 
 import tkinter as tk
 from tkinter import ttk
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from desktop.views.base_view import BaseView
 from desktop.views.dialogs.about_dialog import AboutDialog
 from desktop.views.constants import (
     PADX_DEFAULT, PADY_DEFAULT,
     TEXT_ACTIONS, TEXT_ADD_DATA, TEXT_REFRESH_HISTORY, TEXT_EXPORT_HISTORY, TEXT_BACKUP,
     TEXT_EDIT, TEXT_DELETE_YEAR, TEXT_HISTORY_TITLE, ABOUT_FRAME_TITLE,
+    TEXT_MONTHS_SECTION, ARROW_YEAR_EXPANDED, ARROW_YEAR_COLLAPSED,
     WINDOW_MAIN_MIN_WIDTH, WINDOW_MAIN_MIN_HEIGHT,
     WINDOW_MAIN_DEFAULT_WIDTH, WINDOW_MAIN_DEFAULT_HEIGHT,
     DEFAULT_HISTORY_LAYOUT_MODE, DEFAULT_MAIN_STATS_LAYOUT_MODE,
     DEFAULT_MONTH_TITLE_FONT_SIZE, DEFAULT_MONTH_TOTAL_FONT_SIZE, DEFAULT_MONTH_DATA_FONT_SIZE,
-    CARD_BUTTON_WIDTH, FONT_YEAR_TITLE, FONT_CARD_STATS, FONT_CARD_SECTION,
+    CARD_BUTTON_WIDTH, FONT_YEAR_TITLE, FONT_YEAR_ARROW, FONT_CARD_STATS, FONT_CARD_SECTION,
     FONT_NO_DATA
 )
 from core.utils.money import MoneyUtils
@@ -29,6 +30,17 @@ from desktop.views.main.month_cell import MonthCell, MonthCellStyle
 
 class MainView(BaseView):
     """Класс главной вкладки с отображением истории зарплат по годам"""
+
+    def __init__(self, parent, controller):
+        # Развёрнутые годы: выбор пользователя сохраняется до закрытия приложения
+        self._expanded_years: set[int] = set()
+        # Годы, уже показанные в этом сеансе (новый год по умолчанию разворачивается)
+        self._known_years: set[int] = set()
+        # Карточки текущей отрисовки (по порядку лет): год -> {"card", "body", "arrow", "months", "built"}
+        self._year_cards: Dict[int, Dict[str, Any]] = {}
+        # Колонки, по которым раскладываются карточки (1 или 2 по режиму истории)
+        self._card_columns: List[ttk.Frame] = []
+        super().__init__(parent, controller)
 
     def _create_widgets(self):
         """Создание всех виджетов главной вкладки"""
@@ -102,8 +114,13 @@ class MainView(BaseView):
         history_frame = ttk.LabelFrame(parent, text=TEXT_HISTORY_TITLE, padding=PADX_DEFAULT)
         history_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Создаем Canvas для реализации прокрутки
-        self.canvas = tk.Canvas(history_frame, highlightthickness=0)
+        # Создаем Canvas для реализации прокрутки.
+        # Фон как у панели: под свёрнутыми годами остаётся свободное место.
+        self.canvas = tk.Canvas(
+            history_frame,
+            highlightthickness=0,
+            bg=ttk.Style().lookup("TFrame", "background") or None,
+        )
         scrollbar = ttk.Scrollbar(history_frame, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
 
@@ -204,21 +221,28 @@ class MainView(BaseView):
             self.canvas.yview_scroll(1, "units")
         return "break"  # Предотвращаем дальнейшую обработку события
 
-    def display_years(self, years_data: List[Dict[str, Any]]):
+    def display_years(
+        self,
+        years_data: List[Dict[str, Any]],
+        default_expanded_year: Optional[int] = None,
+    ):
         """
         Отобразить карточки годов на основе полученных данных.
 
         Args:
             years_data: Список словарей с данными по годам
+            default_expanded_year: Год, который разворачивается при первом
+                появлении (остальные годы показываются свёрнутыми)
 
         Производительность:
-            - Очистка виджетов происходит перед созданием новых
-            - При большом количестве лет (>10) используется виртуализация через Canvas
-            - Цвета загружаются один раз для всех карточек
+            - Свёрнутый год показывает только заголовок и итоги; сетка
+              месяцев строится при первом разворачивании
+            - Шрифты и цвета ячеек создаются один раз для всех карточек
         """
         # Очищаем контейнер от старых карточек
         for widget in self.cards_container.winfo_children():
             widget.destroy()
+        self._year_cards = {}
 
         if not hasattr(self, "_history_layout_mode"):
             self.apply_settings({})
@@ -233,6 +257,8 @@ class MainView(BaseView):
         # Сортируем годы по убыванию (новые сверху), не изменяя переданный список
         years_data = sorted(years_data, key=lambda x: x['year'], reverse=True)
 
+        self._remember_expanded_years(years_data, default_expanded_year)
+
         # Шрифты и цвета ячеек месяцев — один раз на всю отрисовку
         self._cell_style = self._create_cell_style()
 
@@ -241,62 +267,148 @@ class MainView(BaseView):
         for col in range(2):
             self.cards_container.columnconfigure(col, weight=0, minsize=0, uniform="")
 
-        # Настраиваем сетку карточек: стандартный режим или 2 карточки в ряд
-        cards_per_row = 2 if self._history_layout_mode == "quarterly" else 1
-        for col in range(cards_per_row):
+        # Колонки карточек: стандартный режим — одна, «по кварталам» — две
+        columns_count = 2 if self._history_layout_mode == "quarterly" else 1
+        self._card_columns = []
+        for col in range(columns_count):
             self.cards_container.columnconfigure(col, weight=1, uniform="year_cards")
+            column = ttk.Frame(self.cards_container)
+            column.grid(row=0, column=col, sticky="new")
+            self._card_columns.append(column)
 
-        # Создаем карточку для каждого года
-        for index, year_data in enumerate(years_data):
-            row = index // cards_per_row
-            col = index % cards_per_row
-            self._create_year_card(year_data, row, col)
+        # Создаем карточку для каждого года и раскладываем карточки по колонкам
+        for year_data in years_data:
+            self._create_year_card(year_data)
+        self._arrange_cards()
 
         # После создания карточек обновляем привязку прокрутки колесиком
         self._bind_mouse_scroll_to_children(self.cards_container)
 
-    def _create_year_card(self, year_data: Dict[str, Any], row: int, col: int):
+    def _remember_expanded_years(
+        self, years_data: List[Dict[str, Any]], default_expanded_year: Optional[int]
+    ) -> None:
         """
-        Создать карточку для одного года с данными.
+        Обновить набор развёрнутых годов перед отрисовкой.
+
+        Год по умолчанию разворачивается, только когда появляется впервые
+        за сеанс: если пользователь его свернул, выбор сохраняется при
+        следующих перерисовках (после сохранения данных, смены настроек).
+        """
+        if default_expanded_year is not None and default_expanded_year not in self._known_years:
+            self._expanded_years.add(default_expanded_year)
+        self._known_years.update(int(item['year']) for item in years_data)
+
+    def _create_year_card(self, year_data: Dict[str, Any]):
+        """
+        Создать карточку для одного года с данными (размещает её _arrange_cards).
 
         Args:
             year_data: Словарь с данными за год (год, сводка, месяцы)
-            row: Строка в сетке карточек
-            col: Столбец в сетке карточек
 
         Структура карточки:
-            1. Заголовок с годом и кнопками управления
+            1. Заголовок: стрелка и год (клик сворачивает/разворачивает), кнопки управления
             2. Статистика за год (общий доход, среднемесячный, количество месяцев)
-            3. Помесячная разбивка
+            3. Помесячная разбивка — только у развёрнутого года
         """
+        year = int(year_data['year'])
+
         # Основной фрейм карточки с тонкой рамкой
         card = ttk.Frame(self.cards_container, relief="solid", borderwidth=1, padding=10)
-        card.grid(row=row, column=col, sticky="nsew", padx=5, pady=10)
 
-        # Заголовок (год + кнопки управления)
-        self._create_card_header(card, year_data['year'])
+        # Заголовок (стрелка + год + кнопки управления)
+        arrow = self._create_card_header(card, year)
 
         # Разделитель между заголовком и статистикой
         ttk.Separator(card, orient='horizontal').pack(fill=tk.X, pady=10)
 
-        # Статистика за год
+        # Статистика за год (видна и у свёрнутого года)
         self._create_year_stats(card, year_data['summary'])
 
-        # Подзаголовок помесячной разбивки (визуально отделяет блок без доп. разделителя)
-        ttk.Label(card, text="Помесячная разбивка:", font=FONT_CARD_SECTION).pack(
+        # Помесячная разбивка: контейнер создаётся сразу, содержимое — при первом разворачивании
+        self._year_cards[year] = {
+            "card": card,
+            "body": ttk.Frame(card),
+            "arrow": arrow,
+            "months": year_data['months'],
+            "built": False,
+        }
+        self._set_year_expanded(year, year in self._expanded_years, arrange=False)
+
+    def _arrange_cards(self) -> None:
+        """
+        Разложить карточки по колонкам: каждая следующая — в самую короткую.
+
+        В режиме «по кварталам» свёрнутые годы встают рядом с развёрнутым,
+        без пустот. Порядок лет сверху вниз сохраняется, а карточка, которую
+        сворачивают или разворачивают, остаётся в своей колонке: её место
+        зависит только от карточек выше, сдвигаются лишь следующие годы.
+        """
+        # Актуальные высоты карточек (в т.ч. только что развёрнутой)
+        self.cards_container.update_idletasks()
+        cards = [item["card"] for item in self._year_cards.values()]
+        card_heights = [card.winfo_reqheight() for card in cards]
+
+        column_heights = [0] * len(self._card_columns)
+        for card in cards:
+            card.pack_forget()
+        for card, height in zip(cards, card_heights):
+            column_index = column_heights.index(min(column_heights))
+            card.pack(in_=self._card_columns[column_index], fill=tk.X, padx=5, pady=10)
+            column_heights[column_index] += height
+
+    def _toggle_year(self, year: int) -> None:
+        """Свернуть или развернуть год по клику на его заголовок."""
+        self._set_year_expanded(year, year not in self._expanded_years)
+
+    def _set_year_expanded(self, year: int, expanded: bool, arrange: bool = True) -> None:
+        """
+        Показать или скрыть помесячную разбивку года.
+
+        Args:
+            arrange: Пересчитать раскладку карточек по колонкам (не нужно,
+                пока карточки ещё создаются в display_years)
+        """
+        entry = self._year_cards[year]
+        if expanded:
+            if not entry["built"]:
+                self._create_months_section(entry["body"], entry["months"])
+                self._bind_mouse_scroll_to_children(entry["body"])
+                entry["built"] = True
+            entry["body"].pack(fill=tk.X)
+            self._expanded_years.add(year)
+        else:
+            # Сетка остаётся построенной: повторное разворачивание мгновенное
+            entry["body"].pack_forget()
+            self._expanded_years.discard(year)
+        entry["arrow"].configure(text=ARROW_YEAR_EXPANDED if expanded else ARROW_YEAR_COLLAPSED)
+        if arrange:
+            self._arrange_cards()
+
+    def _create_months_section(self, parent, months: List[Dict[str, Any]]) -> None:
+        """Подзаголовок и сетка месяцев развёрнутого года."""
+        ttk.Label(parent, text=TEXT_MONTHS_SECTION, font=FONT_CARD_SECTION).pack(
             anchor=tk.W, pady=(10, 10)
         )
+        self._create_months_grid(parent, months)
 
-        # Сетка месяцев
-        self._create_months_grid(card, year_data['months'])
+    def _create_card_header(self, card, year: int) -> ttk.Label:
+        """
+        Создать заголовок карточки: стрелка и год слева, кнопки управления справа.
 
-    def _create_card_header(self, card, year: int):
-        """Создать заголовок карточки: год слева, кнопки управления справа."""
+        Returns:
+            ttk.Label: Стрелка, которая меняется при сворачивании/разворачивании
+        """
         header_frame = ttk.Frame(card)
         header_frame.pack(fill=tk.X)
 
-        # Название года
-        ttk.Label(header_frame, text=f"{year} год", font=FONT_YEAR_TITLE).pack(side=tk.LEFT)
+        # Стрелка и название года — по клику год сворачивается/разворачивается.
+        # Ширина стрелки фиксирована, чтобы год не сдвигался при смене ▶/▼.
+        arrow = ttk.Label(header_frame, font=FONT_YEAR_ARROW, width=2, cursor="hand2")
+        arrow.pack(side=tk.LEFT)
+        title = ttk.Label(header_frame, text=f"{year} год", font=FONT_YEAR_TITLE, cursor="hand2")
+        title.pack(side=tk.LEFT)
+        for widget in (arrow, title):
+            widget.bind("<Button-1>", lambda _event, y=year: self._toggle_year(y))
 
         # Контейнер для кнопок справа
         buttons_frame = ttk.Frame(header_frame)
@@ -320,6 +432,8 @@ class MainView(BaseView):
             style="Danger.TButton"
         )
         delete_button.pack(side=tk.LEFT)
+
+        return arrow
 
     def _create_year_stats(self, card, summary: Dict[str, Any]):
         """Создать блок статистики за год (в строку или столбцом по настройке)."""

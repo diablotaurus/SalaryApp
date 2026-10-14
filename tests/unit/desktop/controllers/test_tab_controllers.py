@@ -16,9 +16,10 @@ class _DummyView:
     def ensure_built(self):
         self.built = True
 
-    def display_years(self, data):
+    def display_years(self, data, default_expanded_year=None):
         self.display_calls += 1
         self.years = data
+        self.default_expanded_year = default_expanded_year
 
     def update_statistics(self, data):
         self.stats = data
@@ -153,6 +154,52 @@ def test_main_tab_controller_skips_rebuild_when_nothing_changed(monkeypatch):
     state["settings"] = {"history_layout_mode": "quarterly"}
     controller.refresh_history()
     assert nav.app.main_view.display_calls == 3
+
+
+def _patch_current_year(monkeypatch, year):
+    monkeypatch.setattr(
+        "api.salary_api.SalaryAPI.get_current_period",
+        lambda: {"success": True, "data": {"year": year, "month": 1}},
+    )
+
+
+def test_default_expanded_year_is_current_year(monkeypatch):
+    _patch_current_year(monkeypatch, 2026)
+    years = [{"year": 2024}, {"year": 2026}, {"year": 2025}]
+
+    assert MainTabController._default_expanded_year(years) == 2026
+
+
+def test_default_expanded_year_falls_back_to_latest_year(monkeypatch):
+    # Январь 2027: данных за текущий год ещё нет — разворачиваем последний год с данными.
+    _patch_current_year(monkeypatch, 2027)
+    years = [{"year": 2024}, {"year": 2026}, {"year": 2025}]
+
+    assert MainTabController._default_expanded_year(years) == 2026
+
+
+def test_default_expanded_year_without_data(monkeypatch):
+    _patch_current_year(monkeypatch, 2026)
+
+    assert MainTabController._default_expanded_year([]) is None
+
+
+def test_refresh_history_passes_default_expanded_year(monkeypatch):
+    nav = _DummyNav()
+    controller = MainTabController(nav)
+    _patch_current_year(monkeypatch, 2026)
+    monkeypatch.setattr(
+        "api.salary_api.SalaryAPI.get_all_grouped_by_year",
+        lambda: {"success": True, "data": [{"year": 2025}, {"year": 2026}]},
+    )
+    monkeypatch.setattr(
+        "api.settings_api.SettingsAPI.get_settings",
+        lambda: {"success": True, "data": {}},
+    )
+
+    controller.refresh_history()
+
+    assert nav.app.main_view.default_expanded_year == 2026
 
 
 def _patch_report_api(monkeypatch, monthly_calls):
