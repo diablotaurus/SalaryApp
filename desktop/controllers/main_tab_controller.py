@@ -8,6 +8,7 @@ from api.settings_api import SettingsAPI
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
 from core.utils.dates import DateUtils
 from desktop.controllers.render_cache import RenderCache
+from desktop.views.constants import BACKUP_COMMENT_AUTO_ON_CLOSE
 from desktop.views.dialogs.backup_dialog import BackupDialog
 from desktop.views.dialogs.export_dialog import ExportDialog
 from desktop.views.dialogs.salary_dialog import SalaryDialog
@@ -249,7 +250,7 @@ class MainTabController:
                 return False
 
             # Срок хранения (backup_days) сервис бэкапов берёт из настроек сам
-            response = SalaryAPI.create_backup("auto_on_close")
+            response = SalaryAPI.create_backup(BACKUP_COMMENT_AUTO_ON_CLOSE)
             if not response["success"]:
                 raise RuntimeError(response.get("message", "Не удалось создать резервную копию"))
             return True

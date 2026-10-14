@@ -47,6 +47,15 @@ class SalaryAPI:
             }
 
     @staticmethod
+    def validate_payment_date(value: str, field_label: str = "даты") -> dict:
+        """Проверить дату выплаты по тем же правилам, что и при сохранении записи."""
+        try:
+            parsed = SalaryService.parse_payment_date(value, field_label)
+        except ValueError as exc:
+            return {"success": False, "error": str(exc), "message": str(exc)}
+        return {"success": True, "data": parsed.strftime("%d.%m.%Y") if parsed else None}
+
+    @staticmethod
     def get_salary(year: int, month: int) -> dict:
         return queries.get_salary(year, month)
 

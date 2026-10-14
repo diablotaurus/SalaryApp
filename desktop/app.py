@@ -23,6 +23,7 @@ from desktop.views.constants import (
 from desktop.views.main.main_view import MainView
 from desktop.views.report.report_view import ReportView
 from desktop.views.settings.settings_view import SettingsView
+from desktop.widgets.window_centering import install_native_dialog_centering
 
 TAB_MAIN_TEXT = "\u0413\u043b\u0430\u0432\u043d\u0430\u044f"
 TAB_REPORT_TEXT = "\u0410\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430"
@@ -86,6 +87,9 @@ class App(tk.Tk):
 
         # Подтверждение перед закрытием главного окна.
         self.protocol("WM_DELETE_WINDOW", self._on_close_requested)
+
+        # Стандартные окна Windows (сообщения, выбор цвета) — по центру главного окна.
+        install_native_dialog_centering(self)
 
     def _create_styles(self):
         """Создать стили для виджетов ttk."""

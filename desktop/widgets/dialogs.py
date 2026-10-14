@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Optional, Callable
 
+from desktop.widgets.window_centering import center_on_main_window
+
 
 class BaseDialog(tk.Toplevel):
     """Базовый класс для всех диалоговых окон"""
@@ -18,37 +20,20 @@ class BaseDialog(tk.Toplevel):
         # Делаем окно модальным
         self.transient(parent)
         self.grab_set()
-        
-        # Центрируем окно относительно родителя
-        self._center_on_parent()
-    
-    def _center_on_parent(self):
-        """Центрировать окно относительно родительского окна"""
-        self.parent.update_idletasks()
-        self.update_idletasks()
 
-        parent_x = self.parent.winfo_x()
-        parent_y = self.parent.winfo_y()
-        parent_width = self.parent.winfo_width()
-        parent_height = self.parent.winfo_height()
+        # Центрирует окно наследник — после построения содержимого, когда известен
+        # его размер (_center_on_main_window). Предварительное центрирование здесь
+        # (с размером пустого окна) не нужно: при двух позициях до показа окна
+        # Tk иногда применял первую, и окно оказывалось не по центру.
 
-        dialog_width = self.winfo_width()
-        dialog_height = self.winfo_height()
+    def _center_on_main_window(self, width: Optional[int] = None, height: Optional[int] = None):
+        """
+        Центрировать окно по главному окну приложения (а не по непосредственному родителю).
 
-        if dialog_width <= 1 or dialog_height <= 1:
-            self.update_idletasks()
-            dialog_width = self.winfo_width()
-            dialog_height = self.winfo_height()
-
-        if parent_width <= 1 or parent_height <= 1:
-            parent_x = 0
-            parent_y = 0
-            parent_width = self.winfo_screenwidth()
-            parent_height = self.winfo_screenheight()
-
-        x = parent_x + (parent_width - dialog_width) // 2
-        y = parent_y + (parent_height - dialog_height) // 2
-        self.geometry(f"+{x}+{y}")
+        Args:
+            width, height: Размер окна, если он задаётся явно
+        """
+        center_on_main_window(self, width, height)
 
 
 class ConfirmationDialog(BaseDialog):
@@ -61,7 +46,7 @@ class ConfirmationDialog(BaseDialog):
         self.result = None
         
         # Настройка окна
-        self.geometry("400x150")
+        self._center_on_main_window(400, 150)
         self.resizable(False, False)
         
         # Создаем интерфейс
@@ -123,7 +108,7 @@ class InputDialog(BaseDialog):
         self.result = None
         
         # Настройка окна
-        self.geometry("400x150")
+        self._center_on_main_window(400, 150)
         self.resizable(False, False)
         
         # Создаем интерфейс
@@ -191,7 +176,7 @@ class ProgressDialog(BaseDialog):
         super().__init__(parent, title)
         
         # Настройка окна
-        self.geometry("400x120")
+        self._center_on_main_window(400, 120)
         self.resizable(False, False)
         
         # Запрещаем закрытие

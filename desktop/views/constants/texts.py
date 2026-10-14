@@ -15,6 +15,10 @@ TEXT_EXPORT = "Экспорт"
 TEXT_IMPORT = "Импорт"
 TEXT_BACKUP = "Резервные копии"
 
+# Служебная метка автокопии при закрытии и её текст в списке копий
+BACKUP_COMMENT_AUTO_ON_CLOSE = "auto_on_close"
+BACKUP_COMMENT_LABELS = {BACKUP_COMMENT_AUTO_ON_CLOSE: "Автокопия при закрытии"}
+
 # --- Удаление года ---
 TEXT_DELETE_YEAR = "Удалить год"
 CONFIRM_DELETE_YEAR = "Вы уверены, что хотите удалить все данные за {year} год?\nЭто действие нельзя отменить."

@@ -4,12 +4,18 @@ from bot.handlers.salary import (
     SalaryStates,
     _format_year_table,
     _format_current_year_table,
+    _is_cancel_text,
     _parse_optional_date,
+    cmd_cancel,
     cmd_current,
     cmd_year_stats,
     process_advance,
+    process_advance_date,
+    process_month,
+    process_non_text,
     process_salary_date,
     process_year,
+    router,
 )
 
 
@@ -30,6 +36,9 @@ class FakeState:
 
     async def set_state(self, state):
         self.current_state = state
+
+    async def get_state(self):
+        return self.current_state
 
     async def update_data(self, **kwargs):
         self.data.update(kwargs)
@@ -233,3 +242,164 @@ def test_cmd_year_stats_sends_plain_text(monkeypatch):
     asyncio.run(cmd_year_stats(msg))
 
     assert msg.answers == [("Статистика за 2025 год", {})]
+
+
+def test_cancel_clears_started_input():
+    msg = FakeMessage("/cancel")
+    state = FakeState({"year": 2026})
+    state.current_state = SalaryStates.waiting_for_advance
+
+    asyncio.run(cmd_cancel(msg, state))
+
+    assert state.cleared is True
+    assert "отменён" in msg.answers[-1][0]
+
+
+def test_cancel_without_started_input():
+    msg = FakeMessage("/cancel")
+    state = FakeState()
+
+    asyncio.run(cmd_cancel(msg, state))
+
+    assert state.cleared is False
+    assert "нечего отменять" in msg.answers[-1][0]
+
+
+def test_cancel_words_are_recognized():
+    assert _is_cancel_text(FakeMessage(" Отмена "))
+    assert not _is_cancel_text(FakeMessage("1000"))
+    assert not _is_cancel_text(FakeMessage(None))
+
+
+def test_month_with_existing_data_shows_warning(monkeypatch):
+    msg = FakeMessage("3")
+    state = FakeState({"year": 2026})
+    monkeypatch.setattr(
+        "bot.handlers.salary.SalaryAPI.get_salary",
+        lambda year, month: {
+            "success": True,
+            "data": {
+                "year": year, "month_name": "Март",
+                "advance": 31503.56, "salary": 76380.77,
+                "advance_date": "27.03.2026", "salary_date": "14.04.2026",
+            },
+        },
+    )
+
+    asyncio.run(process_month(msg, state))
+
+    warning = msg.answers[0][0]
+    assert "За Март 2026 уже есть данные" in warning
+    assert "31 503.56" in warning and "14.04.2026" in warning
+    assert msg.answers[-1][0] == "Введите сумму аванса:"
+    assert state.current_state == SalaryStates.waiting_for_advance
+
+
+def test_month_without_data_has_no_warning(monkeypatch):
+    msg = FakeMessage("3")
+    state = FakeState({"year": 2026})
+    monkeypatch.setattr(
+        "bot.handlers.salary.SalaryAPI.get_salary",
+        lambda year, month: {"success": False, "message": "не найдены"},
+    )
+
+    asyncio.run(process_month(msg, state))
+
+    assert [answer[0] for answer in msg.answers] == ["Введите сумму аванса:"]
+
+
+def test_invalid_advance_date_is_asked_again():
+    # Раньше ошибка даты обнаруживалась только при сохранении, и ввод терялся.
+    msg = FakeMessage("31.02.2026")
+    state = FakeState({"year": 2026, "month": 2, "advance": 1000.0})
+    state.current_state = SalaryStates.waiting_for_advance_date
+
+    asyncio.run(process_advance_date(msg, state))
+
+    assert state.current_state == SalaryStates.waiting_for_advance_date
+    assert "advance_date" not in state.data
+    assert "ДД.ММ.ГГГГ" in msg.answers[-1][0]
+
+
+def test_advance_date_is_normalized():
+    msg = FakeMessage("05032026")
+    state = FakeState({"year": 2026, "month": 3, "advance": 1000.0})
+
+    asyncio.run(process_advance_date(msg, state))
+
+    assert state.data["advance_date"] == "05.03.2026"
+    assert state.current_state == SalaryStates.waiting_for_salary
+
+
+def test_invalid_salary_date_keeps_input(monkeypatch):
+    msg = FakeMessage("99.99.2026")
+    state = FakeState({"year": 2026, "month": 3, "advance": 1.0, "salary": 2.0, "advance_date": None})
+    called = []
+    monkeypatch.setattr(
+        "bot.handlers.salary.SalaryAPI.add_salary", lambda *args: called.append(args)
+    )
+
+    asyncio.run(process_salary_date(msg, state))
+
+    assert called == []
+    assert state.cleared is False
+    assert "ДД.ММ.ГГГГ" in msg.answers[-1][0]
+
+
+def test_non_text_message_is_answered():
+    msg = FakeMessage(None)
+
+    asyncio.run(process_non_text(msg))
+
+    assert "текстом" in msg.answers[-1][0]
+
+
+def test_handler_registration_order():
+    callbacks = [handler.callback for handler in router.message.handlers]
+    first_step = callbacks.index(process_year)
+    # Отмена должна срабатывать раньше шагов ввода, иначе «/cancel» станет ответом шага
+    assert max(i for i, cb in enumerate(callbacks) if cb is cmd_cancel) < first_step
+    # Ответ на нетекстовые сообщения — последним, после всех шагов
+    assert callbacks[-1] is process_non_text
+
+
+def _route(text, state=None):
+    """Какой обработчик выберет роутер (настоящие фильтры aiogram, без сети)."""
+    from datetime import datetime as _dt
+
+    from aiogram.types import Chat, Message, User
+
+    message = Message(
+        message_id=1,
+        date=_dt.now(),
+        chat=Chat(id=1, type="private"),
+        from_user=User(id=1, is_bot=False, first_name="u"),
+        text=text,
+    )
+
+    async def _find():
+        for handler in router.message.handlers:
+            matched, _ = await handler.check(
+                message, raw_state=state.state if state else None, bot=None
+            )
+            if matched:
+                return handler.callback
+        return None
+
+    return asyncio.run(_find())
+
+
+def test_routing_cancel_during_amount_input():
+    assert _route("/cancel", SalaryStates.waiting_for_advance) is cmd_cancel
+    assert _route("Отмена", SalaryStates.waiting_for_salary_date) is cmd_cancel
+
+
+def test_routing_cancel_word_outside_input_is_not_a_command():
+    assert _route("отмена") is None
+    assert _route("/cancel") is cmd_cancel  # команда отвечает «нечего отменять»
+
+
+def test_routing_regular_answers_and_non_text():
+    assert _route("1000", SalaryStates.waiting_for_advance) is process_advance
+    assert _route("2026", SalaryStates.waiting_for_year) is process_year
+    assert _route(None, SalaryStates.waiting_for_advance) is process_non_text  # стикер, фото

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from core.models.salary import Salary
+from core.services.salary_service import SalaryService
 from core.services.statistics_service import StatisticsService
 
 
@@ -122,3 +123,28 @@ def test_get_summary_statistics_uses_unified_average_rule(monkeypatch):
 
     assert summary["average_monthly"] == 0.0
     assert summary["avg_monthly_total"] == 0.0
+
+
+def test_average_by_month_skips_months_without_paid_salary(temp_db):
+    # Тот же принцип, что у KPI «Среднемесячно»: месяц только с авансом
+    # (зарплата ещё не выплачена) не занижает среднее на графике.
+    SalaryService.add_salary(2024, 3, 1000.0, 3000.0, None, "25.03.2024")
+    SalaryService.add_salary(2025, 3, 2000.0, 5000.0, None, "25.03.2025")
+    SalaryService.add_salary(2025, 4, 1500.0, 0.0)  # зарплаты нет — месяц не учитывается
+
+    items = {item["month"]: item for item in StatisticsService.get_average_by_month_dto()["items"]}
+
+    assert set(items) == {3}
+    assert items[3]["avg_advance"] == 1500.0
+    assert items[3]["avg_salary"] == 4000.0
+    assert items[3]["avg_total"] == 5500.0
+
+
+def test_average_by_month_skips_salary_dated_in_future(temp_db):
+    future = (datetime.now() + timedelta(days=30)).strftime("%d.%m.%Y")
+    SalaryService.add_salary(2024, 5, 1000.0, 2000.0, None, "20.05.2024")
+    SalaryService.add_salary(2025, 5, 9000.0, 9000.0, None, future)
+
+    items = StatisticsService.get_average_by_month_dto()["items"]
+
+    assert items == [{"month": 5, "avg_advance": 1000.0, "avg_salary": 2000.0, "avg_total": 3000.0}]

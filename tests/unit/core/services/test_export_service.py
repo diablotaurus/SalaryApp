@@ -32,14 +32,18 @@ def test_export_to_csv_creates_file_with_data(temp_db, tmp_path: Path):
 
         assert file_path_obj.exists()
         assert file_path_obj.suffix == ".csv"
+        # BOM: по нему Excel узнаёт UTF-8 и не показывает кириллицу «кракозябрами»
+        assert file_path_obj.read_bytes().startswith(b"\xef\xbb\xbf")
 
-        with file_path_obj.open("r", encoding="utf-8", newline="") as f:
+        with file_path_obj.open("r", encoding="utf-8-sig", newline="") as f:
             rows = list(csv.reader(f, delimiter=";"))
 
         assert len(rows) >= 2
         assert rows[0][0] == "Год"
         assert rows[1][0] == "2025"
         assert rows[1][1] == "Сентябрь"
+        # Суммы с запятой — русский Excel читает их как числа
+        assert (rows[1][2], rows[1][4], rows[1][6]) == ("11111,00", "22222,00", "33333,00")
     finally:
         config.export.export_dir = old_export_dir
 

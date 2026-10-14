@@ -47,22 +47,6 @@ class AnalyticsRepository:
         return result
 
     @staticmethod
-    def get_average_by_month() -> List[Dict[str, Any]]:
-        conn = DatabaseConnection.get_connection()
-        rows = conn.execute(
-            """
-            SELECT month,
-                   AVG(advance) / 100.0 AS avg_advance,
-                   AVG(salary) / 100.0 AS avg_salary,
-                   AVG(advance + salary) / 100.0 AS avg_total
-            FROM salaries
-            GROUP BY month
-            ORDER BY month
-            """
-        ).fetchall()
-        return [dict(row) for row in rows]
-
-    @staticmethod
     def get_best_month() -> Optional[Dict[str, Any]]:
         conn = DatabaseConnection.get_connection()
         row = conn.execute(

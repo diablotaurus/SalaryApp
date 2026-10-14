@@ -63,8 +63,8 @@ class SalaryService:
             month=month,
             advance=advance,
             salary=salary,
-            advance_date=SalaryService._parse_date_strict(advance_date, "даты аванса"),
-            salary_date=SalaryService._parse_date_strict(salary_date, "даты зарплаты"),
+            advance_date=SalaryService.parse_payment_date(advance_date, "даты аванса"),
+            salary_date=SalaryService.parse_payment_date(salary_date, "даты зарплаты"),
         )
         return SalaryRepository.upsert(
             new_salary,
@@ -166,7 +166,7 @@ class SalaryService:
         return now.year, now.month
 
     @staticmethod
-    def _parse_date_strict(value: Optional[str], field_label: str) -> Optional[datetime]:
+    def parse_payment_date(value: Optional[str], field_label: str) -> Optional[datetime]:
         """
         Строгий парсинг даты из строки.
         

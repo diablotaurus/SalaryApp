@@ -41,7 +41,7 @@ class SalaryDialog(BaseDialog):
         self._load_existing_data()
 
         # Центрируем после построения содержимого (размер уже известен)
-        self._center_on_parent()
+        self._center_on_main_window()
 
         # Фокус на первом поле
         self.year_combobox.focus_set()

@@ -95,7 +95,6 @@ def test_analytics_returns_rubles_from_kopeck_storage(temp_db):
     SalaryService.add_salary(2026, 2, 300.5, 400.5)
 
     yearly = AnalyticsRepository.get_yearly_totals()
-    averages = AnalyticsRepository.get_average_by_month()
     best_year = AnalyticsRepository.get_best_year()
 
     assert yearly == [
@@ -107,5 +106,4 @@ def test_analytics_returns_rubles_from_kopeck_storage(temp_db):
             "months_count": 2,
         }
     ]
-    assert averages[0]["avg_total"] == 301.0
     assert best_year == {"year": 2026, "total": 1002.0}

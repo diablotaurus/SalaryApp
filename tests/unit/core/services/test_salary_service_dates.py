@@ -23,12 +23,12 @@ def test_normalize_date_input_invalid(raw):
     assert SalaryService._normalize_date_input(raw) is None
 
 
-def test_parse_date_strict_valid():
-    parsed = SalaryService._parse_date_strict("31.12.2025", "даты")
+def test_parse_payment_date_valid():
+    parsed = SalaryService.parse_payment_date("31.12.2025", "даты")
     assert isinstance(parsed, datetime)
     assert parsed.strftime("%d.%m.%Y") == "31.12.2025"
 
 
-def test_parse_date_strict_invalid_date_raises_value_error():
+def test_parse_payment_date_invalid_date_raises_value_error():
     with pytest.raises(ValueError):
-        SalaryService._parse_date_strict("31.02.2025", "даты")
+        SalaryService.parse_payment_date("31.02.2025", "даты")

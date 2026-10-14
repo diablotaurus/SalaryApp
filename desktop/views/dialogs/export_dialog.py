@@ -28,7 +28,7 @@ class ExportDialog(BaseDialog):
         self._create_widgets()
 
         # Центрируем после построения содержимого (размер уже известен)
-        self._center_on_parent()
+        self._center_on_main_window()
 
         # Фокус на первом поле выбора формата
         self.first_format_radio.focus_set()

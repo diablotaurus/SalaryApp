@@ -34,7 +34,7 @@ class AboutDialog(BaseDialog):
         self.resizable(False, False)
         self._create_widgets()
         # Пере-центрируем после построения содержимого (теперь размер известен).
-        self._center_on_parent()
+        self._center_on_main_window()
 
     def _create_widgets(self):
         """Создать виджеты окна."""

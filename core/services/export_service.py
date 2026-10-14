@@ -35,16 +35,14 @@ class ExportService:
         Returns:
             str: Путь к созданному CSV файлу
             
-        Формат CSV:
+        Формат CSV (рассчитан на открытие двойным кликом в русском Excel):
             - Разделитель: точка с запятой (;)
-            - Кодировка: UTF-8
+            - Кодировка: UTF-8 с BOM — без него Excel показывает кириллицу
+              «кракозябрами» (правило «UTF-8 без BOM» относится к исходникам
+              проекта, а не к пользовательским выгрузкам)
+            - Суммы: два знака, запятая в дробной части — Excel читает их как числа
             - Заголовки: русские названия колонок
             - Данные: все записи о зарплатах отсортированные по дате (новые сверху)
-            
-        Безопасность:
-            - SQL-запросы параметризованы через DatabaseConnection
-            - Путь к файлу проверяется на принадлежность к разрешенной директории
-            - Кодировка UTF-8 гарантирует корректное сохранение русских символов
         """
         if filepath is None:
             # Создание автоматического имени файла с временной меткой
@@ -55,8 +53,8 @@ class ExportService:
         
         salaries = SalaryService.get_all_salaries()
         
-        # Запись данных в CSV файл
-        with open(filepath, 'w', newline='', encoding='utf-8') as f:
+        # Запись данных в CSV файл (utf-8-sig добавляет BOM для Excel)
+        with open(filepath, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.writer(f, delimiter=';')  # Разделитель точка с запятой
             
             # Заголовки столбцов на русском языке
@@ -70,15 +68,20 @@ class ExportService:
                 writer.writerow([
                     salary_record.year,
                     DateUtils.get_month_name(salary_record.month),
-                    salary_record.advance,
+                    ExportService._csv_amount(salary_record.advance),
                     salary_record.advance_date.date().isoformat() if salary_record.advance_date else "",
-                    salary_record.salary,
+                    ExportService._csv_amount(salary_record.salary),
                     salary_record.salary_date.date().isoformat() if salary_record.salary_date else "",
-                    salary_record.total,
+                    ExportService._csv_amount(salary_record.total),
                     salary_record.created_at.isoformat(sep=" ") if salary_record.created_at else "",
                 ])
-        
+
         return str(filepath)
+
+    @staticmethod
+    def _csv_amount(amount: float) -> str:
+        """Сумма для CSV: два знака и запятая в дробной части (так её понимает русский Excel)."""
+        return f"{amount:.2f}".replace(".", ",")
     
     @staticmethod
     def export_to_json(filepath: str = None) -> str:

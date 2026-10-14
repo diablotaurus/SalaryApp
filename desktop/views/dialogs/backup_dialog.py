@@ -2,8 +2,10 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 from typing import List, Dict, Any
+from core.utils.files import FileUtils
 from desktop.widgets.dialogs import BaseDialog
-from desktop.views.constants import BUTTON_DIALOG_WIDTH, PADX_DEFAULT
+from desktop.widgets.window_centering import center_on_main_window
+from desktop.views.constants import BACKUP_COMMENT_LABELS, BUTTON_DIALOG_WIDTH, PADX_DEFAULT
 
 
 class BackupDialog(BaseDialog):
@@ -17,15 +19,14 @@ class BackupDialog(BaseDialog):
         self.parent = parent
         self.backups_list = []
         
-        # Настройка окна
-        self.geometry("800x600")
-        self._center_on_parent()
-        
         # Создаем интерфейс
         self._create_widgets()
-        
+
         # Загружаем список резервных копий
         self._load_backups()
+
+        # Размер окна и положение по центру главного окна — после построения содержимого
+        self._center_on_main_window(800, 600)
     
     def _create_widgets(self):
         """Создать виджеты"""
@@ -70,24 +71,24 @@ class BackupDialog(BaseDialog):
         tree_container = ttk.Frame(list_frame)
         tree_container.pack(fill=tk.BOTH, expand=True)
         
-        # Treeview
-        columns = ("filename", "size", "created", "modified")
+        # Treeview (колонка «Изменен» заменена комментарием: у копии она всегда равна «Создан»)
+        columns = ("filename", "comment", "size", "created")
         self.tree = ttk.Treeview(
             tree_container,
             columns=columns,
             show="headings"
         )
-        
+
         # Настраиваем колонки
         self.tree.heading("filename", text="Имя файла")
+        self.tree.heading("comment", text="Комментарий")
         self.tree.heading("size", text="Размер")
         self.tree.heading("created", text="Создан")
-        self.tree.heading("modified", text="Изменен")
-        
-        self.tree.column("filename", width=360, stretch=True)
+
+        self.tree.column("filename", width=270, stretch=False)
+        self.tree.column("comment", width=250, stretch=True)
         self.tree.column("size", width=80, anchor=tk.E, stretch=False)
         self.tree.column("created", width=120, anchor=tk.CENTER, stretch=False)
-        self.tree.column("modified", width=120, anchor=tk.CENTER, stretch=False)
         
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -183,32 +184,33 @@ class BackupDialog(BaseDialog):
         # Добавляем в дерево
         for backup in self.backups_list:
             filename = backup.get('filename', '')
-            size_mb = backup.get('size_mb', 0)
+            size_bytes = backup.get('size_bytes', 0)
             created = backup.get('created', '')
-            modified = backup.get('modified', '')
-            
+
             # Форматируем даты
             if isinstance(created, datetime):
                 created = created.strftime("%d.%m.%Y %H:%M")
-            if isinstance(modified, datetime):
-                modified = modified.strftime("%d.%m.%Y %H:%M")
-            
+
             self.tree.insert('', tk.END, values=(
                 filename,
-                f"{size_mb:.2f} MB",
+                self._format_comment(backup.get('comment')),
+                # KB/MB по размеру: «0.00 MB» для небольшой базы ничего не говорил
+                FileUtils.format_file_size(size_bytes),
                 created,
-                modified
             ))
+
+    @staticmethod
+    def _format_comment(comment: Any) -> str:
+        """Комментарий для списка: в одну строку, служебные метки — понятным текстом."""
+        text = " ".join(str(comment or "").split())
+        return BACKUP_COMMENT_LABELS.get(text, text)
     
     def _create_backup(self):
         """Создать резервную копию"""
-        # Создаем диалог для ввода комментария
-        comment_dialog = tk.Toplevel(self)
-        comment_dialog.title("Создание резервной копии")
-        comment_dialog.geometry("400x200")
-        comment_dialog.transient(self)
-        comment_dialog.grab_set()
-        
+        # Создаем диалог для ввода комментария (модальный; BaseDialog
+        # ставит его по центру главного окна — раньше он появлялся в углу экрана)
+        comment_dialog = BaseDialog(self, "Создание резервной копии")
+
         # Виджеты
         main_frame = ttk.Frame(comment_dialog, padding=20)
         main_frame.pack(fill=tk.BOTH, expand=True)
@@ -234,6 +236,8 @@ class BackupDialog(BaseDialog):
                    width=BUTTON_DIALOG_WIDTH).pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
         ttk.Button(buttons_container, text="Отмена", command=comment_dialog.destroy,
                    width=BUTTON_DIALOG_WIDTH).pack(side=tk.LEFT)
+
+        center_on_main_window(comment_dialog, 400, 200)
         
         comment_text.focus_set()
     
@@ -257,7 +261,8 @@ class BackupDialog(BaseDialog):
                     "Подтверждение",
                     f"Вы уверены, что хотите восстановить базу данных из резервной копии?\n\n"
                     f"Файл: {filename}\n\n"
-                    f"Текущие данные будут заменены. Рекомендуется создать резервную копию перед восстановлением."
+                    f"Текущие данные будут заменены. Перед восстановлением автоматически "
+                    f"создаётся резервная копия текущей базы — к ней можно будет вернуться."
                 ):
                     if self.controller.restore_backup(backup['path']):
                         self.destroy()

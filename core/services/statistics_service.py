@@ -6,9 +6,10 @@
 средние значения и поиск лучших периодов.
 """
 
-from typing import Dict, Any, Iterable
+from collections import defaultdict
+from typing import Dict, Any, Iterable, List
 from datetime import datetime
-from core.models.year import calculate_average_monthly
+from core.models.year import calculate_average_monthly, is_payment_complete
 from core.repositories.analytics_repository import AnalyticsRepository
 from core.repositories.salary_repository import SalaryRepository
 from core.repositories.year_repository import YearRepository
@@ -121,15 +122,26 @@ class StatisticsService:
         Использование:
             - Полезно для выявления сезонных тенденций
             - Помогает планировать бюджет по месяцам
+
+        Учитываются только месяцы с фактически выплаченной зарплатой — то же
+        правило, что у KPI «Среднемесячно» (is_payment_complete): месяц,
+        где пока есть только аванс, не занижает среднее.
         """
-        results = AnalyticsRepository.get_average_by_month()
+        now = datetime.now()
+        paid_by_month: Dict[int, List[Any]] = defaultdict(list)
+        for record in SalaryRepository.get_all():
+            if is_payment_complete(record, now):
+                paid_by_month[int(record.month)].append(record)
+
         items = []
-        for row in results:
+        for month in sorted(paid_by_month):
+            records = paid_by_month[month]
+            count = len(records)
             items.append({
-                "month": int(row["month"]),
-                "avg_advance": float(row["avg_advance"] or 0),
-                "avg_salary": float(row["avg_salary"] or 0),
-                "avg_total": float(row["avg_total"] or 0)
+                "month": month,
+                "avg_advance": sum(record.advance for record in records) / count,
+                "avg_salary": sum(record.salary for record in records) / count,
+                "avg_total": sum(record.total for record in records) / count,
             })
         return {"items": items}
     
