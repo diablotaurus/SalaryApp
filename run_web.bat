@@ -13,7 +13,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-python -c "import flask, waitress, pandas, openpyxl, matplotlib, aiogram" >nul 2>&1
+python -c "import flask, waitress, openpyxl, matplotlib, aiogram" >nul 2>&1
 if errorlevel 1 (
     echo Не установлены зависимости. Выполните:
     echo python -m pip install -r requirements.txt

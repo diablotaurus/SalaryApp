@@ -89,7 +89,7 @@ built on a shared core. It records monthly advance/salary payments and provides 
 (monthly dynamics, year-over-year comparison, growth rate, monthly averages, best periods),
 database backups and exports to CSV/JSON/Excel.
 
-- **Stack:** Python, Tkinter, Flask, aiogram v3, SQLite, pandas/openpyxl, matplotlib.
+- **Stack:** Python, Tkinter, Flask, aiogram v3, SQLite, openpyxl, matplotlib.
 - **Run:** `python StartSalary.pyw` (desktop), `python run_web.py` (web), `python run_bot.py` (bot).
 - **Setup bot token:** copy `bot/.env.example` to `bot/.env` and set `BOT_TOKEN`.
 - **Tests:** `python -m pytest`.

@@ -69,3 +69,54 @@ def test_get_available_formats_contains_expected_ids():
     ids = {item["format"] for item in formats}
     assert {"csv", "json", "excel"}.issubset(ids)
 
+
+
+def _export_excel(tmp_path: Path):
+    from openpyxl import load_workbook
+
+    old_export_dir = config.export.export_dir
+    config.export.export_dir = str(tmp_path)
+    try:
+        filepath = Path(ExportService.export_to_excel())
+    finally:
+        config.export.export_dir = old_export_dir
+    assert filepath.suffix == ".xlsx"
+    return load_workbook(filepath)
+
+
+def test_export_to_excel_writes_three_sheets_with_data(temp_db, tmp_path: Path):
+    _seed_salary_row()
+
+    workbook = _export_excel(tmp_path)
+
+    assert workbook.sheetnames == ["Данные", "Сводка по годам", "Статистика"]
+    data = workbook["Данные"]
+    assert [cell.value for cell in data[1]] == [
+        "Год", "Месяц", "Аванс", "Дата аванса", "Зарплата",
+        "Дата зарплаты", "Итого", "Дата создания",
+    ]
+    assert [cell.value for cell in data[2]][:7] == [
+        2025, 9, 11111.0, "2025-09-10", 22222.0, "2025-09-25", 33333.0,
+    ]
+    yearly = [cell.value for cell in workbook["Сводка по годам"][2]]
+    assert yearly == [2025, 11111.0, 22222.0, 33333.0, 1]
+    stats = [cell.value for cell in workbook["Статистика"][2]]
+    assert stats == [1, 11111.0, 22222.0, 33333.0, 2025, 2025]
+
+
+def test_export_to_excel_keeps_header_style(temp_db, tmp_path: Path):
+    _seed_salary_row()
+
+    header = _export_excel(tmp_path)["Данные"]["A1"]
+
+    assert header.font.b is True
+    assert header.border.left.style == "thin" and header.border.bottom.style == "thin"
+    assert (header.alignment.horizontal, header.alignment.vertical) == ("center", "top")
+
+
+def test_export_to_excel_works_on_empty_database(temp_db, tmp_path: Path):
+    # Раньше суммы NULL из пустой таблицы складывались и экспорт падал с TypeError.
+    workbook = _export_excel(tmp_path)
+
+    assert workbook["Данные"].max_row == 1  # только заголовок
+    assert [cell.value for cell in workbook["Статистика"][2]] == [0, 0, 0, 0, None, None]

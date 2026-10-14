@@ -13,8 +13,7 @@ import csv
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
-import pandas as pd
+from typing import Any, Dict, Iterable, List, Sequence
 from core.config.settings import config
 from core.repositories.analytics_repository import AnalyticsRepository
 from core.services.salary_service import SalaryService
@@ -143,14 +142,14 @@ class ExportService:
             - Лист 'Статистика': общая статистика
             
         Особенности:
-            - Используется библиотека pandas для работы с Excel
-            - Автоматическая настройка ширины столбцов
-            - Форматирование данных для лучшей читаемости
-            - Поддержка нескольких листов в одном файле
-            
+            - Файл пишется напрямую через openpyxl (без pandas)
+            - Заголовки оформлены как раньше: жирный шрифт, тонкая рамка,
+              выравнивание по центру и по верху
+            - Автоматическая настройка ширины столбцов (до 50 символов)
+
         Зависимости:
-            - Требует установки pandas и openpyxl
-            - openpyxl используется как движок для записи XLSX
+            - openpyxl импортируется только здесь: его загрузка занимает ~0.7 с,
+              и при импорте модуля она замедляла бы запуск всех приложений
         """
         if filepath is None:
             # Создание автоматического имени файла
@@ -158,74 +157,97 @@ class ExportService:
             export_dir.mkdir(exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filepath = export_dir / f"salary_export_{timestamp}.xlsx"
-        
-        salaries = SalaryService.get_all_salaries()
-        df_main = pd.DataFrame([
-            {
-                "Год": item.year,
-                "Месяц": item.month,
-                "Аванс": item.advance,
-                "Дата аванса": item.advance_date.date().isoformat() if item.advance_date else "",
-                "Зарплата": item.salary,
-                "Дата зарплаты": item.salary_date.date().isoformat() if item.salary_date else "",
-                "Итого": item.total,
-                "Дата создания": item.created_at.isoformat(sep=" ") if item.created_at else "",
-            }
-            for item in salaries
-        ])
 
-        df_yearly = pd.DataFrame([
-            {
-                "Год": item["year"],
-                "Сумма авансов": item["total_advance"],
-                "Сумма зарплат": item["total_salary"],
-                "Общая сумма": item["total"],
-                "Количество месяцев": item["months_count"],
-            }
+        from openpyxl import Workbook
+
+        salaries = SalaryService.get_all_salaries()
+        data_rows = [
+            [
+                item.year,
+                item.month,
+                item.advance,
+                item.advance_date.date().isoformat() if item.advance_date else None,
+                item.salary,
+                item.salary_date.date().isoformat() if item.salary_date else None,
+                round(item.total, 2),
+                item.created_at.isoformat(sep=" ") if item.created_at else None,
+            ]
+            for item in salaries
+        ]
+
+        yearly_rows = [
+            [
+                item["year"],
+                item["total_advance"],
+                item["total_salary"],
+                item["total"],
+                item["months_count"],
+            ]
             for item in AnalyticsRepository.get_yearly_totals()
-        ])
-        
-        # 3. Общая статистика
+        ]
+
+        # Общая статистика. Для пустой базы SQL-суммы равны NULL (None) —
+        # раньше их сложение падало с TypeError, и экспорт без данных не работал.
         stats = SalaryService.get_statistics()
-        df_stats = pd.DataFrame([{
-            'Всего записей': stats.get('total_records', 0),
-            'Общая сумма авансов': stats.get('total_advance_all', 0),
-            'Общая сумма зарплат': stats.get('total_salary_all', 0),
-            'Общая сумма': stats.get('total_advance_all', 0) + stats.get('total_salary_all', 0),
-            'Первый год': stats.get('first_year', ''),
-            'Последний год': stats.get('last_year', '')
-        }])
-        
-        # Запись всех листов в Excel файл
-        with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
-            # Лист с основными данными
-            df_main.to_excel(writer, sheet_name='Данные', index=False)
-            
-            # Лист со сводкой по годам
-            df_yearly.to_excel(writer, sheet_name='Сводка по годам', index=False)
-            
-            # Лист со статистикой
-            df_stats.to_excel(writer, sheet_name='Статистика', index=False)
-            
-            # Настройка ширины колонок для лучшей читаемости
-            for sheet_name in writer.sheets:
-                worksheet = writer.sheets[sheet_name]
-                for column in worksheet.columns:
-                    # Определение максимальной длины содержимого в колонке
-                    max_length = 0
-                    column_letter = column[0].column_letter
-                    for cell in column:
-                        try:
-                            if len(str(cell.value)) > max_length:
-                                max_length = len(str(cell.value))
-                        except Exception:
-                            pass
-                    
-                    # Установка ширины колонки (ограничение 50 символов)
-                    adjusted_width = min(max_length + 2, 50)
-                    worksheet.column_dimensions[column_letter].width = adjusted_width
-        
+        total_advance = stats.get('total_advance_all') or 0
+        total_salary = stats.get('total_salary_all') or 0
+        stats_rows = [[
+            stats.get('total_records') or 0,
+            total_advance,
+            total_salary,
+            round(total_advance + total_salary, 2),
+            stats.get('first_year'),
+            stats.get('last_year'),
+        ]]
+
+        workbook = Workbook()
+        workbook.remove(workbook.active)  # пустой лист по умолчанию не нужен
+        ExportService._write_sheet(
+            workbook, 'Данные',
+            ['Год', 'Месяц', 'Аванс', 'Дата аванса', 'Зарплата',
+             'Дата зарплаты', 'Итого', 'Дата создания'],
+            data_rows,
+        )
+        ExportService._write_sheet(
+            workbook, 'Сводка по годам',
+            ['Год', 'Сумма авансов', 'Сумма зарплат', 'Общая сумма', 'Количество месяцев'],
+            yearly_rows,
+        )
+        ExportService._write_sheet(
+            workbook, 'Статистика',
+            ['Всего записей', 'Общая сумма авансов', 'Общая сумма зарплат',
+             'Общая сумма', 'Первый год', 'Последний год'],
+            stats_rows,
+        )
+        workbook.save(filepath)
+
         return str(filepath)
+
+    @staticmethod
+    def _write_sheet(
+        workbook: Any,
+        title: str,
+        headers: Sequence[str],
+        rows: Iterable[Sequence[Any]],
+    ) -> None:
+        """Добавить лист: оформленный заголовок, строки данных, ширина колонок по содержимому."""
+        from openpyxl.styles import Alignment, Border, Font, Side
+
+        sheet = workbook.create_sheet(title)
+        sheet.append(list(headers))
+        for row in rows:
+            sheet.append(list(row))
+
+        thin = Side(style="thin")
+        for cell in sheet[1]:
+            cell.font = Font(bold=True)
+            cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
+            cell.alignment = Alignment(horizontal="center", vertical="top")
+
+        # Ширина колонки — по самому длинному значению (ограничение 50 символов)
+        for column in sheet.columns:
+            max_length = max(len("" if cell.value is None else str(cell.value)) for cell in column)
+            sheet.column_dimensions[column[0].column_letter].width = min(max_length + 2, 50)
     
     @staticmethod
     def get_available_formats() -> List[Dict[str, str]]:

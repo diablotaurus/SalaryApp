@@ -3,6 +3,7 @@ Web startup helpers.
 """
 from __future__ import annotations
 
+import importlib.util
 import os
 import sys
 import logging
@@ -25,19 +26,16 @@ def check_dependencies() -> bool:
     """Проверка наличия всех необходимых зависимостей из requirements.txt."""
     required_modules = [
         "flask",  # Web framework
-        "pandas",  # Для ExportService
         "openpyxl",  # Для экспорта в Excel
         "matplotlib",  # Для графиков
         "aiogram",  # Для бота (импортируется в salary_api)
         "waitress",  # Production WSGI server
     ]
-    missing_modules = []
-
-    for module in required_modules:
-        try:
-            __import__(module)
-        except ImportError:
-            missing_modules.append(module)
+    # find_spec проверяет наличие модуля, не загружая его
+    # (openpyxl и matplotlib грузятся больше секунды, а нужны не при старте)
+    missing_modules = [
+        module for module in required_modules if importlib.util.find_spec(module) is None
+    ]
 
     if missing_modules:
         logger.error("=" * 60)
@@ -51,19 +49,15 @@ def check_dependencies() -> bool:
         logger.error("   https://visualstudio.microsoft.com/visual-cpp-build-tools/")
         logger.error("   или используйте готовые сборки через pip:")
 
-        if "pandas" in missing_modules:
-            logger.error("\n2. Для pandas можно попробовать установить предварительно собранную версию:")
-            logger.error("   pip install pandas --only-binary=pandas")
-
         if "matplotlib" in missing_modules:
-            logger.error("\n3. Для matplotlib можно установить без зависимостей:")
+            logger.error("\n2. Для matplotlib можно установить готовую сборку:")
             logger.error("   pip install matplotlib --only-binary=matplotlib")
 
-        logger.error("\n4. Или попробуйте установить все зависимости одной командой:")
+        logger.error("\n3. Или попробуйте установить все зависимости одной командой:")
         logger.error("   pip install --only-binary=:all: -r requirements.txt")
 
-        logger.error("\n5. Альтернативно, установите Anaconda или Miniconda, затем:")
-        logger.error("   conda install -c conda-forge pandas matplotlib flask")
+        logger.error("\n4. Альтернативно, установите Anaconda или Miniconda, затем:")
+        logger.error("   conda install -c conda-forge matplotlib flask openpyxl")
 
         logger.error("\n" + "=" * 60)
         return False
