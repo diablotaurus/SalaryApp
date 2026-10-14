@@ -15,7 +15,8 @@ from typing import Any, Dict, List
 from core.config.settings import config
 from core.database.connection import DatabaseConnection
 from core.database.migrations import apply_all_migrations
-from core.exceptions import BackupError
+from core.exceptions import BackupError, SalaryAppError
+from core.services.settings_service import SettingsService
 
 logger = logging.getLogger(__name__)
 
@@ -134,10 +135,25 @@ class BackupService:
             ) from exc
 
     @staticmethod
+    def _retention_days() -> int:
+        """
+        Срок хранения копий: настройка пользователя backup_days.
+
+        Применяется ко всем копиям — ручным, из web, при закрытии и перед
+        восстановлением. Если настройку прочитать нельзя (например, таблицы
+        settings ещё нет), используется значение из конфигурации.
+        """
+        try:
+            return int(SettingsService.get_setting("backup_days"))
+        except (SalaryAppError, sqlite3.Error, TypeError, ValueError):
+            logger.warning("Не удалось прочитать backup_days, срок хранения по умолчанию")
+            return config.db.backup_retention_days
+
+    @staticmethod
     def _cleanup_old_backups() -> None:
         backup_dir = BackupService._backup_dir()
         cutoff_date = datetime.now() - timedelta(
-            days=config.db.backup_retention_days
+            days=BackupService._retention_days()
         )
         for backup_file in backup_dir.glob(f"{BACKUP_PREFIX}*.zip"):
             try:

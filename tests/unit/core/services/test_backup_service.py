@@ -1,9 +1,14 @@
+import sqlite3
 import zipfile
+from datetime import datetime, timedelta
 from pathlib import Path
+
+import pytest
 
 from core.config.settings import config
 from core.services.backup_service import BackupService
 from core.services.salary_service import SalaryService
+from core.services.settings_service import SettingsService
 
 
 def test_create_and_list_backup(temp_db, tmp_path: Path):
@@ -93,3 +98,46 @@ def test_restore_rejects_nested_database_member(temp_db, tmp_path: Path):
         assert not (tmp_path.parent / "unsafe.db").exists()
     finally:
         config.db.backup_dir = old_backup_dir
+
+
+def _old_backup(backup_dir: Path, days_ago: int) -> Path:
+    stamp = (datetime.now() - timedelta(days=days_ago)).strftime("%Y%m%d")
+    path = backup_dir / f"salary_backup_{stamp}_120000_000000.zip"
+    path.write_bytes(b"old backup")
+    return path
+
+
+@pytest.mark.parametrize(
+    ("backup_days", "kept"),
+    [
+        ("90", True),   # пользователь хранит копии 90 дней — 60-дневная остаётся
+        ("30", False),  # 30 дней — 60-дневная удаляется
+    ],
+)
+def test_cleanup_uses_backup_days_setting_for_manual_backup(temp_db, tmp_path: Path, backup_days, kept):
+    # Раньше настройка учитывалась только при автокопии на закрытии,
+    # а ручные копии чистили всё старше 30 дней.
+    old_backup_dir = config.db.backup_dir
+    config.db.backup_dir = str(tmp_path)
+    try:
+        SettingsService.set_settings({"backup_days": backup_days})
+        old_file = _old_backup(tmp_path, days_ago=60)
+        very_old_file = _old_backup(tmp_path, days_ago=120)
+
+        BackupService.create_backup("manual")
+
+        assert old_file.exists() is kept
+        assert not very_old_file.exists()
+    finally:
+        config.db.backup_dir = old_backup_dir
+
+
+def test_retention_falls_back_to_config_when_setting_unavailable(monkeypatch):
+    def broken_setting(*_args, **_kwargs):
+        raise sqlite3.OperationalError("no such table: settings")
+
+    monkeypatch.setattr(
+        "core.services.backup_service.SettingsService.get_setting", broken_setting
+    )
+
+    assert BackupService._retention_days() == config.db.backup_retention_days

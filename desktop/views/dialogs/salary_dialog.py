@@ -267,8 +267,8 @@ class SalaryDialog(BaseDialog):
             # Получаем значения
             year = self.year_var.get()
             month = self.current_month_number
-            advance = MoneyUtils.parse_amount(self.advance_var.get())
-            salary = MoneyUtils.parse_amount(self.salary_var.get())
+            advance = MoneyUtils.parse_amount(self.advance_var.get(), "аванс")
+            salary = MoneyUtils.parse_amount(self.salary_var.get(), "зарплата")
             advance_date = self.advance_date_var.get().strip()
             salary_date = self.salary_date_var.get().strip()
             

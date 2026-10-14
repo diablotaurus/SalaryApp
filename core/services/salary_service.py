@@ -42,32 +42,35 @@ class SalaryService:
             
         Raises:
             ValueError: При неверном формате даты
-            
+
         Примечание:
             Если запись за указанный месяц уже существует, она обновляется.
             Если не существует - создается новая запись.
+
+        Даты выплат при обновлении существующей записи:
+            - None — дата не передана, сохранённая остаётся
+              (бот при ответе «-», API-запрос без поля даты);
+            - пустая строка — дата очищена в форме и стирается
+              (формы desktop и web подставляют сохранённые даты в поля);
+            - ДД.ММ.ГГГГ — дата заменяется.
         """
         year, month = SalaryService._validate_period(year, month)
         advance = normalize_amount(advance, "сумма аванса")
         salary = normalize_amount(salary, "сумма зарплаты")
-
-        # Проверяем, были ли переданы даты
-        advance_date_provided = advance_date is not None and str(advance_date).strip() != ""
-        salary_date_provided = salary_date is not None and str(salary_date).strip() != ""
-        
-        # Парсим даты с строгой валидацией
-        parsed_advance_date = SalaryService._parse_date_strict(advance_date, "даты аванса") if advance_date_provided else None
-        parsed_salary_date = SalaryService._parse_date_strict(salary_date, "даты зарплаты") if salary_date_provided else None
 
         new_salary = Salary(
             year=year,
             month=month,
             advance=advance,
             salary=salary,
-            advance_date=parsed_advance_date,
-            salary_date=parsed_salary_date,
+            advance_date=SalaryService._parse_date_strict(advance_date, "даты аванса"),
+            salary_date=SalaryService._parse_date_strict(salary_date, "даты зарплаты"),
         )
-        return SalaryRepository.upsert(new_salary)
+        return SalaryRepository.upsert(
+            new_salary,
+            keep_advance_date=advance_date is None,
+            keep_salary_date=salary_date is None,
+        )
 
     @staticmethod
     def _validate_period(year: Any, month: Any) -> tuple[int, int]:
@@ -172,12 +175,12 @@ class SalaryService:
             field_label: Название поля для сообщения об ошибке
             
         Returns:
-            Optional[datetime]: Объект datetime или None
-            
+            Optional[datetime]: Объект datetime или None (для None и пустой строки)
+
         Raises:
             ValueError: При неверном формате даты
         """
-        if not value:
+        if value is None or not str(value).strip():
             return None
         normalized = SalaryService._normalize_date_input(value)
         if not normalized:

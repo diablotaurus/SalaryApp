@@ -71,8 +71,21 @@ class SalaryRepository:
         return SalaryRepository._row_to_salary(row) if row else salary
 
     @staticmethod
-    def upsert(salary: Salary) -> Salary:
-        """Atomically insert or update the unique year/month record."""
+    def upsert(
+        salary: Salary,
+        *,
+        keep_advance_date: bool = True,
+        keep_salary_date: bool = True,
+    ) -> Salary:
+        """
+        Атомарно вставить или обновить запись за год/месяц.
+
+        Args:
+            salary: Запись для сохранения
+            keep_advance_date: При обновлении и пустой дате аванса оставить
+                сохранённую дату (иначе пустая дата стирает её)
+            keep_salary_date: То же для даты зарплаты
+        """
         conn = DatabaseConnection.get_connection()
         advance_date = (
             salary.advance_date.date().isoformat() if salary.advance_date else None
@@ -89,8 +102,12 @@ class SalaryRepository:
             ON CONFLICT(year, month) DO UPDATE SET
                 advance = excluded.advance,
                 salary = excluded.salary,
-                advance_date = COALESCE(excluded.advance_date, salaries.advance_date),
-                salary_date = COALESCE(excluded.salary_date, salaries.salary_date)
+                advance_date = CASE WHEN ?
+                    THEN COALESCE(excluded.advance_date, salaries.advance_date)
+                    ELSE excluded.advance_date END,
+                salary_date = CASE WHEN ?
+                    THEN COALESCE(excluded.salary_date, salaries.salary_date)
+                    ELSE excluded.salary_date END
             RETURNING *
             """,
             (
@@ -100,6 +117,8 @@ class SalaryRepository:
                 to_cents(salary.salary),
                 advance_date,
                 salary_date,
+                keep_advance_date,
+                keep_salary_date,
             ),
         )
         row = cursor.fetchone()

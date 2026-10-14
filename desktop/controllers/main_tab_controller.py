@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional
 
 from api.salary_api import SalaryAPI
 from api.settings_api import SettingsAPI
-from core.config.settings import config
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
 from core.utils.dates import DateUtils
 from desktop.controllers.render_cache import RenderCache
@@ -230,25 +229,10 @@ class MainTabController:
             if not is_enabled:
                 return False
 
-            days_response = SettingsAPI.get_setting(
-                "backup_days", str(config.db.backup_retention_days)
-            )
-            raw_days = days_response.get("data", {}).get(
-                "value", str(config.db.backup_retention_days)
-            )
-            try:
-                retention_days = max(1, int(str(raw_days).strip()))
-            except (TypeError, ValueError):
-                retention_days = config.db.backup_retention_days
-
-            previous_retention = config.db.backup_retention_days
-            config.db.backup_retention_days = retention_days
-            try:
-                response = SalaryAPI.create_backup("auto_on_close")
-                if not response["success"]:
-                    raise RuntimeError(response.get("message", "Не удалось создать резервную копию"))
-            finally:
-                config.db.backup_retention_days = previous_retention
+            # Срок хранения (backup_days) сервис бэкапов берёт из настроек сам
+            response = SalaryAPI.create_backup("auto_on_close")
+            if not response["success"]:
+                raise RuntimeError(response.get("message", "Не удалось создать резервную копию"))
             return True
         except Exception:
             logger.exception("Auto backup on close failed")
