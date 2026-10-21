@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.32 - бот с меню и отчётами, проверенные версии библиотек</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.32</h1>
+            <p class="subtitle">Telegram-бот с меню и отчётами: сводка года с листанием, итоги по годам, графики, рекорды, Excel и годовой итог; прод на проверенных версиях библиотек</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 22 октября 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.31 current</p>
+            <p><strong>Новая версия:</strong> 1.2.32 current; скрипт деплоя записывает в production 1.2.32 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> Telegram-бот (меню, отчёты, графики, годовой итог), ядро (сравнения и рекорды, расписание годового итога), API, окружение production (версии библиотек), скрипт деплоя, desktop (подпись настройки уведомлений), тесты. Схема БД не менялась, миграций нет.</p>
+            <p><strong>Основание:</strong> обзор возможностей после 1.2.31 и согласованные с пользователем пакеты Т (версии библиотек), Л (бот с меню) и М (отчёты). Обновление общего системного Python выполнено с разрешения пользователя после проверки остальных проектов. Каждый пакет пользователь проверил вручную.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_22.10.2026_1.2.31.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.32 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>Меню и отчёты</strong>Бот без команд наизусть</div>
+            <div class="summary-item summary-data"><strong>📈 Графики</strong>Картинкой прямо в чат</div>
+            <div class="summary-item summary-tests"><strong>383 теста</strong>+46 к версии 1.2.31</div>
+        </div>
+
+        <section class="section" id="overview">
+            <h2>1. Основные результаты</h2>
+            <table>
+                <thead><tr><th>Область</th><th>Как было</th><th>Как стало</th></tr></thead>
+                <tbody>
+                    <tr><td>Меню бота</td><td>Пять команд, которые нужно помнить.</td><td>Постоянные кнопки под полем ввода и список команд в кнопке «Меню» Telegram.</td></tr>
+                    <tr><td>Сводка года</td><td>12 длинных блоков месяцев; другой год — вводом <code>/2025</code>.</td><td>Короткая сводка с изменением среднего и «год к году», ◀ ▶ по годам, «Подробно» по месяцам.</td></tr>
+                    <tr><td>Отчёты</td><td>Только текстовая таблица года.</td><td>Итоги по годам, графики картинкой, рекорды, Excel-файл в чат.</td></tr>
+                    <tr><td>Обратная связь</td><td>После сохранения — только суммы.</td><td>Сравнение месяца со средним за последние 12 месяцев; годовой итог с графиком в январе.</td></tr>
+                    <tr><td>Версии библиотек</td><td>Прод работал на Flask 2.3.3 и aiogram 3.13.1, а CI проверял 3.1.3 и 3.31.0.</td><td>Прод на тех же версиях, что CI; деплой сверяет версии при каждом запуске.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section" id="menu">
+            <h2>2. Бот с меню</h2>
+            <pre><code>[ ➕ Внести ]   [ 📅 Этот год ]
+[ 📆 По годам ] [ 📊 Отчёты  ]
+[ ❓ Помощь ]</code></pre>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Постоянное меню под полем ввода. Появляется по <code>/start</code> и возвращается после сохранения или отмены ввода. Кнопки работают и посреди ввода: «Этот год» покажет сводку, не сбросив начатое.</li>
+                <li><span class="change-type added">ADDED</span>Кнопка «Меню» Telegram со списком команд (<code>set_my_commands</code>): /add, /current, /years, /reports, /records, /cancel, /help.</li>
+                <li><span class="change-type changed">CHANGED</span>«📅 Этот год», <code>/current</code> и <code>/2025</code> показывают короткую сводку вместо 12 блоков: итог, среднемесячное и его изменение к прошлому году, «год к году» за тот же период, последние три месяца. Кнопки ◀ ▶ листают годы с данными, «Подробно» — по месяцам с датами, «📈 График» — график года. Листание меняет то же сообщение.</li>
+                <li><span class="change-type added">ADDED</span>«📆 По годам» (<code>/years</code>): итог каждого года, число месяцев, среднемесячное и рост к прошлому году, итог за всё время; кнопки годов открывают их сводки. Годы сравниваются по среднемесячному — честно и для неполного года.</li>
+                <li><span class="change-type added">ADDED</span>После сохранения месяца — сравнение со средним за последние 12 месяцев: «📈 На 5 % выше среднего (110 000,00)». Только для месяца с выплаченной зарплатой и при истории не меньше трёх выплаченных месяцев.</li>
+                <li>Обновлена справка: кнопки, команды, формат сумм и дат, уведомления.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="reports">
+            <h2>3. Отчёты</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span>«📊 Отчёты» (<code>/reports</code>): график года, динамика по годам, рекорды, Excel-файл.</li>
+                <li><span class="change-type added">ADDED</span><strong>Графики картинкой:</strong> помесячно выбранный год рядом с прошлым; среднемесячный доход по годам с подписями. matplotlib загружается только при рисовании (запуск бота не замедляется), рисование — через Figure и Agg без GUI, в отдельном потоке, чтобы бот не замирал.</li>
+                <li><span class="change-type added">ADDED</span><strong>Год к году:</strong> «Январь–сентябрь: +6,2 % к тому же периоду 2025». Период — до последнего месяца с выплаченной зарплатой, чтобы месяц, где пока только аванс, не занижал сравнение.</li>
+                <li><span class="change-type added">ADDED</span><strong>Рекорды</strong> (<code>/records</code>): три лучших месяца, лучший полный год по сумме (неполный текущий год не проигрывает заведомо), год с самым высоким среднемесячным.</li>
+                <li><span class="change-type added">ADDED</span><strong>Excel-файл</strong> со всеми данными прямо в чат. Копия на диске сразу удаляется, как в web-экспорте.</li>
+                <li><span class="change-type added">ADDED</span><strong>Годовой итог</strong> с графиком приходит сам — в январе, вечером по МСК, как только внесена зарплата за декабрь (она приходит в середине января), и не позже 25 января. Один раз за год. Не 1 января сознательно: иначе итог был бы без декабрьской зарплаты.</li>
+                <li><span class="change-type changed">CHANGED</span>Выключатель в desktop теперь называется «Уведомления в Telegram: напоминания о выплатах и итоги года» и управляет обоими уведомлениями.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="versions">
+            <h2>4. Версии библиотек production</h2>
+            <table>
+                <thead><tr><th>Пакет</th><th>Было в production</th><th>Стало</th><th>Проверка влияния на другие проекты общего Python</th></tr></thead>
+                <tbody>
+                    <tr><td>Flask</td><td>2.3.3</td><td>3.1.3</td><td>MedForm_030 (требует <code>Flask&gt;=2.3</code>) запускается, удалённых во Flask 3 вызовов нет; боевой WeightTracker Flask не использует.</td></tr>
+                    <tr><td>aiogram</td><td>3.13.1</td><td>3.31.0</td><td>Больше никем не используется; общие зависимости (aiohttp, pydantic) не менялись.</td></tr>
+                    <tr><td>openpyxl</td><td colspan="2">3.1.5 (в <code>requirements.txt</code> было 3.1.2)</td><td>Исправлена запись в requirements: 3.1.5 требуют и соседние проекты.</td></tr>
+                    <tr><td>ruff (dev)</td><td>0.6.9</td><td>0.12.12</td><td>Как в CI; проект проходит проверки.</td></tr>
+                </tbody>
+            </table>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Деплой после проверки файлов сверяет установленные версии с точными (<code>==</code>) из <code>requirements.txt</code> и предупреждает о расхождении, не останавливая деплой. Так версии больше не разъедутся незаметно.</li>
+                <li><code>pip check</code> без конфликтов. Откат при необходимости: <code>python -m pip install "Flask==2.3.3" "aiogram==3.13.1"</code>.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="architecture">
+            <h2>5. Устройство</h2>
+            <ul>
+                <li><span class="change-type refactored">REFACTORED</span>Отчёты — отдельный роутер <code>bot/handlers/reports.py</code>, подключается раньше роутера ввода. Тексты — <code>bot/presenters/year_report.py</code>, графики — <code>bot/presenters/charts.py</code>, кнопки — <code>bot/keyboards/menu.py</code>.</li>
+                <li>Расчёты — в ядре: <code>StatisticsService.compare_with_recent_average</code>, <code>compare_year_to_date</code>, <code>get_records</code>, <code>percent_change</code>; когда отправлять годовой итог — <code>core/services/annual_report_service.py</code>. Бот получает данные через API-фасад, как и раньше.</li>
+                <li>Год последнего годового итога хранится служебным ключом <code>reports.annual_sent</code> в таблице <code>settings</code>, без миграции.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>6. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>383 теста успешно (в 1.2.31 было 337), на новых версиях Flask и aiogram.</td></tr>
+                    <tr><td>Меню и сводки</td><td>Кнопки меню посреди ввода (порядок роутеров как в production); листание годов без данных; редактирование того же сообщения, повторное нажатие, старое сообщение; тексты сводки, подробностей и итогов по годам; сравнение месяца со средним.</td></tr>
+                    <tr><td>Отчёты</td><td>Графики — настоящий matplotlib, проверка PNG; отправка фото и Excel (файл удаляется с диска); рекорды по кнопке и команде; «год к году» до последнего выплаченного месяца; рекорды по полным годам.</td></tr>
+                    <tr><td>Годовой итог</td><td>Ожидание зарплаты за декабрь, крайний срок 25 января, только январь и вечер по МСК, выключатель, один раз за год, отправка с графиком.</td></tr>
+                    <tr><td>Реальные данные</td><td>Сводки, рекорды, годовой итог и оба графика построены на копии production-БД и просмотрены (копия и картинки удалены).</td></tr>
+                    <tr><td>Версии</td><td>Влияние обновления на остальные проекты общего Python; запуск MedForm_030 на Flask 3; production: web 200 и защита 403, бот на aiogram 3.31.0 работает.</td></tr>
+                    <tr><td>Ruff / UTF-8</td><td>Правила CI на ruff 0.12.12 пройдены; файлы в UTF-8 без BOM.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>desktop/app.py</code> не менялись; все компилируются и прошли проверку деплоя.</li>
+                <li><code>bot/main.py</code>: подключение роутера отчётов перед роутером ввода, список команд для кнопки «Меню». Бот локально не запускался, чтобы не конфликтовать с production-ботом по токену.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="files">
+            <h2>7. Карта изменённых файлов</h2>
+            <h3>Новые компоненты</h3>
+            <div class="file">bot/handlers/reports.py; bot/keyboards/menu.py; bot/presenters/year_report.py; bot/presenters/charts.py; core/services/annual_report_service.py</div>
+            <div class="file">tests/unit/bot/test_bot_reports.py; tests/unit/bot/test_bot_report_files.py; tests/unit/bot/conftest.py; tests/unit/core/services/test_reports_services.py</div>
+            <h3>Обновлённые файлы</h3>
+            <div class="file">bot/main.py; bot/handlers/__init__.py; bot/handlers/salary.py; bot/reminders.py</div>
+            <div class="file">core/services/statistics_service.py; core/repositories/reminder_state_repository.py; api/salary_api.py; api/salary_api_modules/analytics.py; api/salary_api_modules/reminders.py; desktop/views/constants/texts.py</div>
+            <div class="file">requirements.txt; scripts/deploy_to_prod.py; tests/unit/scripts/test_deploy_to_prod.py; tests/unit/bot/bot_fakes.py; tests/unit/bot/test_bot_fsm_handlers.py; tests/unit/core/services/test_statistics_service_average.py</div>
+            <p><strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>. Рабочие БД, токены, логи и пользовательские экспорты в коммит не включаются.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>8. Обновление production</h2>
+            <ol>
+                <li>Убедиться, что версии библиотек совпадают с <code>requirements.txt</code> (деплой сам предупредит о расхождении).</li>
+                <li>Закрыть desktop-приложение production и запустить деплой с перезапуском сервисов.</li>
+                <li>Отправить боту <code>/start</code> — появится обновлённое меню с «📊 Отчёты».</li>
+            </ol>
+            <pre><code>python scripts/deploy_to_prod.py --restart-services</code></pre>
+            <p class="note"><strong>Совместимость:</strong> схема БД не менялась, миграций нет. Служебный ключ <code>reports.annual_sent</code> прежние версии игнорируют. Возврат к 1.2.31 возможен обычным деплоем предыдущего кода; версии библиотек при этом можно оставить новыми — код 1.2.31 проверен на них в CI.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.32 · 22.10.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>
