@@ -25,6 +25,7 @@ class SettingsService:
         "backup_auto": "1",
         "backup_days": "30",
         "export_format": "csv",
+        "telegram_reminders": "1",
     }
 
     _COLOR_PATTERN = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -91,6 +92,7 @@ class SettingsService:
             "export_format": lambda raw: cls._normalize_choice(
                 raw, {"csv", "json", "excel"}, key
             ),
+            "telegram_reminders": cls._normalize_bool,
         }
         return validators[key](value)
 

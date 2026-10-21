@@ -141,6 +141,7 @@ async def cmd_year_stats(message: types.Message):
 
 @router.message(Command("add"))
 async def cmd_add(message: types.Message, state: FSMContext):
+    await state.clear()  # новый ввод начинается с чистого листа
     await state.set_state(SalaryStates.waiting_for_year)
     year, month = DateUtils.get_current_period()
     await message.answer(
@@ -177,8 +178,22 @@ async def _start_month(message: types.Message, state: FSMContext, month: int) ->
     existing = SalaryAPI.get_salary(data["year"], month)
     if existing.get("success"):
         await message.answer(_format_existing_month_warning(existing["data"]))
+        # Сохранённые суммы можно оставить кнопкой: по напоминанию о зарплате
+        # не нужно заново набирать уже внесённый аванс
+        await state.update_data(
+            existing_advance=float(existing["data"].get("advance", 0) or 0),
+            existing_salary=float(existing["data"].get("salary", 0) or 0),
+        )
 
-    await message.answer("Введите сумму аванса:")
+    await message.answer("Введите сумму аванса:", reply_markup=await _keep_keyboard(state, "advance"))
+
+
+async def _keep_keyboard(state: FSMContext, kind: str):
+    """Кнопка «Оставить <сумма>», если у месяца уже есть эта выплата."""
+    amount = (await state.get_data()).get(f"existing_{kind}") or 0
+    if amount <= 0:
+        return None
+    return keyboards.keep_amount_keyboard(kind, MoneyUtils.format_amount_plain(amount))
 
 
 @router.message(SalaryStates.waiting_for_month, F.text)
@@ -225,6 +240,10 @@ async def process_advance(message: types.Message, state: FSMContext):
     advance = await _read_amount(message, "аванс", "Введите аванс:")
     if advance is None:
         return
+    await _accept_advance(message, state, advance)
+
+
+async def _accept_advance(message: types.Message, state: FSMContext, advance: float) -> None:
     await state.update_data(advance=advance)
     await state.set_state(SalaryStates.waiting_for_advance_date)
     await message.answer(
@@ -236,7 +255,7 @@ async def process_advance(message: types.Message, state: FSMContext):
 async def _accept_advance_date(message: types.Message, state: FSMContext, advance_date: Optional[str]) -> None:
     await state.update_data(advance_date=advance_date)
     await state.set_state(SalaryStates.waiting_for_salary)
-    await message.answer("Введите сумму зарплаты:")
+    await message.answer("Введите сумму зарплаты:", reply_markup=await _keep_keyboard(state, "salary"))
 
 
 @router.message(SalaryStates.waiting_for_advance_date, F.text)
@@ -252,6 +271,10 @@ async def process_salary(message: types.Message, state: FSMContext):
     salary = await _read_amount(message, "зарплата", "Введите зарплату:")
     if salary is None:
         return
+    await _accept_salary(message, state, salary)
+
+
+async def _accept_salary(message: types.Message, state: FSMContext, salary: float) -> None:
     await state.update_data(salary=salary)
     await state.set_state(SalaryStates.waiting_for_salary_date)
     await message.answer(
@@ -323,6 +346,41 @@ async def _confirm_choice(callback: types.CallbackQuery, choice: str) -> None:
 async def cancel_by_button(callback: types.CallbackQuery, state: FSMContext):
     await _confirm_choice(callback, "Отмена")
     await _cancel(callback.message, state)
+
+
+@router.callback_query(F.data.startswith(keyboards.REMIND_PREFIX))
+async def enter_by_reminder(callback: types.CallbackQuery, state: FSMContext):
+    """Кнопка под напоминанием: сразу ввод нужного месяца (начатый ввод сбрасывается)."""
+    _, year, month = keyboards.parse_payment(callback.data)
+    await _confirm_choice(callback, "Вношу данные")
+    await state.clear()
+    await state.set_state(SalaryStates.waiting_for_year)
+    await state.update_data(year=year)
+    await _start_month(callback.message, state, month)
+
+
+@router.callback_query(F.data.startswith(keyboards.SNOOZE_PREFIX))
+async def snooze_reminder(callback: types.CallbackQuery):
+    kind, year, month = keyboards.parse_payment(callback.data)
+    response = SalaryAPI.snooze_reminder(kind, year, month)
+    if response.get("success"):
+        await _confirm_choice(callback, "Больше не напомню об этой выплате")
+    else:
+        await callback.answer(response.get("message") or "Не удалось отключить напоминание")
+
+
+@router.callback_query(SalaryStates.waiting_for_advance, F.data == f"{keyboards.KEEP_PREFIX}advance")
+async def keep_advance(callback: types.CallbackQuery, state: FSMContext):
+    amount = float((await state.get_data()).get("existing_advance") or 0)
+    await _confirm_choice(callback, f"Аванс прежний: {MoneyUtils.format_amount_plain(amount)}")
+    await _accept_advance(callback.message, state, amount)
+
+
+@router.callback_query(SalaryStates.waiting_for_salary, F.data == f"{keyboards.KEEP_PREFIX}salary")
+async def keep_salary(callback: types.CallbackQuery, state: FSMContext):
+    amount = float((await state.get_data()).get("existing_salary") or 0)
+    await _confirm_choice(callback, f"Зарплата прежняя: {MoneyUtils.format_amount_plain(amount)}")
+    await _accept_salary(callback.message, state, amount)
 
 
 @router.callback_query(SalaryStates.waiting_for_year, F.data.startswith(keyboards.PERIOD_PREFIX))

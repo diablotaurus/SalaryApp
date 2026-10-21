@@ -5,7 +5,7 @@ from desktop.views.base_view import BaseView
 from desktop.views.constants import (
     PADX_DEFAULT, PADY_DEFAULT,
     TEXT_GENERAL_SETTINGS, TEXT_MAIN_TAB_SETTINGS, TEXT_ANALYTICS_TAB_SETTINGS,
-    TEXT_CURRENCY,
+    TEXT_CURRENCY, TEXT_TELEGRAM_REMINDERS, DEFAULT_TELEGRAM_REMINDERS,
     TEXT_HISTORY_LAYOUT, TEXT_HISTORY_LAYOUT_STANDARD, TEXT_HISTORY_LAYOUT_QUARTERLY,
     TEXT_MAIN_STATS_LAYOUT, TEXT_MAIN_STATS_LAYOUT_ROW, TEXT_MAIN_STATS_LAYOUT_COLUMN,
     TEXT_FONT_SIZE_SETTINGS,
@@ -78,6 +78,14 @@ class SettingsView(BaseView):
             width=SETTINGS_ENTRY_WIDTH
         )
         currency_entry.pack(side=tk.LEFT)
+
+        # Бот напоминает вечером в обычный день выплаты, если сумма не внесена
+        self.settings_vars['telegram_reminders'] = tk.BooleanVar(value=DEFAULT_TELEGRAM_REMINDERS)
+        ttk.Checkbutton(
+            frame,
+            text=TEXT_TELEGRAM_REMINDERS,
+            variable=self.settings_vars['telegram_reminders']
+        ).pack(anchor=tk.W, pady=(0, 4))
 
     def _create_main_tab_settings(self, parent):
         """Раздел настроек отображения вкладки Главная."""
@@ -376,6 +384,7 @@ class SettingsView(BaseView):
                 'month_title_font_size': DEFAULT_MONTH_TITLE_FONT_SIZE,
                 'month_total_font_size': DEFAULT_MONTH_TOTAL_FONT_SIZE,
                 'month_data_font_size': DEFAULT_MONTH_DATA_FONT_SIZE,
+                'telegram_reminders': DEFAULT_TELEGRAM_REMINDERS,
             }
             
             for key, value in default_settings.items():

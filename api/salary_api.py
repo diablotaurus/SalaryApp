@@ -3,7 +3,7 @@ Public Salary API facade.
 """
 from __future__ import annotations
 
-from api.salary_api_modules import analytics, commands, maintenance, queries
+from api.salary_api_modules import analytics, commands, maintenance, queries, reminders
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
 from core.services.salary_service import SalaryService
 
@@ -58,6 +58,20 @@ class SalaryAPI:
     @staticmethod
     def get_salary(year: int, month: int) -> dict:
         return queries.get_salary(year, month)
+
+    @staticmethod
+    def get_reminders_to_send() -> dict:
+        """Напоминания о вводе выплат, которые бот должен отправить сейчас."""
+        return reminders.get_reminders_to_send()
+
+    @staticmethod
+    def mark_reminders_sent() -> dict:
+        return reminders.mark_reminders_sent()
+
+    @staticmethod
+    def snooze_reminder(kind: str, year: int, month: int) -> dict:
+        """Не напоминать больше об этой выплате (кнопка в напоминании)."""
+        return reminders.snooze_reminder(kind, year, month)
 
     @staticmethod
     def get_current_period() -> dict:

@@ -15,6 +15,12 @@ PERIOD_PREFIX = "period:"
 MONTH_PREFIX = "month:"
 DATE_TODAY = "date:today"
 DATE_SKIP = "date:skip"
+KEEP_PREFIX = "keep:"      # keep:advance — оставить сохранённую сумму
+REMIND_PREFIX = "remind:"  # remind:salary:2026:9 — открыть ввод по напоминанию
+SNOOZE_PREFIX = "snooze:"  # snooze:salary:2026:9 — больше не напоминать
+
+# Винительный падеж для кнопки «Внести …»
+PAYMENT_ACCUSATIVE = {"advance": "аванс", "salary": "зарплату"}
 
 MONTHS_PER_ROW = 4
 
@@ -57,6 +63,35 @@ def date_keyboard(today_text: str) -> InlineKeyboardMarkup:
         ],
         _cancel_row(),
     ])
+
+
+def keep_amount_keyboard(kind: str, amount_text: str) -> InlineKeyboardMarkup:
+    """Месяц уже заполнен: оставить сохранённую сумму одной кнопкой."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=f"Оставить {amount_text}", callback_data=f"{KEEP_PREFIX}{kind}")],
+        _cancel_row(),
+    ])
+
+
+def reminder_keyboard(kind: str, year: int, month: int) -> InlineKeyboardMarkup:
+    """Кнопки под напоминанием: внести выплату или больше о ней не напоминать."""
+    suffix = f"{kind}:{year}:{month}"
+    month_name = DateUtils.get_month_name(month).lower()
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=f"Внести {PAYMENT_ACCUSATIVE[kind]} за {month_name}",
+            callback_data=f"{REMIND_PREFIX}{suffix}",
+        )],
+        [InlineKeyboardButton(text="Не напоминать об этой выплате", callback_data=f"{SNOOZE_PREFIX}{suffix}")],
+    ])
+
+
+def parse_payment(data: str) -> tuple[str, int, int]:
+    """«remind:salary:2026:9» / «snooze:…» -> ("salary", 2026, 9)."""
+    _, kind, year, month = data.split(":")
+    if kind not in PAYMENT_ACCUSATIVE:
+        raise ValueError(f"Неизвестный вид выплаты: {kind}")
+    return kind, int(year), int(month)
 
 
 def parse_period(data: str) -> tuple[int, int]:

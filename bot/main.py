@@ -11,6 +11,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from bot.config import load_allowed_user_ids, load_bot_token, load_proxies
 from bot.handlers import salary_router
 from bot.middlewares import BotAccessMiddleware
+from bot.reminders import run_reminders
 from core.config.settings import config
 from core.database.migrations import apply_all_migrations
 from core.utils.logging_setup import configure_file_logging
@@ -84,7 +85,12 @@ async def main() -> None:
     dispatcher.include_router(salary_router)
 
     logger.info("Бот запущен")
-    await dispatcher.start_polling(bot)
+    # Напоминания о вводе выплат — фоновая задача рядом с приёмом сообщений
+    reminders_task = asyncio.create_task(run_reminders(bot, allowed_user_ids))
+    try:
+        await dispatcher.start_polling(bot)
+    finally:
+        reminders_task.cancel()
 
 
 if __name__ == "__main__":
