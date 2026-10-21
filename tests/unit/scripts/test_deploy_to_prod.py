@@ -174,3 +174,37 @@ def test_without_flag_reminds_about_running_services(tmp_path, monkeypatch, sche
     assert scheduler.restarted == []
     assert "СТАРЫЙ код" in output and "SalaryAppWeb" in output
     assert "Start-ScheduledTask SalaryAppBot" not in output  # бот не запущен — о нём не напоминаем
+
+
+def _requirements(tmp_path, text):
+    path = tmp_path / "requirements.txt"
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def test_dependency_mismatch_is_reported(tmp_path, monkeypatch):
+    installed = {"Flask": "2.3.3", "aiogram": "3.31.0"}
+
+    def fake_version(name):
+        if name not in installed:
+            raise deploy.importlib.metadata.PackageNotFoundError(name)
+        return installed[name]
+
+    monkeypatch.setattr(deploy.importlib.metadata, "version", fake_version)
+    requirements = _requirements(
+        tmp_path,
+        "# web\nFlask==3.1.3\naiogram==3.31.0  # bot\nwaitress>=3.0\ntzdata==2025.3\n-r other.txt\n",
+    )
+
+    assert deploy.find_dependency_mismatches(requirements) == [
+        "Flask: требуется 3.1.3, установлено 2.3.3",
+        "tzdata: требуется 2025.3, установлено нет",
+    ]
+
+
+def test_matching_versions_report_success(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(deploy.importlib.metadata, "version", lambda name: "1.0")
+
+    deploy.report_dependency_versions(_requirements(tmp_path, "pkg==1.0\n"))
+
+    assert "совпадают" in capsys.readouterr().out

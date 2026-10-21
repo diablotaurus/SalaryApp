@@ -9,7 +9,8 @@ aiogram==3.31.0
 aiohttp-socks==0.11.0
 
 # Excel export (импортируется только в момент экспорта)
-openpyxl==3.1.2
+# 3.1.5 — та же версия, что требуют соседние проекты на общем системном Python
+openpyxl==3.1.5
 
 # Charts - требует компилятора C/C++ на Windows
 # Для Windows: установите Visual C++ Build Tools или используйте --only-binary

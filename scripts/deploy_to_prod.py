@@ -31,7 +31,9 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import importlib.metadata
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -416,6 +418,44 @@ def verify_copy_success(prod_path: Path) -> tuple[int, int]:
     return passed, len(checks)
 
 
+def find_dependency_mismatches(requirements_file: Path) -> list[str]:
+    """
+    Пакеты, установленная версия которых не совпадает с точной (==) из requirements.txt.
+
+    Production работает на этом же (системном) Python, поэтому расхождение
+    означает, что прод запущен не на тех версиях, на которых проверен код
+    в CI. Так незаметно разъехались Flask 2.3.3/3.1.3 и aiogram 3.13.1/3.31.0.
+    """
+    mismatches = []
+    for line in requirements_file.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"^\s*([A-Za-z0-9_.-]+)==([^\s;#]+)", line)
+        if not match:
+            continue
+        name, pinned = match.groups()
+        try:
+            installed = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            installed = None
+        if installed != pinned:
+            mismatches.append(f"{name}: требуется {pinned}, установлено {installed or 'нет'}")
+    return mismatches
+
+
+def report_dependency_versions(requirements_file: Path) -> None:
+    """Предупредить о расхождении версий (деплой не останавливает: решение за человеком)."""
+    mismatches = find_dependency_mismatches(requirements_file)
+    if not mismatches:
+        print_success(f"Версии зависимостей совпадают с requirements.txt ({sys.executable})")
+        return
+    print_warning(f"Версии зависимостей не совпадают с requirements.txt ({sys.executable}):")
+    for item in mismatches:
+        print_warning(f"  {item}")
+    print_info(
+        "Python общий с другими проектами: перед обновлением проверьте, кому ещё нужны "
+        "эти пакеты, затем: python -m pip install -r requirements.txt"
+    )
+
+
 def resolve_prod_dir(cli_value: str | None) -> Path | None:
     """
     Определить каталог production без хранения личного пути в репозитории.
@@ -655,6 +695,8 @@ def main() -> int:
 
         passed, total = verify_copy_success(prod_path)
         success = (passed == total and not errors)
+        if success:
+            report_dependency_versions(prod_path / "requirements.txt")
         print()
         if success:
             print_success("ДЕПЛОЙ ЗАВЕРШЁН УСПЕШНО!")
