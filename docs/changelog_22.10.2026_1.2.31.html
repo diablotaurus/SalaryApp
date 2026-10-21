@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.31 - напоминания в Telegram о вводе выплат</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.31</h1>
+            <p class="subtitle">Напоминания в Telegram о вводе аванса и зарплаты: дни выплат по истории, ввод в одно нажатие, прежние суммы — одной кнопкой</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 22 октября 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.30 current</p>
+            <p><strong>Новая версия:</strong> 1.2.31 current; скрипт деплоя записывает в production 1.2.31 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> Telegram-бот (фоновые напоминания, кнопки), ядро (сервис расписания выплат, состояние напоминаний, настройка), API, desktop (выключатель в настройках), тесты. Схема БД не менялась, миграций нет.</p>
+            <p><strong>Основание:</strong> пакет К из обзора удобства. Решения пользователя: дни выплат — автоматически по истории; повтор — каждый вечер, до 5 дней; подтверждение при закрытии desktop — оставить как есть. Пакет пользователь проверил вручную.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_21.10.2026_1.2.30.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.31 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>🔔 19:00 МСК</strong>В день выплаты и ещё 4 вечера</div>
+            <div class="summary-item summary-data"><strong>По истории</strong>Дни выплат подстраиваются сами</div>
+            <div class="summary-item summary-tests"><strong>337 тестов</strong>+37 к версии 1.2.30</div>
+        </div>
+
+        <section class="section" id="overview">
+            <h2>1. Как работают напоминания</h2>
+            <table>
+                <thead><tr><th>Что</th><th>Как</th></tr></thead>
+                <tbody>
+                    <tr><td>О чём</td><td>Аванс и зарплата, которые обычно уже пришли, но ещё не внесены в приложение.</td></tr>
+                    <tr><td>Когда</td><td>В обычный день выплаты и следующие 4 вечера (всего до 5), один раз за вечер, с 19:00 до 23:00 МСК. Как только сумма внесена — напоминания прекращаются.</td></tr>
+                    <tr><td>Дни выплат</td><td>Не настраиваются, а определяются по истории за последний год: самый частый день и сдвиг «за какой месяц → когда пришла». По текущим данным: аванс — 28-го того же месяца, зарплата — 14-го следующего.</td></tr>
+                    <tr><td>Кнопки</td><td>«Внести аванс/зарплату за …» — сразу ввод нужного месяца; «Не напоминать об этой выплате».</td></tr>
+                    <tr><td>Кому</td><td>Пользователям из списка разрешённых (<code>BOT_ALLOWED_IDS</code>), в личный чат с ботом.</td></tr>
+                    <tr><td>Выключить</td><td>Desktop → «Настройки» → «Общие» → «Напоминать в Telegram о вводе аванса и зарплаты» (включено по умолчанию).</td></tr>
+                </tbody>
+            </table>
+            <p>Пример расписания на копии production-БД (если ничего не вносить): аванс за октябрь — вечерами 28.10–01.11, зарплата за октябрь — вечерами 14–18.11.</p>
+        </section>
+
+        <section class="section" id="schedule">
+            <h2>2. Расписание выплат по истории</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Сервис <code>core/services/reminder_service.py</code> (<code>PaymentReminderService</code>) определяет расписание по выплатам за последние 365 дней: самый частый день месяца (при равенстве — день самой свежей выплаты) и самый частый сдвиг в месяцах между месяцем, за который выплата, и датой её поступления.</li>
+                <li>Если работодатель сдвинет дату (например, с 28-го на 25-е), расписание подстроится по мере накопления новых выплат. Пока дат в истории нет — значения по умолчанию: 28-е и 14-е.</li>
+                <li>Окно повторов может перейти в следующий месяц (аванс 28-го → последний вечер 1-го числа). День выплаты, которого нет в коротком месяце (30-е в феврале), переносится на последний день месяца.</li>
+                <li>Стандарт времени: «сегодня» и вечернее окно считаются по МСК; даты выплат — календарные даты и между поясами не переводятся.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="bot">
+            <h2>3. Telegram-бот</h2>
+            <h3>Отправка</h3>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Фоновая задача бота (<code>bot/reminders.py</code>) каждые 5 минут спрашивает ядро, не пора ли напомнить. Частая проверка вместо «сна до 19:00» переживает сон компьютера и перезапуски бота.</li>
+                <li>Отправка — раз за вечер: день отправки запоминается. Если не удалось доставить ни одного сообщения (нет сети, недоступен прокси), вечер не закрывается и попытка повторяется через 5 минут, пока не закончится окно.</li>
+                <li>Тексты: в день выплаты — «Сегодня обычно приходит аванс за октябрь 2026 (28-го). Пришёл? Внесите сумму.»; в следующие вечера — «Напоминаю: аванс за октябрь 2026 ещё не внесён (обычно приходит 28-го).»</li>
+            </ul>
+            <h3>Кнопки</h3>
+            <ul>
+                <li><span class="change-type added">ADDED</span>«Внести … за …» открывает ввод именно этого месяца с предупреждением о заполненных данных; начатый ранее ввод сбрасывается.</li>
+                <li><span class="change-type added">ADDED</span>«Не напоминать об этой выплате» отключает напоминания только о ней; отметки старше полугода удаляются автоматически.</li>
+                <li><span class="change-type added">ADDED</span>Если у месяца уже есть сумма, на её шаге появляется кнопка «Оставить 14 170,55». По напоминанию о зарплате не нужно заново набирать внесённый аванс; дату можно пропустить — сохранится прежняя.</li>
+                <li><span class="change-type changed">CHANGED</span><code>/add</code> начинает ввод с чистого листа (остатки прерванного ввода не переносятся).</li>
+                <li>Все новые кнопки проходят проверку доступа и работают только на своём шаге; кнопки напоминания — в любом состоянии.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="storage">
+            <h2>4. Хранение и настройки</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Настройка <code>telegram_reminders</code> (включено по умолчанию) и выключатель в общих настройках desktop.</li>
+                <li>Состояние напоминаний — день последней отправки (дата по МСК) и отложенные выплаты — хранится в таблице <code>settings</code> под служебными ключами <code>reminders.last_sent</code> и <code>reminders.snoozed</code> (<code>core/repositories/reminder_state_repository.py</code>). Миграция не нужна; в настройках эти ключи не показываются.</li>
+                <li>Бот работает с напоминаниями через API-фасад (<code>SalaryAPI.get_reminders_to_send</code>, <code>mark_reminders_sent</code>, <code>snooze_reminder</code>), как и с остальными данными.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>5. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>337 тестов успешно (в 1.2.30 было 300).</td></tr>
+                    <tr><td>Расписание</td><td>Обучение по истории; смена дня работодателем; равенство частот; значения по умолчанию; выплаты старше года не учитываются; пять вечеров и переход окна в следующий месяц; зарплата — за прошлый месяц; внесённая и отложенная выплата не напоминаются; короткий февраль.</td></tr>
+                    <tr><td>Время</td><td>Окно 19:00–23:00 МСК на границах (15:59/16:00/19:59/20:00 UTC); отправка раз за вечер; выключатель; хранение и очистка отметок «не напоминать».</td></tr>
+                    <tr><td>Бот</td><td>Тексты напоминаний; кнопки и разбор их данных; отправка каждому разрешённому пользователю; повтор при недоставке; ошибка API; ввод по напоминанию с кнопкой «Оставить»; «Оставить» для аванса и зарплаты; отключение выплаты; маршрутизация нажатий на настоящих фильтрах aiogram.</td></tr>
+                    <tr><td>Desktop</td><td>Выключатель загружается из настроек и сохраняется.</td></tr>
+                    <tr><td>Реальные данные</td><td>Расписание на копии production-БД (копия только для чтения, удалена после проверки): 28-е/14-е, напоминания 28.10–01.11 и 14–18.11.</td></tr>
+                    <tr><td>Ruff / UTF-8</td><td>Правила CI пройдены; файлы в UTF-8 без BOM.</td></tr>
+                    <tr><td>Production</td><td>Пакет задеплоен до релиза; бот перезапущен и работает без ошибок; пользователь проверил изменения.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>desktop/app.py</code> не менялись; все компилируются и прошли проверку деплоя.</li>
+                <li><code>bot/main.py</code>: запуск фоновой задачи напоминаний рядом с приёмом сообщений и её остановка при завершении бота. Бот локально не запускался, чтобы не конфликтовать с production-ботом по токену.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="files">
+            <h2>6. Карта изменённых файлов</h2>
+            <h3>Новые компоненты</h3>
+            <div class="file">core/services/reminder_service.py; core/repositories/reminder_state_repository.py; api/salary_api_modules/reminders.py; bot/reminders.py</div>
+            <div class="file">tests/unit/core/services/test_reminder_service.py; tests/unit/bot/test_bot_reminders.py; tests/unit/bot/bot_fakes.py; tests/unit/desktop/views/test_settings_view.py</div>
+            <h3>Обновлённые файлы</h3>
+            <div class="file">bot/main.py; bot/handlers/salary.py; bot/keyboards/salary.py; api/salary_api.py; core/services/settings_service.py</div>
+            <div class="file">desktop/views/settings/settings_view.py; desktop/views/constants/texts.py; tests/unit/bot/test_bot_buttons.py</div>
+            <p><strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>. Рабочие БД, токены, логи и пользовательские экспорты в коммит не включаются.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>7. Обновление production</h2>
+            <ol>
+                <li>Закрыть desktop-приложение production.</li>
+                <li>Запустить деплой с перезапуском сервисов: напоминания отправляет бот, без перезапуска он работал бы на старом коде.</li>
+                <li>Проверить заголовок окна desktop (1.2.31), выключатель в настройках и запуск бота в <code>logs/bot.log</code>.</li>
+            </ol>
+            <pre><code>python scripts/deploy_to_prod.py --restart-services</code></pre>
+            <p class="note"><strong>Совместимость:</strong> схема БД не менялась, миграций и новых зависимостей нет. Служебные ключи <code>reminders.*</code> в таблице <code>settings</code> прежние версии игнорируют, поэтому возврат к 1.2.30 возможен обычным деплоем предыдущего кода.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.31 · 22.10.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>

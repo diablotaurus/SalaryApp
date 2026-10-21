@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.30</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.31</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -37,34 +37,34 @@
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.30</h1>
-            <p class="subtitle">Краткий отчёт: удобство ввода во всех интерфейсах — клик по месяцу, кнопки в Telegram-боте, правка из таблицы web; рабочие настройки и единый формат сумм</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.31</h1>
+            <p class="subtitle">Краткий отчёт: напоминания в Telegram о вводе аванса и зарплаты — дни выплат по истории, ввод в одно нажатие, прежние суммы одной кнопкой</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.30</p>
-            <p><strong>Дата:</strong> 21 октября 2026 г.</p>
-            <p><strong>Предрелизные проверки:</strong> 300 тестов; маршрутизация кнопок бота через фильтры aiogram; проверка web в браузере на dev-сервере и production; Ruff; UTF-8 без BOM; точки входа.</p>
-            <p><strong>Подробный отчёт:</strong> <a href="changelog_21.10.2026_1.2.30.html">docs/changelog_21.10.2026_1.2.30.html</a></p>
+            <p><strong>Версия:</strong> v.1.2.31</p>
+            <p><strong>Дата:</strong> 22 октября 2026 г.</p>
+            <p><strong>Предрелизные проверки:</strong> 337 тестов; расписание на копии production-БД; окно отправки по МСК на границах; маршрутизация кнопок через фильтры aiogram; Ruff; UTF-8 без BOM; точки входа.</p>
+            <p><strong>Подробный отчёт:</strong> <a href="changelog_22.10.2026_1.2.31.html">docs/changelog_22.10.2026_1.2.31.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.30 current</div>
+        <div class="version-display">SalaryApp v.1.2.31 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type added">UI</span>Desktop: клик по ячейке месяца на «Главной» открывает этот месяц в окне ввода, в том числе пустой.</li>
-                <li><span class="change-type added">BOT</span>Кнопки в боте: текущий и прошлый месяц по МСК, сетка месяцев, «Сегодня» и «Пропустить» для дат, «Отмена»; текстовый ввод работает как раньше. Проверка доступа распространена на нажатия кнопок.</li>
-                <li><span class="change-type fixed">BOT</span>Бот понимает суммы как desktop («87 432,71» с пробелами), а «nan»/«1e5» отклоняет на своём шаге без потери введённого месяца.</li>
-                <li><span class="change-type added">WEB</span>Клик по строке таблицы открывает месяц в форме; для заполненного месяца — «Сохранить изменения» с предупреждением о замене.</li>
-                <li><span class="change-type fixed">FIX</span>«Формат экспорта по умолчанию» выбирает формат в окне экспорта; неработавший «Формат даты» убран; суммы везде в записи «87 432,71»; в web — настоящая версия, 404 для пустого месяца и корректные статусы в production.</li>
+                <li><span class="change-type added">BOT</span>Напоминания: в обычный день выплаты и ещё 4 вечера, в 19:00–23:00 МСК, раз за вечер — если аванс или зарплата не внесены. Недоставленное повторяется через 5 минут.</li>
+                <li><span class="change-type added">AUTO</span>Дни выплат определяются по истории за год (сейчас аванс 28-го, зарплата 14-го следующего месяца) и подстраиваются при сдвиге даты.</li>
+                <li><span class="change-type added">BOT</span>Кнопки под напоминанием: «Внести … за …» — сразу ввод нужного месяца; «Не напоминать об этой выплате». Для заполненного месяца — «Оставить &lt;сумма&gt;».</li>
+                <li><span class="change-type added">UI</span>Выключатель «Напоминать в Telegram о вводе аванса и зарплаты» в общих настройках desktop (включено по умолчанию).</li>
             </ul>
-            <p><strong>Совместимость:</strong> схема БД не менялась, миграций и новых зависимостей нет.</p>
+            <p><strong>Совместимость:</strong> схема БД не менялась, миграций и новых зависимостей нет; состояние напоминаний — служебные ключи в таблице настроек.</p>
         </div>
 
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_22.10.2026_1.2.31.html">22-10-2026</a> - v.1.2.31 - напоминания в Telegram о вводе аванса и зарплаты: дни по истории, кнопки «Внести» и «Оставить», выключатель в desktop (подробный отчёт)</li>
                 <li><a href="changelog_21.10.2026_1.2.30.html">21-10-2026</a> - v.1.2.30 - клик по месяцу в desktop, кнопки в Telegram-боте, правка из таблицы web, рабочие настройки, единый формат сумм (подробный отчёт)</li>
                 <li><a href="changelog_21.10.2026_1.2.29.html">21-10-2026</a> - v.1.2.29 - удобный Telegram-бот, окна по центру, защита web-API, чистка кода, стандарт времени UTC/МСК (подробный отчёт)</li>
                 <li><a href="changelog_15.10.2026_1.2.28.html">15-10-2026</a> - v.1.2.28 - надёжность данных, сворачивание лет на «Главной», запуск вдвое быстрее, лог web и перезапуск сервисов при деплое (подробный отчёт)</li>
