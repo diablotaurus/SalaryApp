@@ -76,7 +76,7 @@ async function listBackups() {
             if (result.data && result.data.length > 0) {
                 let html = '';
                 result.data.forEach(backup => {
-                    const date = new Date(backup.created_at).toLocaleString('ru-RU');
+                    const date = formatMoscowDateTime(backup.created_at);
                     const filename = escapeHtml(backup.filename);
                     const comment = escapeHtml(backup.comment || '');
                     html += `

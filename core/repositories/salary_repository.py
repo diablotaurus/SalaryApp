@@ -11,6 +11,7 @@ from core.database.connection import DatabaseConnection
 from core.models.salary import Salary
 from core.models.year import YearSummary
 from core.repositories.analytics_repository import AnalyticsRepository
+from core.utils.clock import parse_utc
 from core.utils.money_values import from_cents, to_cents
 
 
@@ -339,6 +340,7 @@ class SalaryRepository:
             # Преобразование строк дат в datetime объекты
             advance_date=datetime.fromisoformat(row['advance_date']) if has_advance_date and row['advance_date'] else None,
             salary_date=datetime.fromisoformat(row['salary_date']) if has_salary_date and row['salary_date'] else None,
-            # created_at может быть NULL в старых записях
-            created_at=datetime.fromisoformat(row['created_at']) if row['created_at'] else None
+            # created_at пишет SQLite (CURRENT_TIMESTAMP) — это UTC без метки пояса;
+            # может быть NULL в старых записях
+            created_at=parse_utc(row['created_at']) if row['created_at'] else None
         )

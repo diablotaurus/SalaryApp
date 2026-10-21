@@ -1,6 +1,12 @@
 // Главная страница
 let currentYearFilter = 'all';
-const currentYear = new Date().getFullYear();
+
+// Форма открывается на текущем месяце по МСК
+function setCurrentPeriod() {
+    const { year, month } = moscowYearMonth();
+    document.getElementById('year').value = year;
+    document.getElementById('month').value = month;
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     initModals();
@@ -24,8 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadStatistics();
     });
 
-    document.getElementById('year').value = currentYear;
-    document.getElementById('month').value = new Date().getMonth() + 1;
+    setCurrentPeriod();
     loadSalaryForPeriod();
 
     document.getElementById('year').addEventListener('change', loadSalaryForPeriod);
@@ -251,8 +256,7 @@ async function addSalary() {
             showStatus('Данные успешно сохранены!', 'success');
             form.reset();
 
-            document.getElementById('year').value = currentYear;
-            document.getElementById('month').value = new Date().getMonth() + 1;
+            setCurrentPeriod();
             loadSalaryForPeriod();
 
             refreshData();

@@ -9,12 +9,31 @@ from __future__ import annotations
 
 import logging
 import sys
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 from core.config.settings import config
+from core.utils.clock import MOSCOW_TZ, MSK_LABEL
 
 MAX_LOG_BYTES = 5 * 1024 * 1024  # 5 MiB на файл
 LOG_BACKUP_COUNT = 3
+
+
+class MoscowLogFormatter(logging.Formatter):
+    """
+    Время записей лога — по МСК с подписью, независимо от часового пояса Windows.
+
+    Текстовые логи читает человек, поэтому по стандарту времени в них МСК:
+    «2026-10-15 00:38:43,331 МСК INFO ...».
+    """
+
+    def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
+        moment = datetime.fromtimestamp(record.created, MOSCOW_TZ)
+        if datefmt:
+            text = moment.strftime(datefmt)
+        else:
+            text = f"{moment:%Y-%m-%d %H:%M:%S},{int(record.msecs):03d}"
+        return f"{text} {MSK_LABEL}"
 
 
 def configure_file_logging(log_file: str, *, console: bool = False) -> None:
@@ -25,7 +44,7 @@ def configure_file_logging(log_file: str, *, console: bool = False) -> None:
         log_file: Путь к файлу лога
         console: Дополнительно выводить лог в консоль (если она есть)
     """
-    formatter = logging.Formatter(str(config.logging.format))
+    formatter = MoscowLogFormatter(str(config.logging.format))
 
     file_handler = RotatingFileHandler(
         filename=str(log_file),

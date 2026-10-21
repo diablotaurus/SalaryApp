@@ -140,9 +140,8 @@ class SalaryService:
     
     @staticmethod
     def get_current_period() -> tuple[int, int]:
-        """Получить текущий год и месяц (на основе системной даты)"""
-        now = datetime.now()
-        return now.year, now.month
+        """Получить текущий год и месяц по МСК"""
+        return DateUtils.get_current_period()
 
     @staticmethod
     def parse_payment_date(value: Optional[str], field_label: str) -> Optional[datetime]:

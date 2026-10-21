@@ -41,8 +41,8 @@ def setup_startup_logging(base_dir: Path) -> None:
         backupCount=3,
         encoding="utf-8",
     )
-    # Установка форматера для лог-сообщений
-    handler.setFormatter(logging.Formatter(_resolve_log_format()))
+    # Установка форматера для лог-сообщений (время — по МСК с подписью)
+    handler.setFormatter(_create_formatter(_resolve_log_format()))
 
     # Настройка корневого логгера
     root.setLevel(_resolve_log_level())
@@ -51,6 +51,21 @@ def setup_startup_logging(base_dir: Path) -> None:
 
     # Логирование информации о стартовом контексте
     log_startup_context()
+
+
+def _create_formatter(log_format: str) -> logging.Formatter:
+    """
+    Форматер со временем по МСК; при сбое импорта — стандартный.
+
+    Как и остальные функции модуля, не даёт ошибке настройки логов
+    помешать запуску приложения.
+    """
+    try:
+        from core.utils.logging_setup import MoscowLogFormatter
+
+        return MoscowLogFormatter(log_format)
+    except Exception:
+        return logging.Formatter(log_format)
 
 
 def _resolve_startup_log_path(base_dir: Path) -> Path:

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Iterable, List
+
+from core.utils.clock import moscow_now
 from .salary import Salary
 
 
@@ -11,6 +13,9 @@ def is_payment_complete(record: Any, now: datetime) -> bool:
     Месяц учитывается, только если salary > 0 и:
       - salary_date задана и уже наступила, либо
       - salary_date не задана (старые данные), но месяц раньше текущего.
+
+    salary_date — календарная дата, поэтому сравнивается с календарной датой
+    now (её передают по МСК, см. core.utils.clock.moscow_now).
     """
     advance = float(getattr(record, "advance", 0) or 0)
     salary = float(getattr(record, "salary", 0) or 0)
@@ -19,7 +24,8 @@ def is_payment_complete(record: Any, now: datetime) -> bool:
 
     salary_date = getattr(record, "salary_date", None)
     if salary_date is not None:
-        return salary_date <= now
+        payment_day = salary_date.date() if isinstance(salary_date, datetime) else salary_date
+        return payment_day <= now.date()
 
     year = int(getattr(record, "year", 0) or 0)
     month = int(getattr(record, "month", 0) or 0)
@@ -30,7 +36,7 @@ def calculate_average_monthly(
     records: Iterable[Any], now: datetime | None = None
 ) -> float:
     """Calculate the average for months whose salary payment is complete."""
-    current = now or datetime.now()
+    current = now or moscow_now()
     totals = [
         float(getattr(record, "advance", 0) or 0) + float(getattr(record, "salary", 0) or 0)
         for record in records or []

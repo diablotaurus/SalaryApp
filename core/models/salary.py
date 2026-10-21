@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from core.utils.clock import utc_now
 from core.utils.dates import DateUtils
 
 
@@ -19,14 +20,14 @@ class Salary:
     month: int = 0  # Месяц (1-12)
     advance: float = 0.0  # Сумма аванса
     salary: float = 0.0  # Сумма зарплаты
-    advance_date: Optional[datetime] = None  # Дата получения аванса
-    salary_date: Optional[datetime] = None  # Дата получения зарплаты
-    created_at: datetime = None  # Дата создания записи
+    advance_date: Optional[datetime] = None  # Дата получения аванса (календарная дата)
+    salary_date: Optional[datetime] = None  # Дата получения зарплаты (календарная дата)
+    created_at: datetime = None  # Момент создания записи, timezone-aware UTC
 
     def __post_init__(self):
         """Инициализация после создания экземпляра"""
         if self.created_at is None:
-            self.created_at = datetime.now()  # Текущее время по умолчанию
+            self.created_at = utc_now()  # Текущий момент по умолчанию
 
     @property
     def total(self) -> float:

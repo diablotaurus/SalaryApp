@@ -1,7 +1,6 @@
 """Telegram command and FSM handlers for salary operations."""
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Optional
 
 from aiogram import F, Router, types
@@ -10,6 +9,7 @@ from aiogram.fsm.context import FSMContext
 
 from api.salary_api import SalaryAPI
 from bot.states import SalaryStates
+from core.utils.clock import moscow_now
 from core.utils.money import MoneyUtils
 
 
@@ -90,7 +90,7 @@ def _format_year_table(year: int) -> str:
 
 
 def _format_current_year_table() -> str:
-    return _format_year_table(datetime.now().year)
+    return _format_year_table(moscow_now().year)
 
 
 @router.message(CommandStart())

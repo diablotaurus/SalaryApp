@@ -52,6 +52,28 @@ function formatMoney(amount) {
     });
 }
 
+// Стандарт времени: моменты приходят из API в UTC (с «Z» или «+00:00»),
+// человеку показываем МСК независимо от часового пояса браузера.
+const MOSCOW_TIME_ZONE = 'Europe/Moscow';
+
+function formatMoscowDateTime(isoString) {
+    const moment = new Date(isoString);
+    if (Number.isNaN(moment.getTime())) return '';
+    return moment.toLocaleString('ru-RU', {
+        timeZone: MOSCOW_TIME_ZONE,
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    }) + ' МСК';
+}
+
+function moscowYearMonth() {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: MOSCOW_TIME_ZONE, year: 'numeric', month: 'numeric'
+    }).formatToParts(new Date());
+    const part = type => Number(parts.find(item => item.type === type).value);
+    return { year: part('year'), month: part('month') };
+}
+
 function formatCurrency(amount) {
     return `${formatMoney(amount)} ₽`;
 }

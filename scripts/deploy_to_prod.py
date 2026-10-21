@@ -36,8 +36,9 @@ import shutil
 import subprocess
 import sys
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 # Корректный вывод UTF-8 в консоль Windows (для кириллицы и символов-маркеров).
 try:
@@ -189,7 +190,9 @@ def create_backup_before_update(prod_path: Path, dry_run: bool) -> Path | None:
     print_header("Шаг 1. Резервная копия текущего прода")
 
     version = read_prod_version(prod_path)
-    timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+    # Каталог и сведения о копии читает человек — время по МСК
+    created = datetime.now(timezone.utc).astimezone(ZoneInfo("Europe/Moscow"))
+    timestamp = created.strftime("%d-%m-%Y_%H-%M-%S")
     backup_root = prod_path / ".backup"
     backup_dir = backup_root / f"{version}_{timestamp}"
     print_info(f"Текущая версия в проде: {version}")
@@ -236,7 +239,7 @@ def create_backup_before_update(prod_path: Path, dry_run: bool) -> Path | None:
 
     info = (
         f"Резервная копия версии: {version}\n"
-        f"Дата создания: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}\n"
+        f"Дата создания: {created.strftime('%d.%m.%Y %H:%M:%S')} МСК\n"
         f"Источник: {prod_path}\n"
     )
     try:

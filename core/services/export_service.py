@@ -11,13 +11,17 @@
 
 import csv
 import json
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 from core.config.settings import config
 from core.repositories.analytics_repository import AnalyticsRepository
 from core.services.salary_service import SalaryService
+from core.utils.clock import format_moscow, moscow_now, utc_now
 from core.utils.dates import DateUtils
+
+
+# Момент создания записи показывается по МСК — подпись прямо в заголовке колонки
+CREATED_AT_HEADER = 'Дата создания (МСК)'
 
 
 class ExportService:
@@ -45,11 +49,7 @@ class ExportService:
             - Данные: все записи о зарплатах отсортированные по дате (новые сверху)
         """
         if filepath is None:
-            # Создание автоматического имени файла с временной меткой
-            export_dir = Path(config.export.export_dir)
-            export_dir.mkdir(exist_ok=True)  # Создание директории если не существует
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filepath = export_dir / f"salary_export_{timestamp}.csv"
+            filepath = ExportService._default_path("csv")
         
         salaries = SalaryService.get_all_salaries()
         
@@ -60,7 +60,7 @@ class ExportService:
             # Заголовки столбцов на русском языке
             writer.writerow([
                 'Год', 'Месяц', 'Аванс', 'Дата аванса',
-                'Зарплата', 'Дата зарплаты', 'Итого', 'Дата создания'
+                'Зарплата', 'Дата зарплаты', 'Итого', CREATED_AT_HEADER
             ])
             
             # Запись данных построчно
@@ -73,10 +73,29 @@ class ExportService:
                     ExportService._csv_amount(salary_record.salary),
                     salary_record.salary_date.date().isoformat() if salary_record.salary_date else "",
                     ExportService._csv_amount(salary_record.total),
-                    salary_record.created_at.isoformat(sep=" ") if salary_record.created_at else "",
+                    ExportService._created_at_text(salary_record.created_at),
                 ])
 
         return str(filepath)
+
+    @staticmethod
+    def _default_path(extension: str) -> Path:
+        """
+        Путь нового файла экспорта в директории из конфигурации.
+
+        Метка в имени — время по МСК: имя файла видит человек при скачивании.
+        """
+        export_dir = Path(config.export.export_dir)
+        export_dir.mkdir(exist_ok=True)  # Создание директории если не существует
+        timestamp = moscow_now().strftime("%Y%m%d_%H%M%S")
+        return export_dir / f"salary_export_{timestamp}.{extension}"
+
+    @staticmethod
+    def _created_at_text(created_at) -> str:
+        """Момент создания записи для таблицы: по МСК (подпись — в заголовке колонки)."""
+        if not created_at:
+            return ""
+        return format_moscow(created_at, "%Y-%m-%d %H:%M:%S", label=False)
 
     @staticmethod
     def _csv_amount(amount: float) -> str:
@@ -106,18 +125,14 @@ class ExportService:
             - Легко читается и обрабатывается другими приложениями
         """
         if filepath is None:
-            # Создание автоматического имени файла
-            export_dir = Path(config.export.export_dir)
-            export_dir.mkdir(exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filepath = export_dir / f"salary_export_{timestamp}.json"
+            filepath = ExportService._default_path("json")
         
         # Получение всех данных о зарплатах через сервис
         salaries = SalaryService.get_all_salaries()
         
         # Формирование структуры данных для JSON
         data = {
-            'export_date': datetime.now().isoformat(),  # Время экспорта в ISO формате
+            'export_date': utc_now().isoformat(),  # Момент экспорта: ISO 8601, UTC (+00:00)
             'total_records': len(salaries),  # Количество записей
             'data': [salary.to_dict() for salary in salaries]  # Массив данных
         }
@@ -155,11 +170,7 @@ class ExportService:
               и при импорте модуля она замедляла бы запуск всех приложений
         """
         if filepath is None:
-            # Создание автоматического имени файла
-            export_dir = Path(config.export.export_dir)
-            export_dir.mkdir(exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filepath = export_dir / f"salary_export_{timestamp}.xlsx"
+            filepath = ExportService._default_path("xlsx")
 
         from openpyxl import Workbook
 
@@ -173,7 +184,7 @@ class ExportService:
                 item.salary,
                 item.salary_date.date().isoformat() if item.salary_date else None,
                 round(item.total, 2),
-                item.created_at.isoformat(sep=" ") if item.created_at else None,
+                ExportService._created_at_text(item.created_at) or None,
             ]
             for item in salaries
         ]
@@ -208,7 +219,7 @@ class ExportService:
         ExportService._write_sheet(
             workbook, 'Данные',
             ['Год', 'Месяц', 'Аванс', 'Дата аванса', 'Зарплата',
-             'Дата зарплаты', 'Итого', 'Дата создания'],
+             'Дата зарплаты', 'Итого', CREATED_AT_HEADER],
             data_rows,
         )
         ExportService._write_sheet(
@@ -251,3 +262,4 @@ class ExportService:
         for column in sheet.columns:
             max_length = max(len("" if cell.value is None else str(cell.value)) for cell in column)
             sheet.column_dimensions[column[0].column_letter].width = min(max_length + 2, 50)
+    

@@ -141,3 +141,18 @@ def test_retention_falls_back_to_config_when_setting_unavailable(monkeypatch):
     )
 
     assert BackupService._retention_days() == config.db.backup_retention_days
+
+
+def test_backup_times_are_utc(temp_db, tmp_path: Path):
+    old_backup_dir = config.db.backup_dir
+    config.db.backup_dir = str(tmp_path)
+    try:
+        backup_path = Path(BackupService.create_backup("utc"))
+        info = BackupService.get_backup_info(str(backup_path))
+    finally:
+        config.db.backup_dir = old_backup_dir
+
+    assert backup_path.stem.endswith("Z")  # метка в имени — UTC
+    assert info["backup_date"].endswith("+00:00")
+    assert info["created_at"].endswith("+00:00")
+    assert info["created"].utcoffset() == timedelta(0)

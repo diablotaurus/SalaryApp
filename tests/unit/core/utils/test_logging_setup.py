@@ -48,3 +48,24 @@ def test_no_console_handler_under_pythonw(isolated_root_logger, tmp_path, monkey
     assert [type(h) for h in isolated_root_logger.handlers] == [
         logging.handlers.RotatingFileHandler
     ]
+
+
+def test_log_time_is_moscow_with_label(isolated_root_logger, tmp_path):
+    from core.utils.logging_setup import MoscowLogFormatter
+
+    record = logging.LogRecord("t", logging.INFO, __file__, 1, "msg", None, None)
+    record.created = 1792013923.5  # 2026-10-14 21:38:43.5 UTC
+    record.msecs = 500
+
+    assert MoscowLogFormatter("%(asctime)s").format(record) == "2026-10-15 00:38:43,500 МСК"
+
+
+def test_file_log_uses_moscow_time(isolated_root_logger, tmp_path):
+    log_file = tmp_path / "bot.log"
+
+    configure_file_logging(str(log_file))
+    logging.getLogger("bot.test").info("старт")
+
+    for handler in isolated_root_logger.handlers:
+        handler.flush()
+    assert " МСК INFO старт" in log_file.read_text(encoding="utf-8")

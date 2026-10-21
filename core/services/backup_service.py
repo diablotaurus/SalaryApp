@@ -8,7 +8,7 @@ import shutil
 import sqlite3
 import tempfile
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, List
 
@@ -17,6 +17,7 @@ from core.database.connection import DatabaseConnection
 from core.database.migrations import apply_all_migrations
 from core.exceptions import BackupError, SalaryAppError
 from core.services.settings_service import SettingsService
+from core.utils.clock import utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +99,10 @@ class BackupService:
     @staticmethod
     def create_backup(comment: str = "") -> str:
         backup_dir = BackupService._backup_dir()
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        # Время копии — UTC; «Z» в конце метки однозначно это обозначает.
+        # Старые копии (до перехода на стандарт) названы по местному времени.
+        created = utc_now()
+        timestamp = created.strftime("%Y%m%d_%H%M%S_%fZ")
         backup_path = backup_dir / f"{BACKUP_PREFIX}{timestamp}.zip"
         temporary_archive = backup_path.with_suffix(".zip.tmp")
 
@@ -108,7 +112,7 @@ class BackupService:
                 snapshot_path = Path(temporary_dir) / DATABASE_MEMBER
                 BackupService._create_database_snapshot(snapshot_path)
                 metadata = {
-                    "backup_date": datetime.now().isoformat(),
+                    "backup_date": created.isoformat(),  # ISO 8601, UTC (+00:00)
                     "comment": normalized_comment,
                     "app_version": config.app.version,
                     "database_size": snapshot_path.stat().st_size,
@@ -151,14 +155,21 @@ class BackupService:
 
     @staticmethod
     def _cleanup_old_backups() -> None:
+        """
+        Удалить копии старше срока хранения.
+
+        Возраст считается по дате в имени файла (начало суток, UTC) и
+        сравнивается с моментом «сейчас минус срок» в UTC. Имена старых копий —
+        в местном времени (МСК): расхождение в 3 часа на сроке хранения в днях
+        роли не играет.
+        """
         backup_dir = BackupService._backup_dir()
-        cutoff_date = datetime.now() - timedelta(
-            days=BackupService._retention_days()
-        )
+        cutoff = utc_now() - timedelta(days=BackupService._retention_days())
         for backup_file in backup_dir.glob(f"{BACKUP_PREFIX}*.zip"):
             try:
                 date_str = backup_file.stem[len(BACKUP_PREFIX) :][:8]
-                if datetime.strptime(date_str, "%Y%m%d") < cutoff_date:
+                file_day = datetime.strptime(date_str, "%Y%m%d").replace(tzinfo=timezone.utc)
+                if file_day < cutoff:
                     backup_file.unlink()
                     logger.info("Deleted old backup: %s", backup_file)
             except (OSError, ValueError):
@@ -259,8 +270,9 @@ class BackupService:
                 backup_path, must_exist=True
             )
             file_info = backup_file.stat()
-            created = datetime.fromtimestamp(file_info.st_ctime)
-            modified = datetime.fromtimestamp(file_info.st_mtime)
+            # Моменты файловой системы — timezone-aware UTC; в МСК их переводит интерфейс
+            created = datetime.fromtimestamp(file_info.st_ctime, timezone.utc)
+            modified = datetime.fromtimestamp(file_info.st_mtime, timezone.utc)
             info: dict[str, Any] = {
                 "filename": backup_file.name,
                 "path": str(backup_file),

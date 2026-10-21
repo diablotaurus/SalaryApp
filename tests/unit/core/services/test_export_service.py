@@ -90,7 +90,7 @@ def test_export_to_excel_writes_three_sheets_with_data(temp_db, tmp_path: Path):
     data = workbook["Данные"]
     assert [cell.value for cell in data[1]] == [
         "Год", "Месяц", "Аванс", "Дата аванса", "Зарплата",
-        "Дата зарплаты", "Итого", "Дата создания",
+        "Дата зарплаты", "Итого", "Дата создания (МСК)",
     ]
     assert [cell.value for cell in data[2]][:7] == [
         2025, 9, 11111.0, "2025-09-10", 22222.0, "2025-09-25", 33333.0,
@@ -118,3 +118,39 @@ def test_export_to_excel_works_on_empty_database(temp_db, tmp_path: Path):
     assert workbook["Данные"].max_row == 1  # только заголовок
     assert [cell.value for cell in workbook["Статистика"][2]] == [0, 0, 0, 0, None, None]
 
+
+def _set_created_at(utc_text: str) -> None:
+    from core.database.connection import DatabaseConnection
+
+    conn = DatabaseConnection.get_connection()
+    conn.execute("UPDATE salaries SET created_at = ?", (utc_text,))
+    conn.commit()
+
+
+def test_export_shows_created_at_in_moscow(temp_db, tmp_path: Path):
+    # created_at пишет SQLite в UTC; 21:38 UTC — это уже следующий день по МСК
+    _seed_salary_row()
+    _set_created_at("2026-10-14 21:38:43")
+    old_export_dir = config.export.export_dir
+    config.export.export_dir = str(tmp_path)
+    try:
+        csv_path = Path(ExportService.export_to_csv())
+    finally:
+        config.export.export_dir = old_export_dir
+
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.reader(f, delimiter=";"))
+    assert rows[0][7] == "Дата создания (МСК)"
+    assert rows[1][7] == "2026-10-15 00:38:43"
+    assert _export_excel(tmp_path)["Данные"]["H2"].value == "2026-10-15 00:38:43"
+
+
+def test_json_export_date_is_utc(temp_db, tmp_path: Path):
+    old_export_dir = config.export.export_dir
+    config.export.export_dir = str(tmp_path)
+    try:
+        payload = json.loads(Path(ExportService.export_to_json()).read_text(encoding="utf-8"))
+    finally:
+        config.export.export_dir = old_export_dir
+
+    assert payload["export_date"].endswith("+00:00")

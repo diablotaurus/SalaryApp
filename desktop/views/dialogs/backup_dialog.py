@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 from typing import Any
+from core.utils.clock import MSK_LABEL, format_moscow
 from core.utils.files import FileUtils
 from desktop.widgets.dialogs import BaseDialog
 from desktop.widgets.window_centering import center_on_main_window
@@ -83,7 +84,7 @@ class BackupDialog(BaseDialog):
         self.tree.heading("filename", text="Имя файла")
         self.tree.heading("comment", text="Комментарий")
         self.tree.heading("size", text="Размер")
-        self.tree.heading("created", text="Создан")
+        self.tree.heading("created", text=f"Создан ({MSK_LABEL})")
 
         self.tree.column("filename", width=270, stretch=False)
         self.tree.column("comment", width=250, stretch=True)
@@ -187,9 +188,9 @@ class BackupDialog(BaseDialog):
             size_bytes = backup.get('size_bytes', 0)
             created = backup.get('created', '')
 
-            # Форматируем даты
+            # Момент создания приходит в UTC — показываем по МСК (подпись в заголовке)
             if isinstance(created, datetime):
-                created = created.strftime("%d.%m.%Y %H:%M")
+                created = format_moscow(created, label=False)
 
             self.tree.insert('', tk.END, values=(
                 filename,

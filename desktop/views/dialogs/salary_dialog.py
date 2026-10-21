@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from datetime import datetime
 from core.utils.dates import DateUtils
 from core.utils.money import MoneyUtils
 from desktop.widgets.dialogs import BaseDialog
@@ -60,8 +59,8 @@ class SalaryDialog(BaseDialog):
         self.advance_date_var = tk.StringVar(value="")
         self.salary_date_var = tk.StringVar(value="")
         
-        # Список лет (от 2020 до текущего + 1)
-        current_year = datetime.now().year
+        # Список лет (от 2020 до текущего по МСК + 1)
+        current_year, _ = DateUtils.get_current_period()
         self.years_list = list(range(2020, current_year + 2))
         
         # Список месяцев

@@ -12,6 +12,7 @@ from datetime import datetime
 from core.models.year import calculate_average_monthly, is_payment_complete
 from core.repositories.analytics_repository import AnalyticsRepository
 from core.repositories.salary_repository import SalaryRepository
+from core.utils.clock import moscow_now
 from core.utils.dates import DateUtils
 
 
@@ -126,7 +127,7 @@ class StatisticsService:
         правило, что у KPI «Среднемесячно» (is_payment_complete): месяц,
         где пока есть только аванс, не занижает среднее.
         """
-        now = datetime.now()
+        now = moscow_now()
         paid_by_month: Dict[int, List[Any]] = defaultdict(list)
         for record in SalaryRepository.get_all():
             if is_payment_complete(record, now):
@@ -220,9 +221,10 @@ class StatisticsService:
             first_year = year
             last_year = year
         else:
-            # Для общей статистики берем из данных
-            first_year = stats.get("first_year", datetime.now().year) or datetime.now().year
-            last_year = stats.get("last_year", datetime.now().year) or datetime.now().year
+            # Для общей статистики берем из данных (без данных — текущий год по МСК)
+            current_year = moscow_now().year
+            first_year = stats.get("first_year") or current_year
+            last_year = stats.get("last_year") or current_year
         
         # Дополнительные расчеты
         years_count = len(stats.get("by_year", []))

@@ -8,6 +8,8 @@
 from datetime import datetime
 from typing import List, Tuple
 
+from core.utils.clock import moscow_now
+
 
 class DateUtils:
     """Утилиты для работы с датами и временем"""
@@ -70,7 +72,7 @@ class DateUtils:
     @staticmethod
     def get_current_period() -> Tuple[int, int]:
         """
-        Получить текущий год и месяц.
+        Получить текущий год и месяц по МСК.
 
         Returns:
             Tuple[int, int]: (текущий год, текущий месяц)
@@ -79,7 +81,7 @@ class DateUtils:
             - Для предзаполнения форм ввода даты
             - Для фильтрации данных по текущему периоду
         """
-        now = datetime.now()
+        now = moscow_now()
         return now.year, now.month
     
     @staticmethod
