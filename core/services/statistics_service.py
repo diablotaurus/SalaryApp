@@ -19,6 +19,7 @@ from core.utils.dates import DateUtils
 # Сравнение месяца со средним: окно и минимум месяцев, при котором сравнение осмысленно
 RECENT_MONTHS = 12
 MIN_MONTHS_TO_COMPARE = 3
+TOP_MONTHS = 3
 
 
 class StatisticsService:
@@ -83,6 +84,73 @@ class StatisticsService:
         """
         return calculate_average_monthly(records, now)
     
+    @staticmethod
+    def compare_year_to_date(year: int, now: datetime | None = None) -> Optional[Dict[str, Any]]:
+        """
+        Год к году за одинаковый период: январь — последний выплаченный месяц года.
+
+        Последний месяц берётся по правилу is_payment_complete: месяц, где
+        пока пришёл только аванс, не занижает сравнение. None — если в году
+        нет выплаченных месяцев или нет данных за тот же период прошлого года.
+        """
+        now = now or moscow_now()
+        records = SalaryRepository.get_all()
+        this_year = [record for record in records if record.year == year]
+        paid_months = [record.month for record in this_year if is_payment_complete(record, now)]
+        if not paid_months:
+            return None
+        last_month = max(paid_months)
+        previous = [record for record in records if record.year == year - 1 and record.month <= last_month]
+        if not previous:
+            return None
+        total = sum(record.total for record in this_year if record.month <= last_month)
+        previous_total = sum(record.total for record in previous)
+        return {
+            "year": year,
+            "last_month": last_month,
+            "total": total,
+            "previous_total": previous_total,
+            "percent": StatisticsService.percent_change(total, previous_total),
+        }
+
+    @staticmethod
+    def get_records() -> Dict[str, Any]:
+        """
+        Рекорды за всё время: лучшие месяцы, лучший год по сумме и по среднемесячному.
+
+        Лучший год по сумме выбирается среди полных лет (12 месяцев), чтобы
+        неполный текущий год не проигрывал заведомо; если полных лет нет — среди всех.
+        По среднемесячному сравнимы и неполные годы (правило is_payment_complete).
+        """
+        records = SalaryRepository.get_all()
+        top_months = [
+            {"year": record.year, "month": record.month,
+             "month_name": DateUtils.get_month_name(record.month), "total": record.total}
+            for record in sorted(records, key=lambda item: (item.total, item.year, item.month), reverse=True)
+            if record.total > 0
+        ][:TOP_MONTHS]
+
+        totals = AnalyticsRepository.get_yearly_totals()
+        full_years = [item for item in totals if int(item["months_count"] or 0) >= 12] or totals
+        best_year = max(full_years, key=lambda item: float(item["total"] or 0), default=None)
+
+        by_year: Dict[int, List[Any]] = defaultdict(list)
+        for record in records:
+            by_year[record.year].append(record)
+        averages = {year: calculate_average_monthly(items) for year, items in by_year.items()}
+        best_average = max(averages.items(), key=lambda item: item[1], default=None)
+
+        return {
+            "top_months": top_months,
+            "best_year": (
+                {"year": int(best_year["year"]), "total": float(best_year["total"] or 0)} if best_year else None
+            ),
+            "best_average_year": (
+                {"year": best_average[0], "average": best_average[1]}
+                if best_average and best_average[1] > 0 else None
+            ),
+        }
+
     @staticmethod
     def get_yearly_comparison_dto() -> Dict[str, Any]:
         """

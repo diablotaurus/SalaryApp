@@ -13,11 +13,15 @@ from core.repositories.settings_repository import SettingsRepository
 
 LAST_SENT_KEY = "reminders.last_sent"
 SNOOZED_KEY = "reminders.snoozed"
+ANNUAL_SENT_KEY = "reports.annual_sent"  # год, за который годовой итог уже отправлен
 SNOOZE_KEEP_MONTHS = 6  # старые отметки «не напоминать» удаляются
 
 
 class ReminderStateRepository:
-    """День последней отправки (дата по МСК) и выплаты, о которых не напоминать."""
+    """
+    День последней отправки напоминаний (дата по МСК), выплаты, о которых
+    не напоминать, и год последнего отправленного годового итога.
+    """
 
     @staticmethod
     def get_last_sent() -> date | None:
@@ -30,6 +34,18 @@ class ReminderStateRepository:
     @staticmethod
     def set_last_sent(day: date) -> None:
         SettingsRepository.set_setting(LAST_SENT_KEY, day.isoformat())
+
+    @staticmethod
+    def get_annual_sent() -> int | None:
+        value = SettingsRepository.get_setting(ANNUAL_SENT_KEY)
+        try:
+            return int(value) if value else None
+        except ValueError:
+            return None
+
+    @staticmethod
+    def set_annual_sent(year: int) -> None:
+        SettingsRepository.set_setting(ANNUAL_SENT_KEY, str(year))
 
     @staticmethod
     def get_snoozed() -> frozenset[tuple[str, int, int]]:

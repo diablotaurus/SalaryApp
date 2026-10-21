@@ -20,6 +20,21 @@ def compare_with_recent_average(year: int, month: int) -> dict:
     )
 
 
+def compare_year_to_date(year: int) -> dict:
+    """Год к году за тот же период (data=None — сравнивать не с чем)."""
+    return execute_with_default_error(
+        lambda: success(StatisticsService.compare_year_to_date(year)),
+        "Ошибка при сравнении с прошлым годом",
+    )
+
+
+def get_records() -> dict:
+    return execute_with_default_error(
+        lambda: success(StatisticsService.get_records()),
+        "Ошибка при подсчёте рекордов",
+    )
+
+
 def get_best_periods() -> dict:
     return execute_with_default_error(
         lambda: success(StatisticsService.get_best_periods()),

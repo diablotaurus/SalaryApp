@@ -76,6 +76,8 @@ BOT_COMMANDS = [
     BotCommand(command="add", description="Внести аванс и зарплату"),
     BotCommand(command="current", description="Сводка за текущий год"),
     BotCommand(command="years", description="Итоги по годам"),
+    BotCommand(command="reports", description="Графики, рекорды, Excel"),
+    BotCommand(command="records", description="Рекорды"),
     BotCommand(command="cancel", description="Отменить ввод"),
     BotCommand(command="help", description="Справка и меню"),
 ]

@@ -1,12 +1,8 @@
 import asyncio
-from datetime import datetime as _dt
-
 import pytest
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.methods import EditMessageText
-from aiogram.types import Chat, Message, User
 
-from bot.handlers import reports_router, salary_router
 from bot.handlers.reports import cmd_current, cmd_year_stats, cmd_years, show_year, show_year_details
 from bot.handlers.salary import SalaryStates, cmd_add, cmd_start, process_advance
 from bot.keyboards import menu
@@ -16,34 +12,7 @@ from bot.presenters.year_report import (
     format_year_overview,
     format_years_summary,
 )
-from bot_fakes import FakeCallback, FakeMessage, buttons
-
-
-def _month(month, total=0.0, name=None):
-    return {
-        "month": month, "month_name": name or f"М{month}", "has_data": total > 0,
-        "advance": total / 3, "salary": total * 2 / 3, "total": total,
-        "advance_date": f"28.{month:02}.2026" if total else "", "salary_date": "",
-    }
-
-
-def _year(year, totals, average):
-    months = [_month(m, totals.get(m, 0.0)) for m in range(1, 13)]
-    return {
-        "year": year,
-        "summary": {
-            "total": sum(totals.values()), "average_monthly": average,
-            "months_with_data": len(totals),
-        },
-        "months": months,
-    }
-
-
-DATA = [
-    _year(2026, {1: 100000.0, 2: 110000.0, 9: 120000.0, 10: 15000.0}, 110000.0),
-    _year(2025, {m: 100000.0 for m in range(1, 13)}, 100000.0),
-    _year(2023, {5: 50000.0}, 50000.0),
-]
+from bot_fakes import SAMPLE_YEARS as DATA, FakeCallback, FakeMessage, buttons, route_message as _route_message
 
 
 @pytest.fixture
@@ -115,7 +84,7 @@ def test_main_menu_buttons():
     markup = menu.main_menu()
 
     assert [[b.text for b in row] for row in markup.keyboard] == [
-        ["➕ Внести", "📅 Этот год"], ["📆 По годам", "❓ Помощь"],
+        ["➕ Внести", "📅 Этот год"], ["📆 По годам", "📊 Отчёты"], ["❓ Помощь"],
     ]
     assert markup.is_persistent and markup.resize_keyboard
 
@@ -123,10 +92,11 @@ def test_main_menu_buttons():
 def test_year_navigation_skips_years_without_data():
     assert buttons(menu.year_overview_keyboard(2025, [2023, 2025, 2026])) == [
         ("◀ 2023", "year:2023"), ("Подробно", "yeardet:2025"), ("2026 ▶", "year:2026"),
+        ("📈 График", "chartyear:2025"),
     ]
     # Текущий год ещё без данных: назад — к последнему году с данными
     assert buttons(menu.year_overview_keyboard(2027, [2025, 2026])) == [
-        ("◀ 2026", "year:2026"), ("Подробно", "yeardet:2027"),
+        ("◀ 2026", "year:2026"), ("Подробно", "yeardet:2027"), ("📈 График", "chartyear:2027"),
     ]
 
 
@@ -211,23 +181,6 @@ def test_help_shows_menu():
 
 
 # --- Маршрутизация (настоящие фильтры aiogram, порядок роутеров как в bot/main.py) ---------
-
-
-def _route_message(text, state=None):
-    message = Message(
-        message_id=1, date=_dt.now(), chat=Chat(id=1, type="private"),
-        from_user=User(id=1, is_bot=False, first_name="u"), text=text,
-    )
-
-    async def _find():
-        for router in (reports_router, salary_router):
-            for handler in router.message.handlers:
-                matched, _ = await handler.check(message, raw_state=state.state if state else None, bot=None)
-                if matched:
-                    return handler.callback
-        return None
-
-    return asyncio.run(_find())
 
 
 def test_menu_buttons_work_in_the_middle_of_input():

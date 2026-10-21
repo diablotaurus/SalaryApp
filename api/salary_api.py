@@ -111,6 +111,22 @@ class SalaryAPI:
         return analytics.compare_with_recent_average(year, month)
 
     @staticmethod
+    def compare_year_to_date(year: int) -> dict:
+        return analytics.compare_year_to_date(year)
+
+    @staticmethod
+    def get_records() -> dict:
+        return analytics.get_records()
+
+    @staticmethod
+    def get_annual_report_year() -> dict:
+        return reminders.get_annual_report_year()
+
+    @staticmethod
+    def mark_annual_report_sent(year: int) -> dict:
+        return reminders.mark_annual_report_sent(year)
+
+    @staticmethod
     def get_monthly_series_dto(year: int | None = None) -> dict:
         return analytics.get_monthly_series_dto(year)
 

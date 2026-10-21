@@ -18,17 +18,23 @@ from aiogram.types import (
 MENU_ADD = "➕ Внести"
 MENU_YEAR = "📅 Этот год"
 MENU_YEARS = "📆 По годам"
+MENU_REPORTS = "📊 Отчёты"
 MENU_HELP = "❓ Помощь"
 
 YEAR_PREFIX = "year:"            # year:2026 — сводка года
 YEAR_DETAILS_PREFIX = "yeardet:"  # yeardet:2026 — подробно по месяцам
+CHART_YEAR_PREFIX = "chartyear:"  # chartyear:2026 — график года
+CHART_YEARS = "chartyears"        # график по годам
+RECORDS = "records"
+EXPORT_EXCEL = "export:excel"
 
 
 def main_menu() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=MENU_ADD), KeyboardButton(text=MENU_YEAR)],
-            [KeyboardButton(text=MENU_YEARS), KeyboardButton(text=MENU_HELP)],
+            [KeyboardButton(text=MENU_YEARS), KeyboardButton(text=MENU_REPORTS)],
+            [KeyboardButton(text=MENU_HELP)],
         ],
         resize_keyboard=True,
         is_persistent=True,
@@ -53,7 +59,22 @@ def year_overview_keyboard(year: int, years: Iterable[int]) -> InlineKeyboardMar
     row.append(InlineKeyboardButton(text="Подробно", callback_data=f"{YEAR_DETAILS_PREFIX}{year}"))
     if following is not None:
         row.append(InlineKeyboardButton(text=f"{following} ▶", callback_data=f"{YEAR_PREFIX}{following}"))
-    return InlineKeyboardMarkup(inline_keyboard=[row])
+    chart = [InlineKeyboardButton(text="📈 График", callback_data=f"{CHART_YEAR_PREFIX}{year}")]
+    return InlineKeyboardMarkup(inline_keyboard=[row, chart])
+
+
+def reports_keyboard(year: int) -> InlineKeyboardMarkup:
+    """Меню отчётов."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text=f"📈 График {year}", callback_data=f"{CHART_YEAR_PREFIX}{year}"),
+            InlineKeyboardButton(text="📊 По годам", callback_data=CHART_YEARS),
+        ],
+        [
+            InlineKeyboardButton(text="🏆 Рекорды", callback_data=RECORDS),
+            InlineKeyboardButton(text="📄 Excel-файл", callback_data=EXPORT_EXCEL),
+        ],
+    ])
 
 
 def year_details_keyboard(year: int) -> InlineKeyboardMarkup:

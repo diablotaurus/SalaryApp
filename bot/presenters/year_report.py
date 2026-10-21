@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from core.services.statistics_service import StatisticsService
+from core.utils.dates import DateUtils
 from core.utils.money import MoneyUtils
 
 LAST_MONTHS_SHOWN = 3
@@ -40,8 +41,18 @@ def _average_change(years: dict[int, dict], year: int) -> Optional[float]:
     )
 
 
-def format_year_overview(years_data: list[dict], year: int) -> str:
-    """Короткая сводка года: итог, среднее и его изменение, последние месяцы."""
+def _year_to_date_line(ytd: Optional[dict]) -> Optional[str]:
+    """«Январь–сентябрь: +3,9 % к тому же периоду 2025» — только для неполного года."""
+    if not ytd or ytd.get("percent") is None or ytd["last_month"] >= 12:
+        return None
+    first = DateUtils.get_month_name(1)
+    last = DateUtils.get_month_name(ytd["last_month"]).lower()
+    period = first if ytd["last_month"] == 1 else f"{first}–{last}"
+    return f"{period}: {_percent(ytd['percent'])} к тому же периоду {ytd['year'] - 1}"
+
+
+def format_year_overview(years_data: list[dict], year: int, ytd: Optional[dict] = None) -> str:
+    """Короткая сводка года: итог, среднее и его изменение, год к году, последние месяцы."""
     years = _by_year(years_data)
     if year not in years:
         return f"📅 {year} год\n\nДанных пока нет."
@@ -57,8 +68,11 @@ def format_year_overview(years_data: list[dict], year: int) -> str:
         "",
         f"Итого: {_amount(summary['total'])}",
         average_line,
-        f"Месяцев с данными: {summary['months_with_data']}",
     ]
+    ytd_line = _year_to_date_line(ytd)
+    if ytd_line:
+        lines.append(ytd_line)
+    lines.append(f"Месяцев с данными: {summary['months_with_data']}")
     filled = [month for month in years[year]["months"] if month.get("has_data")]
     if filled:
         lines += ["", "Последние месяцы:"]
@@ -126,3 +140,42 @@ def format_month_comparison(comparison: Optional[dict]) -> Optional[str]:
     arrow = "📈" if percent > 0 else "📉"
     value = f"{abs(percent):.0f}"
     return f"{arrow} На {value} % {direction} среднего за последние 12 месяцев ({average})."
+
+
+def format_records(records: dict) -> str:
+    """Рекорды за всё время."""
+    top = records.get("top_months") or []
+    if not top:
+        return "🏆 Рекордов пока нет — внесите первый месяц: /add"
+    lines = ["🏆 Рекорды", "", "Лучшие месяцы:"]
+    for place, month in enumerate(top, start=1):
+        lines.append(f"{place}. {month['month_name']} {month['year']} — {_amount(month['total'])}")
+    if records.get("best_year"):
+        best = records["best_year"]
+        lines += ["", f"Лучший год: {best['year']} — {_amount(best['total'])}"]
+    if records.get("best_average_year"):
+        best = records["best_average_year"]
+        lines.append(f"Самое высокое среднемесячное: {best['year']} — {_amount(best['average'])}")
+    return "\n".join(lines)
+
+
+def format_annual_report(years_data: list[dict], year: int) -> str:
+    """Годовой итог (подпись к графику, ≤ 1024 символов)."""
+    years = _by_year(years_data)
+    summary = years[year]["summary"]
+    change = _average_change(years, year)
+    average_line = f"Среднемесячно: {_amount(summary['average_monthly'])}"
+    if change is not None:
+        average_line += f" ({_percent(change)} к {year - 1})"
+    lines = [
+        f"🎉 Итоги {year} года",
+        "",
+        f"Заработано: {_amount(summary['total'])}",
+        average_line,
+        f"Месяцев с данными: {summary['months_with_data']}",
+    ]
+    filled = [month for month in years[year]["months"] if month.get("has_data")]
+    if filled:
+        best = max(filled, key=lambda item: item["total"])
+        lines.append(f"Лучший месяц года: {best['month_name']} — {_amount(best['total'])}")
+    return "\n".join(lines)
