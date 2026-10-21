@@ -3,6 +3,7 @@ API routes for salary operations.
 """
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 
 from flask import Blueprint, jsonify, request, send_file
@@ -184,8 +185,7 @@ def export_data():
         payload, status = payload_from_exception(exc, is_production=config.app.is_production)
 
     if payload.get("success"):
-        filepath = payload["data"]["filepath"]
-        filename = Path(filepath).name
+        export_file = Path(payload["data"]["filepath"])
 
         if format_type == "excel":
             mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -196,10 +196,15 @@ def export_data():
         else:
             mimetype = "application/octet-stream"
 
+        # Файл отдаётся из памяти и сразу удаляется: иначе каждая выгрузка
+        # из браузера оставляла в exports/ копию финансовых данных.
+        content = export_file.read_bytes()
+        export_file.unlink(missing_ok=True)
+
         return send_file(
-            filepath,
+            BytesIO(content),
             as_attachment=True,
-            download_name=filename,
+            download_name=export_file.name,
             mimetype=mimetype,
         )
 
