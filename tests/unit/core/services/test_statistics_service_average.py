@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import datetime, timedelta
 
 from core.models.salary import Salary
@@ -148,3 +150,40 @@ def test_average_by_month_skips_salary_dated_in_future(temp_db):
     items = StatisticsService.get_average_by_month_dto()["items"]
 
     assert items == [{"month": 5, "avg_advance": 1000.0, "avg_salary": 2000.0, "avg_total": 3000.0}]
+
+
+def _paid(year, month, total, day=25):
+    # Зарплата выплачена (дата наступила) — месяц учитывается в средних
+    return dict(year=year, month=month, advance=total / 2, salary=total / 2,
+                salary_date=datetime(year, month, day).strftime("%d.%m.%Y"))
+
+
+def _seed(*months):
+    for item in months:
+        SalaryService.add_salary(item["year"], item["month"], item["advance"], item["salary"], None, item["salary_date"])
+
+
+def test_month_is_compared_with_previous_twelve_months(temp_db):
+    _seed(*[_paid(2025, m, 100000.0) for m in range(1, 13)], _paid(2026, 1, 110000.0))
+    _seed(_paid(2024, 12, 999999.0))  # 13 месяцев назад — вне окна
+
+    result = StatisticsService.compare_with_recent_average(2026, 1, now=datetime(2026, 2, 1))
+
+    assert result["months"] == 12
+    assert result["average"] == 100000.0
+    assert round(result["percent"], 6) == 10.0
+
+
+def test_unpaid_month_or_short_history_is_not_compared(temp_db):
+    _seed(_paid(2026, 1, 100000.0), _paid(2026, 2, 100000.0), _paid(2026, 3, 120000.0))
+    SalaryService.add_salary(2026, 4, 50000.0, 0.0)  # только аванс
+
+    assert StatisticsService.compare_with_recent_average(2026, 4, now=datetime(2026, 5, 1)) is None
+    # для марта до него всего 2 выплаченных месяца — сравнивать рано
+    assert StatisticsService.compare_with_recent_average(2026, 3, now=datetime(2026, 5, 1)) is None
+    assert StatisticsService.compare_with_recent_average(2030, 1) is None
+
+
+def test_percent_change():
+    assert StatisticsService.percent_change(110, 100) == pytest.approx(10.0)
+    assert StatisticsService.percent_change(5, 0) is None

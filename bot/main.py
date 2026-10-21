@@ -5,11 +5,13 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.exceptions import TelegramAPIError
+from aiogram.types import BotCommand
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.config import load_allowed_user_ids, load_bot_token, load_proxies
-from bot.handlers import salary_router
+from bot.handlers import reports_router, salary_router
 from bot.middlewares import BotAccessMiddleware
 from bot.reminders import run_reminders
 from core.config.settings import config
@@ -70,6 +72,23 @@ async def _create_bot(token: str) -> Bot:
     return Bot(token=token, session=AiohttpSession(proxy=primary))
 
 
+BOT_COMMANDS = [
+    BotCommand(command="add", description="Внести аванс и зарплату"),
+    BotCommand(command="current", description="Сводка за текущий год"),
+    BotCommand(command="years", description="Итоги по годам"),
+    BotCommand(command="cancel", description="Отменить ввод"),
+    BotCommand(command="help", description="Справка и меню"),
+]
+
+
+async def _set_commands(bot: Bot) -> None:
+    """Список команд для кнопки «Меню» в Telegram (сбой не мешает работе бота)."""
+    try:
+        await bot.set_my_commands(BOT_COMMANDS)
+    except TelegramAPIError:
+        logger.warning("Не удалось обновить список команд бота", exc_info=True)
+
+
 async def main() -> None:
     """Validate configuration, initialize dependencies and start polling."""
     _setup_logging()
@@ -82,7 +101,10 @@ async def main() -> None:
     access = BotAccessMiddleware(allowed_user_ids)
     dispatcher.message.outer_middleware(access)
     dispatcher.callback_query.outer_middleware(access)
+    # Отчёты раньше ввода: кнопки «Этот год»/«По годам» работают и посреди ввода
+    dispatcher.include_router(reports_router)
     dispatcher.include_router(salary_router)
+    await _set_commands(bot)
 
     logger.info("Бот запущен")
     # Напоминания о вводе выплат — фоновая задача рядом с приёмом сообщений

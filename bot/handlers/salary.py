@@ -9,9 +9,11 @@ from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 
 from api.salary_api import SalaryAPI
+from bot.keyboards import menu
 from bot.keyboards import salary as keyboards
+from bot.presenters.year_report import format_month_comparison
 from bot.states import SalaryStates
-from core.utils.clock import moscow_now, moscow_today
+from core.utils.clock import moscow_today
 from core.utils.dates import DateUtils
 from core.utils.money import MoneyUtils
 
@@ -62,55 +64,25 @@ def _format_existing_month_warning(data: dict) -> str:
     )
 
 
-def _format_year_table(year: int) -> str:
-    response = SalaryAPI.get_salaries_by_year(year)
-    if not response.get("success"):
-        return "Ошибка при получении данных."
-
-    rows = response.get("data", [])
-    if not rows:
-        return f"Нет данных за {year} год."
-
-    month_blocks = [f"Статистика за {year} год"]
-    total_year = 0.0
-    for row in sorted(rows, key=lambda item: item["month"]):
-        advance = float(row.get("advance", 0) or 0)
-        salary = float(row.get("salary", 0) or 0)
-        total = float(row.get("total", 0) or (advance + salary))
-        total_year += total
-        month_blocks.append(
-            "\n".join(
-                [
-                    str(row.get("month_name", "")),
-                    f"  Аванс: {MoneyUtils.format_amount_plain(advance)}  •  {row.get('advance_date') or '-'}",
-                    f"  Зарплата: {MoneyUtils.format_amount_plain(salary)}  •  {row.get('salary_date') or '-'}",
-                    f"  Итого: {MoneyUtils.format_amount_plain(total)}",
-                ]
-            )
-        )
-
-    month_blocks.append(f"Итого за год: {MoneyUtils.format_amount_plain(total_year)}")
-    return "\n\n".join(month_blocks)
-
-
-def _format_current_year_table() -> str:
-    return _format_year_table(moscow_now().year)
+HELP_TEXT = (
+    "👋 Бот учёта зарплаты\n\n"
+    "Кнопки меню внизу:\n"
+    f"{menu.MENU_ADD} — аванс и зарплата за месяц\n"
+    f"{menu.MENU_YEAR} — сводка, ◀ ▶ листают годы\n"
+    f"{menu.MENU_YEARS} — итоги и рост по годам\n"
+    f"{menu.MENU_HELP} — эта справка\n\n"
+    "Команды: /add, /current, /years, /2025 (любой год), /cancel\n"
+    "Суммы: 87 432,71 или 87432.71\n"
+    "Даты: ДД.ММ.ГГГГ, «-» — пропустить\n\n"
+    "🔔 В дни выплат бот напомнит, если сумма не внесена."
+)
 
 
 @router.message(CommandStart())
 @router.message(Command("help"))
+@router.message(F.text == menu.MENU_HELP)
 async def cmd_start(message: types.Message):
-    await message.answer(
-        "👋 Добро пожаловать в бот учета зарплаты!\n\n"
-        "Доступные команды:\n"
-        "/add - Добавить запись о зарплате (месяц и даты — кнопками)\n"
-        "/current - Показать статистику за текущий год\n"
-        "/2025 - Показать статистику за 2025 год\n"
-        "/cancel - Отменить начатый ввод\n"
-        "/help - Показать эту справку\n\n"
-        "Суммы: 87 432,71 или 87432.71\n"
-        "Формат даты: ДД.ММ.ГГГГ (можно пропустить, введя '-')"
-    )
+    await message.answer(HELP_TEXT, reply_markup=menu.main_menu())
 
 
 async def _cancel(message: types.Message, state: FSMContext) -> None:
@@ -118,7 +90,7 @@ async def _cancel(message: types.Message, state: FSMContext) -> None:
         await message.answer("Сейчас нечего отменять.")
         return
     await state.clear()
-    await message.answer("Ввод отменён, данные не сохранены.")
+    await message.answer("Ввод отменён, данные не сохранены.", reply_markup=menu.main_menu())
 
 
 # Отмена регистрируется раньше обработчиков шагов ввода:
@@ -129,17 +101,8 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
     await _cancel(message, state)
 
 
-@router.message(Command("current"))
-async def cmd_current(message: types.Message):
-    await message.answer(_format_current_year_table())
-
-
-@router.message(F.text.regexp(r"^/\d{4}$"))
-async def cmd_year_stats(message: types.Message):
-    await message.answer(_format_year_table(int(message.text[1:])))
-
-
 @router.message(Command("add"))
+@router.message(F.text == menu.MENU_ADD)
 async def cmd_add(message: types.Message, state: FSMContext):
     await state.clear()  # новый ввод начинается с чистого листа
     await state.set_state(SalaryStates.waiting_for_year)
@@ -298,13 +261,19 @@ async def _save_month(message: types.Message, state: FSMContext, salary_date: Op
     if response.get("success"):
         salary_data = response["data"]
         total = salary_data["advance"] + salary_data["salary"]
-        await message.answer(
+        text = (
             "✅ Запись успешно сохранена!\n\n"
             f"📅 {salary_data['month_name']} {salary_data['year']} г.\n"
             f"💵 Аванс: {MoneyUtils.format_amount(salary_data['advance'])}\n"
             f"💰 Зарплата: {MoneyUtils.format_amount(salary_data['salary'])}\n"
             f"📊 Итого: {MoneyUtils.format_amount(total)}"
         )
+        # Сравнение со средним — только для месяца с выплаченной зарплатой
+        comparison = SalaryAPI.compare_with_recent_average(data["year"], data["month"])
+        line = format_month_comparison(comparison.get("data")) if comparison.get("success") else None
+        if line:
+            text += f"\n\n{line}"
+        await message.answer(text, reply_markup=menu.main_menu())
     else:
         await message.answer(f"❌ Ошибка: {response.get('message')}")
 

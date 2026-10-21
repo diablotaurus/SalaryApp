@@ -4,13 +4,9 @@ import pytest
 
 from bot.handlers.salary import (
     SalaryStates,
-    _format_year_table,
-    _format_current_year_table,
     _is_cancel_text,
     _parse_optional_date,
     cmd_cancel,
-    cmd_current,
-    cmd_year_stats,
     process_advance,
     process_advance_date,
     process_month,
@@ -198,102 +194,6 @@ def test_process_salary_date_api_error(monkeypatch):
 
     assert state.cleared is True
     assert "Ошибка валидации" in msg.answers[-1][0]
-
-
-def test_format_current_year_table_compact_layout(monkeypatch):
-    monkeypatch.setattr(
-        "bot.handlers.salary.SalaryAPI.get_salaries_by_year",
-        lambda year: {
-            "success": True,
-            "data": [
-                {
-                    "month": 1,
-                    "month_name": "Январь",
-                    "advance": 20783.87,
-                    "advance_date": "28.01.2026",
-                    "salary": 84562.16,
-                    "salary_date": "13.02.2026",
-                    "total": 105346.03,
-                },
-                {
-                    "month": 2,
-                    "month_name": "Февраль",
-                    "advance": 41021.06,
-                    "advance_date": "27.02.2026",
-                    "salary": 68673.96,
-                    "salary_date": "13.03.2026",
-                    "total": 109695.02,
-                },
-            ],
-        },
-    )
-
-    result = _format_current_year_table()
-
-    assert "Статистика за" in result
-    assert "Январь" in result
-    assert "  Аванс: 20 783,87  •  28.01.2026" in result
-    assert "  Зарплата: 84 562,16  •  13.02.2026" in result
-    assert "  Итого: 105 346,03" in result
-    assert "Итого за год: 215 041,05" in result
-    assert "<pre>" not in result
-
-
-def test_cmd_current_sends_plain_text(monkeypatch):
-    async def fake_answer(text, **kwargs):
-        msg.answers.append((text, kwargs))
-
-    msg = FakeMessage("/current")
-    msg.answer = fake_answer
-
-    monkeypatch.setattr("bot.handlers.salary._format_current_year_table", lambda: "Тестовый вывод")
-
-    asyncio.run(cmd_current(msg))
-
-    assert msg.answers == [("Тестовый вывод", {})]
-
-
-def test_format_year_table_uses_requested_year(monkeypatch):
-    called = {}
-
-    def fake_get_salaries_by_year(year):
-        called["year"] = year
-        return {
-            "success": True,
-            "data": [
-                {
-                    "month": 1,
-                    "month_name": "Январь",
-                    "advance": 10000.0,
-                    "advance_date": "25.01.2025",
-                    "salary": 50000.0,
-                    "salary_date": "10.02.2025",
-                    "total": 60000.0,
-                }
-            ],
-        }
-
-    monkeypatch.setattr("bot.handlers.salary.SalaryAPI.get_salaries_by_year", fake_get_salaries_by_year)
-
-    result = _format_year_table(2025)
-
-    assert called["year"] == 2025
-    assert "Статистика за 2025 год" in result
-    assert "Итого за год: 60 000,00" in result
-
-
-def test_cmd_year_stats_sends_plain_text(monkeypatch):
-    async def fake_answer(text, **kwargs):
-        msg.answers.append((text, kwargs))
-
-    msg = FakeMessage("/2025")
-    msg.answer = fake_answer
-
-    monkeypatch.setattr("bot.handlers.salary._format_year_table", lambda year: f"Статистика за {year} год")
-
-    asyncio.run(cmd_year_stats(msg))
-
-    assert msg.answers == [("Статистика за 2025 год", {})]
 
 
 def test_cancel_clears_started_input():

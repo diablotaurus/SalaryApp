@@ -12,6 +12,14 @@ def get_statistics(year: int | None = None) -> dict:
     )
 
 
+def compare_with_recent_average(year: int, month: int) -> dict:
+    """Сумма месяца против среднего за предыдущий год (data=None — сравнивать не с чем)."""
+    return execute_with_default_error(
+        lambda: success(StatisticsService.compare_with_recent_average(year, month)),
+        "Ошибка при сравнении месяца со средним",
+    )
+
+
 def get_best_periods() -> dict:
     return execute_with_default_error(
         lambda: success(StatisticsService.get_best_periods()),

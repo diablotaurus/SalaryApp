@@ -7,7 +7,7 @@
 """
 
 from collections import defaultdict
-from typing import Dict, Any, Iterable, List
+from typing import Dict, Any, Iterable, List, Optional
 from datetime import datetime
 from core.models.year import calculate_average_monthly, is_payment_complete
 from core.repositories.analytics_repository import AnalyticsRepository
@@ -16,8 +16,52 @@ from core.utils.clock import moscow_now
 from core.utils.dates import DateUtils
 
 
+# Сравнение месяца со средним: окно и минимум месяцев, при котором сравнение осмысленно
+RECENT_MONTHS = 12
+MIN_MONTHS_TO_COMPARE = 3
+
+
 class StatisticsService:
     """Сервис для вычисления статистики по данным о зарплатах"""
+
+    @staticmethod
+    def percent_change(current: float, previous: float) -> Optional[float]:
+        """Изменение в процентах; None, если сравнивать не с чем (предыдущее значение 0)."""
+        if not previous:
+            return None
+        return (float(current) / float(previous) - 1) * 100
+
+    @staticmethod
+    def compare_with_recent_average(year: int, month: int, now: datetime | None = None) -> Optional[Dict[str, Any]]:
+        """
+        Сравнить сумму месяца со средним за предыдущие RECENT_MONTHS месяцев.
+
+        Учитываются только месяцы с фактически выплаченной зарплатой — то же
+        правило, что у «Среднемесячно» (is_payment_complete). None, если сам
+        месяц ещё не выплачен целиком или для сравнения мало данных.
+        """
+        now = now or moscow_now()
+        records = SalaryRepository.get_all()
+        target = next((r for r in records if (r.year, r.month) == (year, month)), None)
+        if target is None or not is_payment_complete(target, now):
+            return None
+
+        index = year * 12 + month
+        previous = [
+            record for record in records
+            if 0 < index - (record.year * 12 + record.month) <= RECENT_MONTHS
+            and is_payment_complete(record, now)
+        ]
+        if len(previous) < MIN_MONTHS_TO_COMPARE:
+            return None
+
+        average = sum(record.total for record in previous) / len(previous)
+        return {
+            "total": target.total,
+            "average": average,
+            "percent": StatisticsService.percent_change(target.total, average),
+            "months": len(previous),
+        }
 
     @staticmethod
     def calculate_average_monthly_from_records(records: Iterable[Any], now: datetime | None = None) -> float:

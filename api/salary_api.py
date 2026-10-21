@@ -107,6 +107,10 @@ class SalaryAPI:
         return analytics.get_best_periods()
 
     @staticmethod
+    def compare_with_recent_average(year: int, month: int) -> dict:
+        return analytics.compare_with_recent_average(year, month)
+
+    @staticmethod
     def get_monthly_series_dto(year: int | None = None) -> dict:
         return analytics.get_monthly_series_dto(year)
 
