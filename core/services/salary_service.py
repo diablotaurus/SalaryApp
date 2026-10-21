@@ -116,11 +116,6 @@ class SalaryService:
         return SalaryRepository.get_year_summary(year)
     
     @staticmethod
-    def get_all_years_summary() -> List[YearSummary]:
-        """Получить сводку по всем годам"""
-        return SalaryRepository.get_all_years_summary()
-    
-    @staticmethod
     def delete_salary(year: int, month: int) -> bool:
         """Удалить запись о зарплате за указанный месяц"""
         return SalaryRepository.delete_by_year_month(year, month)
@@ -142,22 +137,6 @@ class SalaryService:
         """
         SalaryRepository.delete_by_year(year)
         return True
-    
-    @staticmethod
-    def get_next_month(year: int, month: int) -> tuple[int, int]:
-        """Получить следующий месяц (для навигации)"""
-        if month == 12:
-            return year + 1, 1
-        else:
-            return year, month + 1
-    
-    @staticmethod
-    def get_previous_month(year: int, month: int) -> tuple[int, int]:
-        """Получить предыдущий месяц (для навигации)"""
-        if month == 1:
-            return year - 1, 12
-        else:
-            return year, month - 1
     
     @staticmethod
     def get_current_period() -> tuple[int, int]:

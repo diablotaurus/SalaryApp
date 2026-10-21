@@ -71,11 +71,6 @@ class ReportView(BaseView):
         self._loading_label = ttk.Label(self, text=TEXT_LOADING_CHARTS, font=('Segoe UI', 10))
         self._loading_label.pack(expand=True)
 
-    @property
-    def is_built(self) -> bool:
-        """Построено ли содержимое вкладки."""
-        return self._is_built
-
     def ensure_built(self):
         """Построить содержимое вкладки при первом обращении (повторные вызовы ничего не делают)."""
         if self._is_built:
@@ -617,7 +612,7 @@ class ReportView(BaseView):
             
             if len(labels) > 0:
                 x = range(len(labels))
-                line = ax.plot(x, values, marker='s', color=color, linewidth=2, markersize=6)[0]
+                ax.plot(x, values, marker='s', color=color, linewidth=2, markersize=6)
                 
                 # Заливка под линией
                 ax.fill_between(x, values, alpha=0.2, color=fill_color)
@@ -686,15 +681,13 @@ class ReportView(BaseView):
             
             # Цвета по умолчанию
             default_colors = ['#FF6384', '#36A2EB', '#4BC0C0']
-            default_fill_colors = ['#FF6384', '#36A2EB', '#4BC0C0']
-            
+
             if len(labels) > 0:
                 # Отрисовка нескольких линий (например, по годам)
                 for i, dataset in enumerate(datasets):
                     values = dataset['data']
                     label = dataset['label']
                     color = dataset.get('borderColor', default_colors[i] if i < len(default_colors) else f'C{i}')
-                    fill_color = dataset.get('backgroundColor', default_fill_colors[i] if i < len(default_fill_colors) else f'C{i}20')
                     
                     x = range(len(labels))
                     ax.plot(x, values, marker='s', label=label, color=color, linewidth=2, markersize=6)

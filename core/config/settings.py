@@ -5,11 +5,9 @@
 (development/production). Использует паттерн Singleton для глобального доступа к конфигурации.
 """
 
-import os
 import logging
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 

@@ -26,14 +26,6 @@ class NavigationController:
         self.app.notebook.select(0)
         self.refresh_history()
 
-    def show_report_view(self):
-        self.app.notebook.select(1)
-        self.refresh_reports()
-
-    def show_settings_view(self):
-        self.app.notebook.select(2)
-        self.refresh_settings()
-
     def show_message(self, title: str, message: str, message_type: str = "info"):
         return self.app.show_message(title, message, message_type)
 

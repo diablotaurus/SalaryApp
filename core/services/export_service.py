@@ -13,7 +13,7 @@ import csv
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Sequence
+from typing import Any, Iterable, Sequence
 from core.config.settings import config
 from core.repositories.analytics_repository import AnalyticsRepository
 from core.services.salary_service import SalaryService
@@ -251,34 +251,3 @@ class ExportService:
         for column in sheet.columns:
             max_length = max(len("" if cell.value is None else str(cell.value)) for cell in column)
             sheet.column_dimensions[column[0].column_letter].width = min(max_length + 2, 50)
-    
-    @staticmethod
-    def get_available_formats() -> List[Dict[str, str]]:
-        """
-        Получить список доступных форматов экспорта.
-        
-        Returns:
-            List[Dict[str, str]]: Список словарей с информацией о форматах
-            
-        Информация о каждом формате:
-            - format: внутренний идентификатор формата
-            - name: понятное название формата
-            - description: подробное описание формата
-        """
-        return [
-            {
-                'format': 'csv', 
-                'name': 'CSV файл', 
-                'description': 'Текстовый формат с разделителями, подходит для импорта в Excel и другие табличные редакторы'
-            },
-            {
-                'format': 'json', 
-                'name': 'JSON файл', 
-                'description': 'Структурированный формат данных, удобен для автоматизированной обработки и интеграций'
-            },
-            {
-                'format': 'excel', 
-                'name': 'Excel файл', 
-                'description': 'Файл Microsoft Excel с несколькими листами, готовый для анализа и презентации'
-            }
-        ]

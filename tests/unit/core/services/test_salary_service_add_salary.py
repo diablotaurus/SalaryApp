@@ -1,8 +1,6 @@
-from datetime import datetime
 
 import pytest
 
-from core.models.salary import Salary
 from core.services.salary_service import SalaryService
 
 

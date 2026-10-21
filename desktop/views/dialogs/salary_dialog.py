@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
-from typing import Optional
 from core.utils.dates import DateUtils
 from core.utils.money import MoneyUtils
 from desktop.widgets.dialogs import BaseDialog

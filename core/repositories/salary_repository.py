@@ -20,23 +20,21 @@ class SalaryRepository:
     @staticmethod
     def save(salary: Salary) -> Salary:
         """
-        Сохранить запись о зарплате (INSERT или UPDATE).
-        
+        Сохранить запись о зарплате.
+
         Args:
             salary: Объект Salary для сохранения
-            
+
         Returns:
-            Salary: Сохраненный объект с заполненным ID (при INSERT)
-            
+            Salary: Сохранённая запись в том виде, в каком она лежит в БД
+
+        Поведение:
+            - без id — атомарный upsert по паре (year, month), см. upsert();
+            - с id — UPDATE этой записи (created_at не меняется).
+
         Безопасность:
             - Все значения передаются через параметризованные запросы
-            - Предотвращение SQL-инъекций гарантируется на уровне драйвера SQLite
-            - Уникальность пары (year, month) обеспечивается бизнес-логикой
-              в SalaryService.add_salary (поиск существующей записи перед вставкой)
-            
-        Производительность:
-            - Используется UPSERT (INSERT OR UPDATE) через отдельные запросы
-            - Можно оптимизировать через INSERT OR REPLACE, но нужно сохранить created_at
+            - Уникальность пары (year, month) гарантирует ограничение UNIQUE в БД
         """
         if not salary.id:
             return SalaryRepository.upsert(salary)
@@ -126,29 +124,6 @@ class SalaryRepository:
         return SalaryRepository._row_to_salary(row)
     
     @staticmethod
-    def get_by_id(salary_id: int) -> Optional[Salary]:
-        """
-        Получить запись о зарплате по ID.
-        
-        Args:
-            salary_id: Идентификатор записи
-            
-        Returns:
-            Optional[Salary]: Объект Salary или None, если не найден
-            
-        Производительность:
-            - Поиск по PRIMARY KEY - максимально быстрая операция в SQLite
-            - Не требует дополнительных индексов
-        """
-        conn = DatabaseConnection.get_connection()
-        cursor = conn.execute(
-            "SELECT * FROM salaries WHERE id = ?", 
-            (salary_id,)
-        )
-        row = cursor.fetchone()
-        return SalaryRepository._row_to_salary(row) if row else None
-    
-    @staticmethod
     def get_by_year_month(year: int, month: int) -> Optional[Salary]:
         """
         Получить запись о зарплате по году и месяцу.
@@ -161,9 +136,7 @@ class SalaryRepository:
             Optional[Salary]: Объект Salary или None
             
         Производительность:
-            - Рекомендуется составной индекс (year, month)
-            - В текущей реализации используется индекс idx_salaries_year
-            - Можно добавить индекс idx_salaries_year_month для оптимизации
+            - Поиск идёт по уникальному индексу пары (year, month)
         """
         conn = DatabaseConnection.get_connection()
         cursor = conn.execute(
@@ -269,44 +242,6 @@ class SalaryRepository:
         return year_summary
 
     @staticmethod
-    def get_connection():
-        """
-        Получить соединение с БД (служебный метод).
-        
-        Returns:
-            Connection: Активное соединение с базой данных
-            
-        Примечание:
-            - В основном используется для миграций и тестов
-            - В обычной работе использовать DatabaseConnection.get_connection()
-        """
-        from core.database.connection import DatabaseConnection
-        return DatabaseConnection.get_connection()
-
-    @staticmethod
-    def delete_by_id(salary_id: int) -> bool:
-        """
-        Удалить запись по ID.
-        
-        Args:
-            salary_id: Идентификатор удаляемой записи
-            
-        Returns:
-            bool: True если запись удалена, False если не найдена
-            
-        Безопасность:
-            - Удаление только по ID гарантирует точность операции
-            - Нельзя случайно удалить несколько записей
-        """
-        conn = DatabaseConnection.get_connection()
-        cursor = conn.execute(
-            "DELETE FROM salaries WHERE id = ?", 
-            (salary_id,)
-        )
-        conn.commit()
-        return cursor.rowcount > 0
-    
-    @staticmethod
     def delete_by_year_month(year: int, month: int) -> bool:
         """
         Удалить запись по году и месяцу.
@@ -320,7 +255,6 @@ class SalaryRepository:
             
         Примечание:
             - Уникальность пары (year, month) гарантирует удаление максимум одной записи
-            - Используется для обновления данных через удаление+вставку
         """
         conn = DatabaseConnection.get_connection()
         cursor = conn.execute(

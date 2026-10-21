@@ -6,9 +6,6 @@
 """
 
 import logging
-import sqlite3
-from datetime import datetime
-from pathlib import Path
 from core.database.connection import DatabaseConnection
 
 logger = logging.getLogger(__name__)
@@ -305,24 +302,6 @@ class MigrationManager:
             """
         )
     
-    def get_applied_migrations(self) -> list:
-        """
-        Получить историю примененных миграций.
-        
-        Returns:
-            list: Список примененных миграций с датами применения
-            
-        Использование:
-            - Для отладки и аудита
-            - Для проверки состояния базы данных
-            - В будущем может использоваться для отката миграций
-        """
-        cursor = self.conn.execute(
-            "SELECT name, applied_at FROM migrations ORDER BY applied_at"
-        )
-        return [dict(row) for row in cursor.fetchall()]
-
-
 def apply_all_migrations():
     """
     Основная функция для применения всех миграций при запуске приложения.

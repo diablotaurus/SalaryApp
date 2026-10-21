@@ -12,7 +12,6 @@ from datetime import datetime
 from core.models.year import calculate_average_monthly, is_payment_complete
 from core.repositories.analytics_repository import AnalyticsRepository
 from core.repositories.salary_repository import SalaryRepository
-from core.repositories.year_repository import YearRepository
 from core.utils.dates import DateUtils
 
 
@@ -52,10 +51,10 @@ class StatisticsService:
             - total: Общая сумма за год
             
         Производительность:
-            - Использует оптимизированный запрос через YearRepository
+            - Один агрегирующий SQL-запрос (AnalyticsRepository.get_yearly_totals)
             - Данные возвращаются в формате, готовом для использования в графиках
         """
-        yearly_totals = YearRepository.get_yearly_totals()
+        yearly_totals = AnalyticsRepository.get_yearly_totals()
         items = []
         for item in yearly_totals:
             items.append({

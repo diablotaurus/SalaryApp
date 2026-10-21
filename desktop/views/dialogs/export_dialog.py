@@ -1,13 +1,12 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from typing import Dict, List
+from tkinter import ttk
 from desktop.widgets.dialogs import BaseDialog
 from desktop.views.constants import (
     DIALOG_EXPORT_TITLE, TEXT_EXPORT_TO_FILE, TEXT_SELECT_EXPORT_FORMAT,
     TEXT_CSV_FORMAT, TEXT_JSON_FORMAT, TEXT_EXCEL_FORMAT,
     TEXT_EXPORT_INFO, TEXT_EXPORT_DETAILS,
     TEXT_EXPORT_BUTTON, TEXT_CANCEL_BUTTON,
-    TEXT_WRAPLENGTH_EXPORT_INFO, PADX_DEFAULT, PADY_DEFAULT, BUTTON_DIALOG_WIDTH
+    TEXT_WRAPLENGTH_EXPORT_INFO, PADX_DEFAULT, BUTTON_DIALOG_WIDTH
 )
 
 

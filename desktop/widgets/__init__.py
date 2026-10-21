@@ -1,2 +1,1 @@
-# Desktop widgets package
-from .dialogs import ConfirmationDialog, InputDialog, ProgressDialog
+"""Общие виджеты desktop-приложения."""

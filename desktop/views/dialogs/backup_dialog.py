@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any
 from core.utils.files import FileUtils
 from desktop.widgets.dialogs import BaseDialog
 from desktop.widgets.window_centering import center_on_main_window

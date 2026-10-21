@@ -28,25 +28,6 @@ class AnalyticsRepository:
         return [dict(row) for row in rows]
 
     @staticmethod
-    def get_monthly_averages(year: Optional[int] = None) -> Dict[str, Any]:
-        conn = DatabaseConnection.get_connection()
-        where = "WHERE year = ?" if year is not None else ""
-        params = (year,) if year is not None else ()
-        row = conn.execute(
-            f"""
-            SELECT AVG(advance) / 100.0 AS avg_advance,
-                   AVG(salary) / 100.0 AS avg_salary,
-                   AVG(advance + salary) / 100.0 AS avg_total
-            FROM salaries
-            {where}
-            """,
-            params,
-        ).fetchone()
-        result = dict(row)
-        result["year"] = year if year is not None else "all"
-        return result
-
-    @staticmethod
     def get_best_month() -> Optional[Dict[str, Any]]:
         conn = DatabaseConnection.get_connection()
         row = conn.execute(

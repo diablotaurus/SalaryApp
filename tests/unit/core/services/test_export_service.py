@@ -68,13 +68,6 @@ def test_export_to_json_creates_structured_payload(temp_db, tmp_path: Path):
         config.export.export_dir = old_export_dir
 
 
-def test_get_available_formats_contains_expected_ids():
-    formats = ExportService.get_available_formats()
-    ids = {item["format"] for item in formats}
-    assert {"csv", "json", "excel"}.issubset(ids)
-
-
-
 def _export_excel(tmp_path: Path):
     from openpyxl import load_workbook
 
@@ -124,3 +117,4 @@ def test_export_to_excel_works_on_empty_database(temp_db, tmp_path: Path):
 
     assert workbook["Данные"].max_row == 1  # только заголовок
     assert [cell.value for cell in workbook["Статистика"][2]] == [0, 0, 0, 0, None, None]
+

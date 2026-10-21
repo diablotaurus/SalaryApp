@@ -5,7 +5,7 @@
 а также константы с названиями месяцев на русском языке.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Tuple
 
 
@@ -71,10 +71,10 @@ class DateUtils:
     def get_current_period() -> Tuple[int, int]:
         """
         Получить текущий год и месяц.
-        
+
         Returns:
             Tuple[int, int]: (текущий год, текущий месяц)
-            
+
         Использование:
             - Для предзаполнения форм ввода даты
             - Для фильтрации данных по текущему периоду
@@ -136,27 +136,6 @@ class DateUtils:
         return [(i, DateUtils.MONTH_NAMES[i-1]) for i in range(1, 13)]
     
     @staticmethod
-    def get_years_list(start_year: int = 2020) -> List[int]:
-        """
-        Получить список лет от start_year до текущего + 1.
-        
-        Args:
-            start_year: Начальный год списка
-            
-        Returns:
-            List[int]: Список лет
-            
-        Особенности:
-            - Включает текущий год и следующий год для планирования
-            - По умолчанию начинается с 2020 года
-            
-        Пример (в 2024 году):
-            get_years_list(2020) -> [2020, 2021, 2022, 2023, 2024, 2025]
-        """
-        current_year = datetime.now().year
-        return list(range(start_year, current_year + 2))  # +2 чтобы включить следующий год
-    
-    @staticmethod
     def format_date(date: datetime, format_str: str = "%d.%m.%Y") -> str:
         """
         Форматировать дату в строку.
@@ -193,24 +172,3 @@ class DateUtils:
         """
         return datetime.strptime(date_str, format_str)
     
-    @staticmethod
-    def is_valid_date(year: int, month: int) -> bool:
-        """
-        Проверить корректность даты (год и месяц).
-        
-        Args:
-            year: Год
-            month: Месяц (1-12)
-            
-        Returns:
-            bool: True если дата корректна, иначе False
-            
-        Использование:
-            - Валидация ввода пользователя
-            - Проверка данных перед сохранением в БД
-        """
-        try:
-            datetime(year, month, 1)  # Пытаемся создать дату с первым днем месяца
-            return True
-        except ValueError:
-            return False

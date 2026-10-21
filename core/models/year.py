@@ -64,9 +64,3 @@ class YearSummary:
         """Среднемесячная зарплата"""
         return calculate_average_monthly(self.records)
     
-    def add_record(self, salary: Salary):
-        """Добавить запись о зарплате"""
-        self.records.append(salary)
-        self.total_advance += salary.advance
-        self.total_salary += salary.salary
-        self.month_details[salary.month] = salary.to_dict()
