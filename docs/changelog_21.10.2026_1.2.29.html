@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.29 - бот, окна, защита веба, чистка кода и стандарт времени</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.29</h1>
+            <p class="subtitle">Удобный Telegram-бот, окна по центру, защита web-API, чистка кода и единый стандарт времени (UTC в данных, МСК на экране)</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 21 октября 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.28 current</p>
+            <p><strong>Новая версия:</strong> 1.2.29 current; скрипт деплоя записывает в production 1.2.29 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> Telegram-бот, desktop (диалоги, резервные копии), web (безопасность API, отображение времени), ядро (экспорт, бэкапы, статистика, время), логирование, скрипт деплоя, зависимости, CI, тесты. Схема БД не менялась, миграций нет; сохранённые данные не переписывались.</p>
+            <p><strong>Основание:</strong> оставшиеся пакеты полного code review 1.2.27 — Д (удобство), Г (защита web), Е (чистка кода), Ж (стандарт времени) — и замечание пользователя о положении окон. Каждый пакет пользователь проверил вручную.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_15.10.2026_1.2.28.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.29 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>Web-API</strong>Чужой сайт не достучится до данных</div>
+            <div class="summary-item summary-data"><strong>UTC → МСК</strong>Всё время подписано и однозначно</div>
+            <div class="summary-item summary-tests"><strong>260 тестов</strong>+52 к версии 1.2.28</div>
+        </div>
+
+        <section class="section" id="overview">
+            <h2>1. Основные результаты</h2>
+            <table>
+                <thead><tr><th>Область</th><th>Проблема до исправления</th><th>Что изменено</th></tr></thead>
+                <tbody>
+                    <tr><td>Telegram-бот</td><td>Ввод нельзя было прервать; ошибка в дате обнаруживалась только при сохранении, и весь месяц приходилось вводить заново; заполненный месяц молча перезаписывался; стикер на шаге ввода давал ошибку.</td><td><code>/cancel</code>, проверка даты на своём шаге, предупреждение о заполненном месяце, понятный ответ на нетекстовые сообщения.</td></tr>
+                    <tr><td>Окна desktop</td><td>Диалоги появлялись у родителя или в углу экрана и «мигали» при открытии; стандартные окна Windows — где придётся.</td><td>Все окна, включая системные, появляются по центру главного окна без мигания.</td></tr>
+                    <tr><td>Web-API</td><td>Чужая страница могла обратиться к API через DNS rebinding или отправить HTML-форму (например, создать копию); экспорт оставлял файлы с данными в <code>exports/</code>.</td><td>Проверка заголовка Host, POST только с JSON, экспорт из памяти.</td></tr>
+                    <tr><td>Время</td><td>Время хранилось без часового пояса и показывалось по часам Windows: UTC из SQLite выдавался за местное, в логах и бэкапах шкала не была подписана.</td><td>Хранение и расчёты в UTC с меткой пояса, всё видимое человеку — по МСК с подписью «МСК».</td></tr>
+                    <tr><td>Код</td><td>Мёртвые модули и методы, реэкспорты в <code>__init__.py</code>, неиспользуемые импорты.</td><td>~755 строк удалено, CI следит за неиспользуемыми импортами и переменными.</td></tr>
+                    <tr><td>Экспорт и отчёты</td><td>CSV открывался в Excel «кракозябрами» и с суммами-текстом; график «Средние значения» занижался месяцами, где был только аванс.</td><td>CSV для русского Excel; единое правило средних на графике и в KPI.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section" id="bot">
+            <h2>2. Telegram-бот</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span><code>/cancel</code> (а также «отмена» / «отменить» текстом) на любом шаге прерывает ввод без сохранения.</li>
+                <li><span class="change-type changed">CHANGED</span>Дата выплаты проверяется сразу на своём шаге теми же правилами, что при сохранении (<code>SalaryAPI.validate_payment_date</code>). При ошибке бот объясняет, что не так, и переспрашивает только дату — уже введённые суммы не теряются. «-» по-прежнему пропускает дату.</li>
+                <li><span class="change-type added">ADDED</span>Если выбран месяц, за который уже есть данные, бот показывает их и предупреждает: новые значения заменят прежние, пропуск даты («-») оставит сохранённую дату.</li>
+                <li><span class="change-type fixed">FIXED</span>Стикер, фото или голосовое на шаге ввода больше не вызывают ошибку в обработчике: бот просит ответить текстом.</li>
+                <li><code>/current</code> показывает текущий год по МСК (раньше — по часам Windows).</li>
+                <li>Тесты маршрутизации идут через настоящие фильтры aiogram: проверяется, какой обработчик получит сообщение в каждом состоянии.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="desktop">
+            <h2>3. Desktop</h2>
+            <h3>Окна по центру главного окна</h3>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Все диалоги центрируются по главному окну приложения, а не по непосредственному родителю (новый модуль <code>desktop/widgets/window_centering.py</code>). Замечание пользователя: окно создания резервной копии появлялось не по центру.</li>
+                <li><span class="change-type fixed">FIXED</span>На время расчёта размера окно скрыто. Раньше <code>update_idletasks</code> успевал показать его в позиции по умолчанию: окно мигало и могло остаться в углу.</li>
+                <li><span class="change-type added">ADDED</span>Стандартные окна Windows (сообщения, подтверждения, выбор цвета) ставятся по центру перехватчиком CBT (<code>WH_CBT</code> / <code>HCBT_ACTIVATE</code>): Tk не позволяет управлять их положением напрямую.</li>
+                <li>Окно ввода комментария к резервной копии переведено на общий <code>BaseDialog</code>. Положение всех окон проверено скриптом: отклонение от центра главного окна не больше 1 px.</li>
+            </ul>
+            <h3>Резервные копии</h3>
+            <ul>
+                <li><span class="change-type changed">CHANGED</span>Колонка «Изменен» (всегда совпадала с «Создан») заменена комментарием; служебная метка <code>auto_on_close</code> показывается как «Автокопия при закрытии».</li>
+                <li>Размер — в KB/MB по величине (раньше «0.00 MB» для небольшой базы); подтверждение восстановления сообщает, что перед ним будет сделана автоматическая копия.</li>
+                <li>Время создания показывается в колонке «Создан (МСК)» — см. раздел 6.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="web">
+            <h2>4. Защита web-API</h2>
+            <p>Web-сервер слушает только <code>127.0.0.1</code>, и запросы с этого адреса доверялись без ключа. Этого недостаточно: браузер выполняет запросы чужих страниц тоже с локального адреса.</p>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span><strong>DNS rebinding.</strong> Чужой домен можно направить на <code>127.0.0.1</code>, и его страница получит доступ к API как «своя». Теперь без ключа доверяются только запросы, у которых и адрес, и заголовок <code>Host</code> локальные (<code>localhost</code>, <code>127.0.0.1</code>, <code>[::1]</code>); остальным нужен <code>X-API-Key</code>, иначе 403.</li>
+                <li><span class="change-type fixed">FIXED</span><strong>Формы с чужих сайтов.</strong> HTML-форма и <code>text/plain</code> отправляются браузером без CORS-проверки, поэтому чужая страница могла, например, создать или восстановить резервную копию. Теперь POST в <code>/api/</code> принимается только с JSON (иначе 400, действие не выполняется). Собственный интерфейс и так отправляет JSON.</li>
+                <li><span class="change-type fixed">FIXED</span><strong>Экспорт.</strong> Файл экспорта читается в память, удаляется с диска и отдаётся из памяти: копии финансовых данных больше не накапливаются в <code>exports/</code>.</li>
+                <li>Проверено на production после деплоя: запрос с <code>localhost</code> — 200, с подменённым <code>Host: evil.example</code> — 403.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="cleanup">
+            <h2>5. Чистка кода</h2>
+            <ul>
+                <li><span class="change-type refactored">REFACTORED</span>Удалены неиспользуемые модули <code>core/models/report.py</code> и <code>core/repositories/year_repository.py</code>; годовые итоги статистика берёт напрямую из <code>AnalyticsRepository</code>.</li>
+                <li><span class="change-type refactored">REFACTORED</span>Удалены около 25 методов без вызовов: в <code>SalaryService</code>, <code>SalaryRepository</code>, <code>AnalyticsRepository</code>, <code>FileUtils</code> (остался только <code>format_file_size</code>), <code>MoneyUtils</code>, <code>DateUtils</code>, миграциях, навигации; <code>ExportService.get_available_formats</code>; диалоги <code>ConfirmationDialog</code>, <code>InputDialog</code>, <code>ProgressDialog</code>. Перед удалением каждый проверен поиском по всему проекту, включая тесты и точки входа.</li>
+                <li>9 файлов <code>__init__.py</code> больше не реэкспортируют содержимое: импорты идут из модулей напрямую, и при запуске не загружается лишнее.</li>
+                <li>Ruff: убраны 35 неиспользуемых импортов (F401) и 2 переменные (F841). В CI эти правила теперь проверяются, чтобы мусор не возвращался.</li>
+                <li>Описания в <code>SalaryRepository</code> приведены к фактической логике (уникальность пары год/месяц обеспечивает ограничение БД, upsert атомарный).</li>
+                <li>Экспорт: три одинаковых блока «путь файла по умолчанию» объединены в один метод.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="time">
+            <h2>6. Стандарт времени: UTC в данных, МСК на экране</h2>
+            <p>Проект приведён к общему стандарту MyHobby (<code>GLOBAL_TIME_STANDARD_RU.md</code>): <strong>хранить и считать в UTC, показывать человеку в МСК</strong>. Все переходы между шкалами собраны в одном модуле <code>core/utils/clock.py</code> (<code>zoneinfo</code>, <code>Europe/Moscow</code>).</p>
+            <h3>Как устроено хранение</h3>
+            <ul>
+                <li>Перед изменениями проверены обе базы (локальная и production, только чтение): все <code>created_at</code> / <code>updated_at</code> записывает сам SQLite (<code>CURRENT_TIMESTAMP</code>), а это всегда UTC без метки пояса. Поэтому данные <strong>не переписывались</strong>: при чтении такие значения получают метку UTC по документированному правилу.</li>
+                <li>Даты аванса и зарплаты — календарные даты, а не моменты времени, и по стандарту между поясами не конвертируются.</li>
+            </ul>
+            <h3>Что изменилось</h3>
+            <table>
+                <thead><tr><th>Где</th><th>Было</th><th>Стало</th></tr></thead>
+                <tbody>
+                    <tr><td>CSV и Excel</td><td>«Дата создания» — UTC без подписи</td><td>«Дата создания (МСК)», время по МСК</td></tr>
+                    <tr><td>JSON-экспорт</td><td><code>export_date</code> без часового пояса</td><td>UTC с <code>+00:00</code></td></tr>
+                    <tr><td>Метаданные резервной копии</td><td>местное время без пояса</td><td>UTC с <code>+00:00</code></td></tr>
+                    <tr><td>Имя новой резервной копии</td><td><code>salary_backup_20261015_003843_331962.zip</code></td><td><code>salary_backup_20261014_213843_331962Z.zip</code> (<code>Z</code> — UTC)</td></tr>
+                    <tr><td>Список копий</td><td>время без подписи</td><td>desktop: колонка «Создан (МСК)»; web: «… МСК»</td></tr>
+                    <tr><td>Логи бота, web и запуска desktop</td><td><code>2026-10-15 00:38:43,331 INFO</code></td><td><code>2026-10-15 00:38:43,331 МСК INFO</code></td></tr>
+                    <tr><td>Текущий месяц и год</td><td>по часам Windows</td><td>по МСК: формы desktop и web, <code>/current</code> бота, среднемесячное</td></tr>
+                    <tr><td>Деплой</td><td>время копии прода без подписи</td><td>«Дата создания: … МСК»</td></tr>
+                </tbody>
+            </table>
+            <ul>
+                <li><span class="change-type changed">CHANGED</span>«Выплачена ли зарплата» сравнивает календарную дату выплаты с сегодняшней датой по МСК: зарплата от 15-го учитывается в среднем сразу после московской полуночи, независимо от часового пояса компьютера.</li>
+                <li>Web показывает время через <code>Intl</code> с <code>timeZone: 'Europe/Moscow'</code> независимо от пояса браузера.</li>
+                <li>Старые резервные копии сохраняют прежние имена (местное время). На сроке хранения это не сказывается: расхождение в 3 часа при сроке в днях роли не играет, граница срока осталась прежней.</li>
+                <li>В <code>requirements.txt</code> добавлен <code>tzdata</code>: в Windows нет системной базы часовых поясов для <code>zoneinfo</code>.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="exports">
+            <h2>7. Экспорт и отчёты</h2>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>CSV сохраняется в UTF-8 с BOM, с разделителем «;» и запятой в суммах (два знака): двойной клик открывает его в русском Excel с нормальной кириллицей и числами, а не текстом. Правило «UTF-8 без BOM» относится к исходникам проекта, а не к пользовательским выгрузкам.</li>
+                <li><span class="change-type fixed">FIXED</span>График «Средние значения по месяцам» использует то же правило, что KPI «Среднемесячно» (<code>is_payment_complete</code>): учитываются только месяцы с выплаченной зарплатой. Месяц, где пока есть только аванс, больше не занижает среднее. SQL-метод <code>AnalyticsRepository.get_average_by_month</code> удалён.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="ops">
+            <h2>8. Эксплуатация</h2>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Деплой больше не копирует в production кэш линтера <code>.ruff_cache</code> (~190 файлов при каждом деплое).</li>
+                <li>Каталог резервной копии прода и <code>_backup_info.txt</code> подписаны по МСК; <code>scripts/DEPLOY.md</code> обновлён.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>9. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>260 тестов успешно (в 1.2.28 было 208).</td></tr>
+                    <tr><td>Бот</td><td>Отмена на каждом шаге, ошибочная дата с повторным вопросом, заполненный месяц, нетекстовые сообщения — через настоящие фильтры aiogram.</td></tr>
+                    <tr><td>Окна</td><td>Центрирование диалогов и стандартных окон Windows по главному окну; скрипт-замер положения всех окон (±1 px).</td></tr>
+                    <tr><td>Web-API</td><td>10 тестов: локальные имена хоста, отказ чужому Host, доступ по ключу, страницы не затронуты, POST без JSON не доходит до действия, экспорт из памяти без файла на диске.</td></tr>
+                    <tr><td>Время (§6 стандарта)</td><td>UTC → МСК с подписью; переход через московскую полночь (21:00 UTC — следующий день, 31.12 21:30 UTC — январь следующего года); <code>Z</code>, <code>+00:00</code>, <code>+03:00</code> и naive из SQLite дают один момент; дата выплаты относительно московской полуночи; экспорт, JSON, бэкапы и логи. Ручная проверка: копия, созданная в 08:21 UTC, показана как 11:21 МСК и в API, и в desktop.</td></tr>
+                    <tr><td>Чистка кода</td><td>Коммит чистки проверен отдельно на снимке индекса: 244 теста и Ruff без правок пакета времени.</td></tr>
+                    <tr><td>Ruff / UTF-8</td><td>Правила CI, включая новые F401/F841, пройдены; файлы в UTF-8 без BOM; JS-помощники МСК проверены в Node.</td></tr>
+                    <tr><td>Production</td><td>Код 1.2.29 задеплоен до релиза: web и бот перезапущены, web отвечает, бот подключился через прокси, логи пишутся с меткой «МСК». Пользователь проверил изменения вручную.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code> не менялись; все три компилируются и прошли проверку деплоя.</li>
+                <li><code>desktop/app.py</code>: подключён перехватчик, ставящий стандартные окна Windows по центру главного окна (<code>install_native_dialog_centering</code>); лог запуска (<code>desktop/startup_logging.py</code>) — время по МСК с запасным форматером.</li>
+                <li><code>bot/main.py</code> не менялся; бот локально не запускался, чтобы не конфликтовать с production-ботом по токену.</li>
+                <li>Импорт всех модулей проекта проверен скриптом.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="files">
+            <h2>10. Карта изменённых файлов</h2>
+            <h3>Новые компоненты</h3>
+            <div class="file">core/utils/clock.py; desktop/widgets/window_centering.py</div>
+            <div class="file">tests/unit/core/utils/test_clock.py; tests/unit/web/test_web_security.py; tests/unit/desktop/widgets/test_window_centering.py; tests/unit/desktop/views/test_backup_dialog_comment.py</div>
+            <h3>Удалённые компоненты</h3>
+            <div class="file">core/models/report.py; core/repositories/year_repository.py</div>
+            <h3>Обновлённые файлы</h3>
+            <div class="file">bot/handlers/salary.py; api/salary_api.py; web/security.py; web/routes/salaries.py; web/static/js/common.js; web/static/js/index.js; web/static/js/settings.js</div>
+            <div class="file">core/services/backup_service.py; core/services/export_service.py; core/services/statistics_service.py; core/services/salary_service.py; core/repositories/salary_repository.py; core/repositories/analytics_repository.py; core/models/salary.py; core/models/year.py; core/utils/dates.py; core/utils/files.py; core/utils/money.py; core/utils/logging_setup.py; core/database/migrations.py</div>
+            <div class="file">desktop/app.py; desktop/startup_logging.py; desktop/widgets/dialogs.py; desktop/views/dialogs/backup_dialog.py; desktop/views/dialogs/salary_dialog.py; desktop/views/dialogs/about_dialog.py; desktop/views/dialogs/export_dialog.py; desktop/views/report/report_view.py; desktop/controllers/navigation_controller.py; 9 файлов __init__.py</div>
+            <div class="file">scripts/deploy_to_prod.py; scripts/deploy_exclude.txt; scripts/DEPLOY.md; requirements.txt; .github/workflows/ci.yml</div>
+            <p><strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>. Рабочие БД, токены, логи и пользовательские экспорты в коммит не включаются.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>11. Обновление production</h2>
+            <ol>
+                <li>Закрыть desktop-приложение production.</li>
+                <li>Запустить деплой с перезапуском сервисов (web и бот изменились).</li>
+                <li>Проверить заголовок окна desktop (1.2.29), метку «МСК» в новых строках <code>logs/web.log</code> и <code>logs/bot.log</code>.</li>
+            </ol>
+            <pre><code>python scripts/deploy_to_prod.py --restart-services</code></pre>
+            <p class="note"><strong>Совместимость:</strong> схема БД не менялась, миграций нет, сохранённые данные не переписывались. Новая зависимость <code>tzdata</code> уже установлена в системном Python 3.13, на котором работает production. Внешние клиенты web-API, отправлявшие POST не в JSON или обращавшиеся по нелокальному имени хоста без <code>X-API-Key</code>, получат 400/403. Возврат к 1.2.28 возможен обычным деплоем предыдущего кода; копии с меткой <code>Z</code> в имени он видит и восстанавливает как обычные.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.29 · 21.10.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>

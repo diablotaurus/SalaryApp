@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.28</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.29</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -37,34 +37,36 @@
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.28</h1>
-            <p class="subtitle">Краткий отчёт: надёжность данных, сворачивание лет на «Главной», вдвое более быстрый запуск и удобство эксплуатации</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.29</h1>
+            <p class="subtitle">Краткий отчёт: удобный Telegram-бот, окна по центру, защита web-API, чистка кода и единый стандарт времени (UTC в данных, МСК на экране)</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.28</p>
-            <p><strong>Дата:</strong> 15 октября 2026 г.</p>
-            <p><strong>Предрелизные проверки:</strong> 208 тестов; попиксельное сравнение главной вкладки и сверка Excel-экспорта с прежней версией; замеры скорости на копии production-БД; критический Ruff; UTF-8 без BOM; точки входа.</p>
-            <p><strong>Подробный отчёт:</strong> <a href="changelog_15.10.2026_1.2.28.html">docs/changelog_15.10.2026_1.2.28.html</a></p>
+            <p><strong>Версия:</strong> v.1.2.29</p>
+            <p><strong>Дата:</strong> 21 октября 2026 г.</p>
+            <p><strong>Предрелизные проверки:</strong> 260 тестов; тесты по §6 стандарта времени; маршрутизация бота через фильтры aiogram; замер положения окон; проверка web-API на production (200 / 403); Ruff с F401/F841; UTF-8 без BOM; точки входа.</p>
+            <p><strong>Подробный отчёт:</strong> <a href="changelog_21.10.2026_1.2.29.html">docs/changelog_21.10.2026_1.2.29.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.28 current</div>
+        <div class="version-display">SalaryApp v.1.2.29 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type fixed">DATA</span>Ошибка ввода суммы больше не превращается молча в 0; срок хранения копий из настроек применяется ко всем копиям; стёртая в форме дата выплаты стирается из базы.</li>
-                <li><span class="change-type added">UI</span>Годы на «Главной» сворачиваются (при запуске развёрнут текущий), в режиме «по кварталам» карточки раскладываются плиткой; полоса прокрутки видна только при необходимости, колёсико не сдвигает короткое содержимое.</li>
-                <li><span class="change-type improved">SPEED</span>Экспорт в Excel без pandas, тяжёлые библиотеки не загружаются при запуске desktop, бота и web.</li>
-                <li><span class="change-type fixed">OPS</span>Лог web в файл, ошибки интерфейса desktop пишутся в журнал и показываются, деплой умеет перезапускать web и бота (<code>--restart-services</code>).</li>
+                <li><span class="change-type added">BOT</span><code>/cancel</code> прерывает ввод; дата выплаты проверяется на своём шаге без потери введённого; предупреждение о заполненном месяце; стикер или фото не ломают ввод.</li>
+                <li><span class="change-type fixed">UI</span>Все окна desktop, включая стандартные окна Windows, появляются по центру главного окна и не мигают; в резервных копиях — комментарий, размер в KB/MB и время «Создан (МСК)».</li>
+                <li><span class="change-type fixed">SECURITY</span>Web-API защищён от DNS rebinding (проверка Host) и форм с чужих сайтов (POST только JSON); экспорт отдаётся из памяти и не оставляет файлов.</li>
+                <li><span class="change-type improved">TIME</span>Стандарт времени: хранение и расчёты в UTC с меткой пояса, экспорт, логи, списки копий и «текущий месяц» — по МСК с подписью; данные в БД не переписывались.</li>
+                <li><span class="change-type refactored">CLEANUP</span>Удалены мёртвые модули, ~25 методов, реэкспорты и неиспользуемые импорты (~755 строк); CI проверяет F401/F841.</li>
+                <li><span class="change-type fixed">DATA</span>CSV открывается в русском Excel (BOM, запятая в суммах); график средних использует то же правило, что KPI «Среднемесячно».</li>
             </ul>
-            <p><strong>Скорость (копия production-БД, 4 года):</strong> запуск desktop 2.1–2.4 с → 0.8–0.9 с, перестройка после сохранения месяца ~0.6 с → ~0.27 с.</p>
-            <p><strong>Совместимость:</strong> схема БД не менялась, миграций и новых зависимостей нет; pandas удалён из зависимостей. Развёрнутый год на «Главной» выглядит как раньше.</p>
+            <p><strong>Совместимость:</strong> схема БД не менялась, миграций нет. Новая зависимость <code>tzdata</code> (уже установлена в production-Python). Имена новых резервных копий содержат метку UTC <code>Z</code>.</p>
         </div>
 
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_21.10.2026_1.2.29.html">21-10-2026</a> - v.1.2.29 - удобный Telegram-бот, окна по центру, защита web-API, чистка кода, стандарт времени UTC/МСК (подробный отчёт)</li>
                 <li><a href="changelog_15.10.2026_1.2.28.html">15-10-2026</a> - v.1.2.28 - надёжность данных, сворачивание лет на «Главной», запуск вдвое быстрее, лог web и перезапуск сервисов при деплое (подробный отчёт)</li>
                 <li><a href="changelog_14.10.2026_1.2.27.html">14-10-2026</a> - v.1.2.27 - несколько прокси для бота без падений, подсказки на графике, ускорение запуска и вкладок desktop (подробный отчёт)</li>
                 <li><a href="changelog_27.08.2026_1.2.26.html">27-08-2026</a> - v.1.2.26 - изоляция unit-теста истории от БД, проверка чистой копии и корректирующий релиз (подробный отчёт)</li>
