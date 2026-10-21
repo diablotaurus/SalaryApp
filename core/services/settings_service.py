@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
 from typing import Any, Callable, Dict, Mapping
 
 from core.exceptions import ValidationError
@@ -14,7 +13,6 @@ class SettingsService:
 
     DEFAULTS: Dict[str, str] = {
         "currency": "руб.",
-        "date_format": "%d.%m.%Y",
         "history_layout_mode": "standard",
         "main_stats_layout_mode": "row",
         "advance_color": "#0d6efd",
@@ -75,7 +73,6 @@ class SettingsService:
         cls._require_supported_key(key)
         validators: Dict[str, Callable[[Any], str]] = {
             "currency": cls._normalize_currency,
-            "date_format": cls._normalize_date_format,
             "history_layout_mode": lambda raw: cls._normalize_choice(
                 raw, {"standard", "quarterly"}, key
             ),
@@ -107,17 +104,6 @@ class SettingsService:
         normalized = str(value).strip()
         if not normalized or len(normalized) > 10:
             raise ValidationError("Обозначение валюты должно содержать от 1 до 10 символов")
-        return normalized
-
-    @staticmethod
-    def _normalize_date_format(value: Any) -> str:
-        normalized = str(value).strip()
-        if not normalized or len(normalized) > 32:
-            raise ValidationError("Некорректный формат даты")
-        try:
-            datetime(2026, 8, 27).strftime(normalized)
-        except (TypeError, ValueError) as exc:
-            raise ValidationError("Некорректный формат даты") from exc
         return normalized
 
     @classmethod

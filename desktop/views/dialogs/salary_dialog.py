@@ -16,6 +16,10 @@ from desktop.views.constants import (
 )
 
 
+# Пустая сумма в поле ввода — в той же записи, что и сохранённые суммы
+ZERO_AMOUNT_TEXT = MoneyUtils.format_amount_plain(0)
+
+
 class SalaryDialog(BaseDialog):
     """Диалоговое окно для ввода данных по зарплате"""
     
@@ -54,8 +58,8 @@ class SalaryDialog(BaseDialog):
         
         self.year_var = tk.IntVar(value=year)
         self.month_name_var = tk.StringVar(value=DateUtils.get_month_name(month))
-        self.advance_var = tk.StringVar(value="0.00")
-        self.salary_var = tk.StringVar(value="0.00")
+        self.advance_var = tk.StringVar(value=ZERO_AMOUNT_TEXT)
+        self.salary_var = tk.StringVar(value=ZERO_AMOUNT_TEXT)
         self.advance_date_var = tk.StringVar(value="")
         self.salary_date_var = tk.StringVar(value="")
         
@@ -253,8 +257,8 @@ class SalaryDialog(BaseDialog):
                 self.salary_date_var.set(data.get('salary_date') or "")
             else:
                 # Очищаем поля если данных нет
-                self.advance_var.set("0.00")
-                self.salary_var.set("0.00")
+                self.advance_var.set(ZERO_AMOUNT_TEXT)
+                self.salary_var.set(ZERO_AMOUNT_TEXT)
                 self.advance_date_var.set("")
                 self.salary_date_var.set("")
             self.clear_pending = False
@@ -327,8 +331,8 @@ class SalaryDialog(BaseDialog):
                     self.current_month_number = next_month
                     
                     # Очищаем поля и загружаем данные за следующий месяц
-                    self.advance_var.set("0.00")
-                    self.salary_var.set("0.00")
+                    self.advance_var.set(ZERO_AMOUNT_TEXT)
+                    self.salary_var.set(ZERO_AMOUNT_TEXT)
                     self.advance_date_var.set("")
                     self.salary_date_var.set("")
                     self._load_existing_data()
@@ -348,8 +352,8 @@ class SalaryDialog(BaseDialog):
         self.clear_pending = True
 
         # Очищаем суммы и даты без изменения выбранного периода
-        self.advance_var.set("0.00")
-        self.salary_var.set("0.00")
+        self.advance_var.set(ZERO_AMOUNT_TEXT)
+        self.salary_var.set(ZERO_AMOUNT_TEXT)
         self.advance_date_var.set("")
         self.salary_date_var.set("")
 

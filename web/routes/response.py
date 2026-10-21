@@ -107,5 +107,7 @@ def payload_from_exception(exc: Exception, *, is_production: bool) -> tuple[dict
 
 
 def finalize_response(payload: Any, *, is_production: bool) -> tuple[dict, int]:
-    normalized = _normalize_payload(payload, is_production=is_production)
-    return normalized, status_from_payload(normalized)
+    # Статус считается до того, как в production скрывается поле error:
+    # иначе машинный код ошибки («not found» и т.п.) терялся и вместо 404 было 400.
+    status = status_from_payload(_normalize_payload(payload, is_production=False))
+    return _normalize_payload(payload, is_production=is_production), status

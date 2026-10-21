@@ -57,7 +57,7 @@ def test_grouped_chart_tooltip_matches_hovered_series(chart, bar_index, label):
     hover(canvas, axes.patches[bar_index])
 
     assert tooltip._annotation.get_visible()
-    assert tooltip._annotation.get_text() == f"Март 2026\n{label}: {(bar_index + 1) * 100:.2f} руб."
+    assert tooltip._annotation.get_text() == f"Март 2026\n{label}: {(bar_index + 1) * 100},00 руб."
 
 
 @pytest.mark.parametrize("event_name", ["axes_leave_event", "figure_leave_event", "resize_event"])
@@ -108,7 +108,7 @@ def test_refresh_clears_old_bars_annotations_and_empty_data(chart, empty_data):
         assert len(axes.texts) == 1
         assert not tooltip._annotation.get_visible()
         hover(canvas, axes.patches[0])
-        assert tooltip._annotation.get_text() == f"Март {year}\nИтого: 100.00 руб."
+        assert tooltip._annotation.get_text() == f"Март {year}\nИтого: 100,00 руб."
         assert tooltip._connections == connections
 
     ReportView.update_monthly_chart(view, empty_data)

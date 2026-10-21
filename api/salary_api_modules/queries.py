@@ -11,7 +11,7 @@ def get_salary(year: int, month: int) -> dict:
             return success(salary.to_dict())
         return failure(
             message=f"Данные за {month}.{year} не найдены",
-            error="Данные не найдены",
+            error="not found",  # машинный код: web отдаёт 404, а не 400
         )
 
     return execute_with_default_error(_action, "Ошибка при получении данных")

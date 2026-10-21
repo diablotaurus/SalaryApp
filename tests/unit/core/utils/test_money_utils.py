@@ -52,4 +52,4 @@ def test_parse_amount_error_names_the_field():
 
 
 def test_format_amount_plain():
-    assert MoneyUtils.format_amount_plain(12345.6) == "12 345.60"
+    assert MoneyUtils.format_amount_plain(12345.6) == "12 345,60"

@@ -558,7 +558,7 @@ class ReportView(BaseView):
                     ax.text(
                         bar.get_x() + bar.get_width() / 2.,
                         height,
-                        f'{height:,.0f}',
+                        f'{height:,.0f}'.replace(',', ' '),  # без копеек, тысячи — пробелом
                         ha='center',
                         va='bottom',
                         fontsize=9

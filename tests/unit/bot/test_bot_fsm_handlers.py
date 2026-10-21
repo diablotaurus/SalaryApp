@@ -1,5 +1,7 @@
 import asyncio
 
+import pytest
+
 from bot.handlers.salary import (
     SalaryStates,
     _format_year_table,
@@ -13,6 +15,7 @@ from bot.handlers.salary import (
     process_advance_date,
     process_month,
     process_non_text,
+    process_salary,
     process_salary_date,
     process_year,
     router,
@@ -89,6 +92,54 @@ def test_process_advance_negative_value():
     assert "advance" not in state.data
     assert state.current_state is None
     assert "Сумма не может быть отрицательной" in msg.answers[-1][0]
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [("87 432,71", 87432.71), ("87 432,71", 87432.71), ("1000", 1000.0), ("12.345,67", 12345.67)],
+)
+def test_process_advance_understands_amounts_like_desktop(text, expected):
+    # Суммы из банковских приложений — с пробелами (в т.ч. неразрывными) и запятой
+    msg = FakeMessage(text)
+    state = FakeState()
+
+    asyncio.run(process_advance(msg, state))
+
+    assert state.data["advance"] == expected
+    assert state.current_state == SalaryStates.waiting_for_advance_date
+
+
+@pytest.mark.parametrize("text", ["nan", "1e5", "87432,7l", "87.432.71", "inf"])
+def test_process_salary_rejects_ambiguous_amount_on_its_step(text):
+    # Раньше «nan» и «1e5» проходили шаг (float) и падали лишь при сохранении,
+    # и весь введённый месяц терялся
+    msg = FakeMessage(text)
+    state = FakeState({"year": 2026, "month": 3, "advance": 1.0, "advance_date": None})
+
+    asyncio.run(process_salary(msg, state))
+
+    assert "salary" not in state.data
+    assert state.current_state is None
+    assert state.cleared is False
+    assert "ожидается число" in msg.answers[-1][0]
+    assert "Введите зарплату" in msg.answers[-1][0]
+
+
+def test_saved_message_uses_russian_amount_format(monkeypatch):
+    monkeypatch.setattr(
+        "bot.handlers.salary.SalaryAPI.add_salary",
+        lambda *args, **kwargs: {
+            "success": True,
+            "data": {"year": 2026, "month": 3, "month_name": "Март", "advance": 87432.71, "salary": 1000.0},
+        },
+    )
+    msg = FakeMessage("-")
+    state = FakeState({"year": 2026, "month": 3, "advance": 87432.71, "salary": 1000.0, "advance_date": None})
+
+    asyncio.run(process_salary_date(msg, state))
+
+    assert "87 432,71 руб." in msg.answers[-1][0]
+    assert "88 432,71 руб." in msg.answers[-1][0]
 
 
 def test_process_salary_date_success(monkeypatch):
@@ -180,10 +231,10 @@ def test_format_current_year_table_compact_layout(monkeypatch):
 
     assert "Статистика за" in result
     assert "Январь" in result
-    assert "  Аванс: 20 783.87  •  28.01.2026" in result
-    assert "  Зарплата: 84 562.16  •  13.02.2026" in result
-    assert "  Итого: 105 346.03" in result
-    assert "Итого за год: 215 041.05" in result
+    assert "  Аванс: 20 783,87  •  28.01.2026" in result
+    assert "  Зарплата: 84 562,16  •  13.02.2026" in result
+    assert "  Итого: 105 346,03" in result
+    assert "Итого за год: 215 041,05" in result
     assert "<pre>" not in result
 
 
@@ -227,7 +278,7 @@ def test_format_year_table_uses_requested_year(monkeypatch):
 
     assert called["year"] == 2025
     assert "Статистика за 2025 год" in result
-    assert "Итого за год: 60 000.00" in result
+    assert "Итого за год: 60 000,00" in result
 
 
 def test_cmd_year_stats_sends_plain_text(monkeypatch):
@@ -290,7 +341,7 @@ def test_month_with_existing_data_shows_warning(monkeypatch):
 
     warning = msg.answers[0][0]
     assert "За Март 2026 уже есть данные" in warning
-    assert "31 503.56" in warning and "14.04.2026" in warning
+    assert "31 503,56" in warning and "14.04.2026" in warning
     assert msg.answers[-1][0] == "Введите сумму аванса:"
     assert state.current_state == SalaryStates.waiting_for_advance
 

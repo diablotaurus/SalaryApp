@@ -12,13 +12,26 @@ from desktop.views.constants import (
 
 class ExportDialog(BaseDialog):
     """Диалоговое окно для экспорта данных"""
-    
-    def __init__(self, parent, controller):
+
+    FORMATS = (
+        (TEXT_CSV_FORMAT, "csv"),
+        (TEXT_JSON_FORMAT, "json"),
+        (TEXT_EXCEL_FORMAT, "excel"),
+    )
+
+    def __init__(self, parent, controller, default_format: str = "csv"):
+        """
+        Args:
+            default_format: Формат, выбранный при открытии — настройка
+                «Формат экспорта по умолчанию»
+        """
         # Вызываем конструктор базового класса
         super().__init__(parent, DIALOG_EXPORT_TITLE)
         
         self.controller = controller
         self.parent = parent
+        known_formats = {value for _, value in self.FORMATS}
+        self.default_format = default_format if default_format in known_formats else "csv"
 
         # Настройка окна (размер подгоняется под содержимое автоматически)
         self.resizable(False, False)
@@ -29,8 +42,8 @@ class ExportDialog(BaseDialog):
         # Центрируем после построения содержимого (размер уже известен)
         self._center_on_main_window()
 
-        # Фокус на первом поле выбора формата
-        self.first_format_radio.focus_set()
+        # Фокус на выбранном формате
+        self.format_radios[self.default_format].focus_set()
     
     def _create_widgets(self):
         """Создать виджеты"""
@@ -50,17 +63,10 @@ class ExportDialog(BaseDialog):
         format_frame = ttk.LabelFrame(main_frame, text=TEXT_SELECT_EXPORT_FORMAT, padding=10)
         format_frame.pack(fill=tk.X, pady=(0, 15))
         
-        self.format_var = tk.StringVar(value="csv")
-        
-        # Список форматов
-        formats = [
-            (TEXT_CSV_FORMAT, "csv"),
-            (TEXT_JSON_FORMAT, "json"),
-            (TEXT_EXCEL_FORMAT, "excel")
-        ]
-        
-        self.first_format_radio = None
-        for text, value in formats:
+        self.format_var = tk.StringVar(value=self.default_format)
+
+        self.format_radios = {}
+        for text, value in self.FORMATS:
             rb = ttk.Radiobutton(
                 format_frame,
                 text=text,
@@ -68,8 +74,7 @@ class ExportDialog(BaseDialog):
                 value=value
             )
             rb.pack(anchor=tk.W, pady=2)
-            if self.first_format_radio is None:
-                self.first_format_radio = rb
+            self.format_radios[value] = rb
         
         # Информация - УВЕЛИЧЕННАЯ КАРТОЧКА
         info_frame = ttk.LabelFrame(main_frame, text=TEXT_EXPORT_INFO, padding=10)

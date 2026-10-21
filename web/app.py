@@ -11,6 +11,7 @@ from flask import Flask
 
 from core.config.settings import config
 from core.database.connection import DatabaseConnection
+from core.utils.clock import moscow_now
 from web.routes.errors import errors_bp
 from web.routes.pages import pages_bp
 from web.routes.salaries import salaries_bp
@@ -52,6 +53,12 @@ def create_app() -> Flask:
     app.register_blueprint(salaries_bp)   # API для работы с зарплатами
     app.register_blueprint(settings_bp)   # API для работы с настройками
     app.register_blueprint(errors_bp)     # Обработчики ошибок (404, 500)
+
+    @app.context_processor
+    def inject_app_info():
+        # Версия из version.txt и год по МСК — в подвале и на странице настроек
+        # (раньше там были зашитые «v1.0» и «1.0.0»)
+        return {"app_version": config.app.version, "current_year": moscow_now().year}
 
     @app.teardown_appcontext
     def close_database_connection(_exception=None):

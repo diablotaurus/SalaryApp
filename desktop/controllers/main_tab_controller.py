@@ -106,8 +106,17 @@ class MainTabController:
             self.navigation.show_message("Ошибка", app_exc.user_message, "error")
 
     def export_history(self):
-        dialog = ExportDialog(self.app, self.navigation)
+        dialog = ExportDialog(self.app, self.navigation, default_format=self._default_export_format())
         dialog.grab_set()
+
+    @staticmethod
+    def _default_export_format() -> str:
+        """Формат из настройки «Формат экспорта по умолчанию» (при ошибке — CSV)."""
+        try:
+            response = SettingsAPI.get_setting("export_format", "csv")
+            return str(response.get("data", {}).get("value", "csv"))
+        except RECOVERABLE_EXCEPTIONS:
+            return "csv"
 
     def show_backups(self):
         dialog = BackupDialog(self.app, self.navigation)

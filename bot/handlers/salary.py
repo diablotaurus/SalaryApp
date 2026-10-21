@@ -171,18 +171,35 @@ async def process_month(message: types.Message, state: FSMContext):
         await message.answer("Введите число (месяц):")
 
 
+async def _read_amount(message: types.Message, field_label: str, ask_again: str) -> Optional[float]:
+    """
+    Прочитать сумму из ответа по тем же правилам, что в desktop (MoneyUtils.parse_amount).
+
+    Понимает пробелы (в т.ч. неразрывные из банковских приложений) и запятую:
+    «87 432,71». Раньше бот принимал только float(): сумма с пробелами
+    отклонялась, а «nan» или «1e5» проходили шаг и падали лишь при сохранении,
+    и весь введённый месяц терялся.
+    """
+    try:
+        amount = MoneyUtils.parse_amount(message.text, field_label)
+    except ValueError as exc:
+        error = str(exc)
+        await message.answer(f"❌ {error[:1].upper()}{error[1:]}\n{ask_again}")
+        return None
+    if amount < 0:
+        await message.answer(f"Сумма не может быть отрицательной. {ask_again}")
+        return None
+    return amount
+
+
 @router.message(SalaryStates.waiting_for_advance, F.text)
 async def process_advance(message: types.Message, state: FSMContext):
-    try:
-        advance = float(message.text.replace(",", "."))
-        if advance < 0:
-            await message.answer("Сумма не может быть отрицательной. Введите аванс:")
-            return
-        await state.update_data(advance=advance)
-        await state.set_state(SalaryStates.waiting_for_advance_date)
-        await message.answer("Введите дату аванса (ДД.ММ.ГГГГ) или '-' чтобы пропустить:")
-    except ValueError:
-        await message.answer("Введите число (сумма аванса):")
+    advance = await _read_amount(message, "аванс", "Введите аванс:")
+    if advance is None:
+        return
+    await state.update_data(advance=advance)
+    await state.set_state(SalaryStates.waiting_for_advance_date)
+    await message.answer("Введите дату аванса (ДД.ММ.ГГГГ) или '-' чтобы пропустить:")
 
 
 @router.message(SalaryStates.waiting_for_advance_date, F.text)
@@ -197,16 +214,12 @@ async def process_advance_date(message: types.Message, state: FSMContext):
 
 @router.message(SalaryStates.waiting_for_salary, F.text)
 async def process_salary(message: types.Message, state: FSMContext):
-    try:
-        salary = float(message.text.replace(",", "."))
-        if salary < 0:
-            await message.answer("Сумма не может быть отрицательной. Введите зарплату:")
-            return
-        await state.update_data(salary=salary)
-        await state.set_state(SalaryStates.waiting_for_salary_date)
-        await message.answer("Введите дату зарплаты (ДД.ММ.ГГГГ) или '-' чтобы пропустить:")
-    except ValueError:
-        await message.answer("Введите число (сумма зарплаты):")
+    salary = await _read_amount(message, "зарплата", "Введите зарплату:")
+    if salary is None:
+        return
+    await state.update_data(salary=salary)
+    await state.set_state(SalaryStates.waiting_for_salary_date)
+    await message.answer("Введите дату зарплаты (ДД.ММ.ГГГГ) или '-' чтобы пропустить:")
 
 
 @router.message(SalaryStates.waiting_for_salary_date, F.text)
@@ -230,9 +243,9 @@ async def process_salary_date(message: types.Message, state: FSMContext):
         await message.answer(
             "✅ Запись успешно сохранена!\n\n"
             f"📅 {salary_data['month_name']} {salary_data['year']} г.\n"
-            f"💵 Аванс: {salary_data['advance']:,.2f} руб.\n"
-            f"💰 Зарплата: {salary_data['salary']:,.2f} руб.\n"
-            f"📊 Итого: {total:,.2f} руб."
+            f"💵 Аванс: {MoneyUtils.format_amount(salary_data['advance'])}\n"
+            f"💰 Зарплата: {MoneyUtils.format_amount(salary_data['salary'])}\n"
+            f"📊 Итого: {MoneyUtils.format_amount(total)}"
         )
     else:
         await message.answer(f"❌ Ошибка: {response.get('message')}")

@@ -5,7 +5,7 @@ from desktop.views.base_view import BaseView
 from desktop.views.constants import (
     PADX_DEFAULT, PADY_DEFAULT,
     TEXT_GENERAL_SETTINGS, TEXT_MAIN_TAB_SETTINGS, TEXT_ANALYTICS_TAB_SETTINGS,
-    TEXT_CURRENCY, TEXT_DATE_FORMAT, TEXT_DATE_FORMAT_EXAMPLE,
+    TEXT_CURRENCY,
     TEXT_HISTORY_LAYOUT, TEXT_HISTORY_LAYOUT_STANDARD, TEXT_HISTORY_LAYOUT_QUARTERLY,
     TEXT_MAIN_STATS_LAYOUT, TEXT_MAIN_STATS_LAYOUT_ROW, TEXT_MAIN_STATS_LAYOUT_COLUMN,
     TEXT_FONT_SIZE_SETTINGS,
@@ -15,7 +15,7 @@ from desktop.views.constants import (
     TEXT_BACKUP_SETTINGS, TEXT_AUTO_BACKUP, TEXT_BACKUP_RETENTION,
     TEXT_EXPORT_SETTINGS, TEXT_DEFAULT_EXPORT_FORMAT,
     TEXT_SAVE_SETTINGS, TEXT_RESET_SETTINGS,
-    DEFAULT_CURRENCY, DEFAULT_DATE_FORMAT, DEFAULT_BACKUP_DAYS, DEFAULT_EXPORT_FORMAT,
+    DEFAULT_CURRENCY, DEFAULT_BACKUP_DAYS, DEFAULT_EXPORT_FORMAT,
     DEFAULT_ADVANCE_COLOR, DEFAULT_SALARY_COLOR, DEFAULT_TOTAL_COLOR, DEFAULT_SHOW_BEST_YEAR_ALWAYS,
     DEFAULT_HISTORY_LAYOUT_MODE, DEFAULT_MAIN_STATS_LAYOUT_MODE,
     DEFAULT_MONTH_TITLE_FONT_SIZE, DEFAULT_MONTH_TOTAL_FONT_SIZE, DEFAULT_MONTH_DATA_FONT_SIZE,
@@ -67,14 +67,9 @@ class SettingsView(BaseView):
         frame = ttk.LabelFrame(parent, text=TEXT_GENERAL_SETTINGS, padding=PADX_DEFAULT)
         frame.grid(row=0, column=0, sticky="nsew", padx=(0, 4))
 
-        pair_frame = ttk.Frame(frame)
-        pair_frame.pack(fill=tk.X, pady=(6, 4))
-        pair_frame.columnconfigure(0, weight=0)
-        pair_frame.columnconfigure(1, weight=0)
-
-        # Валюта (левая колонка)
-        currency_frame = ttk.Frame(pair_frame)
-        currency_frame.grid(row=0, column=0, sticky="w", padx=(0, 8))
+        # Валюта (формат даты убран: даты везде ДД.ММ.ГГГГ, настройка ни на что не влияла)
+        currency_frame = ttk.Frame(frame)
+        currency_frame.pack(fill=tk.X, pady=(6, 4))
         ttk.Label(currency_frame, text=TEXT_CURRENCY).pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
         self.settings_vars['currency'] = tk.StringVar(value=DEFAULT_CURRENCY)
         currency_entry = ttk.Entry(
@@ -83,19 +78,6 @@ class SettingsView(BaseView):
             width=SETTINGS_ENTRY_WIDTH
         )
         currency_entry.pack(side=tk.LEFT)
-
-        # Формат даты (правая колонка)
-        date_frame = ttk.Frame(pair_frame)
-        date_frame.grid(row=0, column=1, sticky="w")
-        ttk.Label(date_frame, text=TEXT_DATE_FORMAT).pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
-        self.settings_vars['date_format'] = tk.StringVar(value=DEFAULT_DATE_FORMAT)
-        date_entry = ttk.Entry(
-            date_frame, 
-            textvariable=self.settings_vars['date_format'], 
-            width=SETTINGS_ENTRY_WIDTH
-        )
-        date_entry.pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
-        ttk.Label(date_frame, text=TEXT_DATE_FORMAT_EXAMPLE).pack(side=tk.LEFT, padx=(5, 0))
 
     def _create_main_tab_settings(self, parent):
         """Раздел настроек отображения вкладки Главная."""
@@ -382,7 +364,6 @@ class SettingsView(BaseView):
         if messagebox.askyesno(CONFIRM_TITLE, CONFIRM_RESET_SETTINGS):
             default_settings = {
                 'currency': DEFAULT_CURRENCY,
-                'date_format': DEFAULT_DATE_FORMAT,
                 'backup_auto': True,
                 'backup_days': DEFAULT_BACKUP_DAYS,
                 'export_format': DEFAULT_EXPORT_FORMAT,

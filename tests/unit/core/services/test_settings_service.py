@@ -41,6 +41,7 @@ def test_set_settings_does_not_partially_save_invalid_batch(temp_db):
         ("month_data_font_size", 40),
         ("advance_color", "red"),
         ("export_format", "xml"),
+        ("date_format", "%d.%m.%Y"),  # настройка убрана: ни на что не влияла
     ],
 )
 def test_rejects_unsupported_or_invalid_settings(temp_db, key, value):

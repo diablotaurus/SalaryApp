@@ -141,7 +141,6 @@ class AppConfig:
     display_name: str = "Учет заработной платы"
     version: str = "0.0.0"
     currency: str = "руб."
-    date_format: str = "%d.%m.%Y"
     
     # UI настройки
     default_theme: str = "clam"

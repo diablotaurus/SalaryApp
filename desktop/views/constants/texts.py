@@ -132,8 +132,6 @@ TEXT_GENERAL_SETTINGS = "Общие настройки"
 TEXT_MAIN_TAB_SETTINGS = "Вкладка Главная"
 TEXT_ANALYTICS_TAB_SETTINGS = "Вкладка Аналитика"
 TEXT_CURRENCY = "Валюта:"
-TEXT_DATE_FORMAT = "Формат даты:"
-TEXT_DATE_FORMAT_EXAMPLE = " (например: %d.%m.%Y)"
 TEXT_HISTORY_LAYOUT = "Вид истории:"
 TEXT_HISTORY_LAYOUT_STANDARD = "Стандартный (6х2, карточки года по одной в ряд)"
 TEXT_HISTORY_LAYOUT_QUARTERLY = "Поквартальный (3х4, карточки года по две в ряд)"
@@ -190,7 +188,6 @@ MESSAGE_SUCCESS = "Настройки успешно сохранены"
 
 # --- Значения по умолчанию ---
 DEFAULT_CURRENCY = "руб."
-DEFAULT_DATE_FORMAT = "%d.%m.%Y"
 DEFAULT_EXPORT_FORMAT = "csv"
 DEFAULT_BACKUP_DAYS = 30
 DEFAULT_ADVANCE_COLOR = "#0d6efd"
