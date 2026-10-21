@@ -69,7 +69,8 @@ def test_process_year_valid():
 
     assert state.data["year"] == 2025
     assert state.current_state == SalaryStates.waiting_for_month
-    assert "Введите номер месяца (1-12):" in msg.answers[-1][0]
+    assert "номер месяца (1-12):" in msg.answers[-1][0]
+    assert msg.answers[-1][1]["reply_markup"] is not None  # кнопки 12 месяцев
 
 
 def test_process_year_invalid_text():

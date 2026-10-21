@@ -13,7 +13,7 @@ from __future__ import annotations
 import tkinter as tk
 import tkinter.font as tkfont
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from core.utils.money import MoneyUtils
 from desktop.views.constants import FONT_MONTH_NO_DATA
@@ -94,7 +94,18 @@ def _text_height(font: tkfont.Font) -> int:
 class MonthCell(tk.Canvas):
     """Ячейка месяца: название, строки «Аванс»/«Зарплата» и «Итого» (или «Нет данных»)."""
 
-    def __init__(self, parent: tk.Misc, month_info: Dict[str, Any], style: MonthCellStyle):
+    def __init__(
+        self,
+        parent: tk.Misc,
+        month_info: Dict[str, Any],
+        style: MonthCellStyle,
+        on_click: Optional[Callable[[], None]] = None,
+    ):
+        """
+        Args:
+            on_click: Действие по клику — открыть месяц для ввода и правки
+                (в том числе пустой месяц «Нет данных»)
+        """
         self._style = style
         self._title = str(month_info["month_name"])
         self._has_data = bool(month_info["has_data"])
@@ -110,8 +121,11 @@ class MonthCell(tk.Canvas):
             borderwidth=0,
             width=self._natural_width(),
             height=self._natural_height(),
+            cursor="hand2" if on_click else "",
         )
         self.bind("<Configure>", self._redraw)
+        if on_click:
+            self.bind("<Button-1>", lambda _event: on_click())
 
     @staticmethod
     def _build_rows(month_info: Dict[str, Any], style: MonthCellStyle) -> List[PaymentRow]:

@@ -51,6 +51,11 @@ class MainTabController:
         dialog = SalaryDialog(self.app, self.navigation, year, 1)
         dialog.grab_set()
 
+    def edit_month(self, year: int, month: int):
+        """Открыть окно ввода сразу на выбранном месяце (клик по ячейке на «Главной»)."""
+        dialog = SalaryDialog(self.app, self.navigation, year, month)
+        dialog.grab_set()
+
     def delete_year(self, year: int) -> bool:
         try:
             confirm = self.navigation.show_message(

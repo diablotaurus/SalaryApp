@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+import pytest
+
 from desktop.views.constants import ARROW_YEAR_COLLAPSED, ARROW_YEAR_EXPANDED
 from desktop.views.main.main_view import MainView
 from desktop.views.main.month_cell import MonthCell
@@ -173,3 +175,29 @@ def test_month_grid_receives_mouse_wheel_after_lazy_build(root):
         if isinstance(widget, MonthCell)
     )
     assert cell.bind("<MouseWheel>")  # прокрутка колесиком работает и над новыми ячейками
+
+
+def _cell_list(widget):
+    if isinstance(widget, MonthCell):
+        return [widget]
+    return [cell for child in widget.winfo_children() for cell in _cell_list(child)]
+
+
+@pytest.mark.parametrize("layout", ["standard", "quarterly"])
+def test_click_on_month_cell_opens_that_month(root, layout):
+    opened = []
+    controller = _controller()
+    controller.edit_month = lambda year, month: opened.append((year, month))
+    view = MainView(root, controller)
+    view.apply_settings({"history_layout_mode": layout})
+    view.display_years(_years(2025, 2026), default_expanded_year=2026)
+
+    root.update_idletasks()  # окна ячеек должны быть созданы, иначе Tk теряет событие
+    cells = _cell_list(view._year_cards[2026]["body"])
+    cells[9].event_generate("<Button-1>")  # десятая ячейка — октябрь
+    view._toggle_year(2025)
+    root.update_idletasks()
+    _cell_list(view._year_cards[2025]["body"])[0].event_generate("<Button-1>")
+
+    assert opened == [(2026, 10), (2025, 1)]
+    assert cells[0].cget("cursor") == "hand2"

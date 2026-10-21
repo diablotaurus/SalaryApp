@@ -386,7 +386,7 @@ class MainView(BaseView):
         entry = self._year_cards[year]
         if expanded:
             if not entry["built"]:
-                self._create_months_section(entry["body"], entry["months"])
+                self._create_months_section(entry["body"], year, entry["months"])
                 self._bind_mouse_scroll_to_children(entry["body"])
                 entry["built"] = True
             entry["body"].pack(fill=tk.X)
@@ -399,12 +399,12 @@ class MainView(BaseView):
         if arrange:
             self._arrange_cards()
 
-    def _create_months_section(self, parent, months: List[Dict[str, Any]]) -> None:
+    def _create_months_section(self, parent, year: int, months: List[Dict[str, Any]]) -> None:
         """Подзаголовок и сетка месяцев развёрнутого года."""
         ttk.Label(parent, text=TEXT_MONTHS_SECTION, font=FONT_CARD_SECTION).pack(
             anchor=tk.W, pady=(10, 10)
         )
-        self._create_months_grid(parent, months)
+        self._create_months_grid(parent, year, months)
 
     def _create_card_header(self, card, year: int) -> ttk.Label:
         """
@@ -480,7 +480,7 @@ class MainView(BaseView):
             ttk.Label(stats_frame, text=months_text, font=FONT_CARD_STATS).grid(
                 row=0, column=2, sticky=tk.W)
 
-    def _create_months_grid(self, card, months: List[Dict[str, Any]]):
+    def _create_months_grid(self, card, year: int, months: List[Dict[str, Any]]):
         """Создать сетку из 12 ячеек месяцев (режим задаётся настройкой)."""
         months_grid = ttk.Frame(card)
         months_grid.pack(fill=tk.X, expand=False)
@@ -506,9 +506,13 @@ class MainView(BaseView):
             for j in range(cols_count):
                 idx = i * cols_count + j
                 if idx < 12:  # Всего 12 месяцев
-                    MonthCell(months_grid, months[idx], self._cell_style).grid(
-                        row=i, column=j, padx=2, pady=2, sticky="nsew"
-                    )
+                    # Клик по месяцу открывает его в окне ввода (и пустой — для заполнения)
+                    MonthCell(
+                        months_grid,
+                        months[idx],
+                        self._cell_style,
+                        on_click=lambda y=year, m=idx + 1: self._edit_month(y, m),
+                    ).grid(row=i, column=j, padx=2, pady=2, sticky="nsew")
 
     def _create_cell_style(self) -> MonthCellStyle:
         """Собрать шрифты и цвета ячеек месяцев из текущих настроек отображения."""
@@ -562,6 +566,10 @@ class MainView(BaseView):
     def _show_about(self):
         """Открыть модальное окно «О программе»."""
         AboutDialog(self.winfo_toplevel())
+
+    def _edit_month(self, year: int, month: int):
+        """Клик по ячейке месяца: открыть этот месяц в окне ввода."""
+        self.controller.edit_month(year, month)
 
     def _edit_year(self, year: int):
         """Обработка нажатия кнопки редактирования года"""

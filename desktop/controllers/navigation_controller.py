@@ -35,6 +35,9 @@ class NavigationController:
     def edit_year(self, year: int):
         self._main_tab.edit_year(year)
 
+    def edit_month(self, year: int, month: int):
+        self._main_tab.edit_month(year, month)
+
     def delete_year(self, year: int):
         return self._main_tab.delete_year(year)
 

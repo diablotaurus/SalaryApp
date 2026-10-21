@@ -6,7 +6,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message, TelegramObject
+from aiogram.types import CallbackQuery, Message, TelegramObject
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,7 @@ class BotAccessMiddleware(BaseMiddleware):
             return await handler(event, data)
 
         logger.warning("Отклонён доступ к Telegram-боту: user_id=%s", user_id)
-        if isinstance(event, Message):
+        if isinstance(event, (Message, CallbackQuery)):
+            # У нажатия кнопки answer() — всплывающее уведомление и снятие «часиков»
             await event.answer("Доступ к этому боту запрещён.")
         return None

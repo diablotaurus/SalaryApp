@@ -77,7 +77,10 @@ async def main() -> None:
 
     bot = await _create_bot(_load_bot_token())
     dispatcher = Dispatcher(storage=MemoryStorage())
-    dispatcher.message.outer_middleware(BotAccessMiddleware(allowed_user_ids))
+    # Доступ проверяется и для сообщений, и для нажатий inline-кнопок
+    access = BotAccessMiddleware(allowed_user_ids)
+    dispatcher.message.outer_middleware(access)
+    dispatcher.callback_query.outer_middleware(access)
     dispatcher.include_router(salary_router)
 
     logger.info("Бот запущен")

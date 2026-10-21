@@ -36,6 +36,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('year').addEventListener('change', loadSalaryForPeriod);
     document.getElementById('month').addEventListener('change', loadSalaryForPeriod);
 
+    // Клик по строке таблицы открывает этот месяц в форме для правки
+    document.getElementById('salariesTable').addEventListener('click', function(e) {
+        const row = e.target.closest('tr[data-year]');
+        if (row) {
+            openPeriodInForm(Number(row.dataset.year), Number(row.dataset.month));
+        }
+    });
+
     attachDateMask(document.getElementById('advance_date'));
     attachDateMask(document.getElementById('salary_date'));
 });
@@ -130,7 +138,8 @@ async function loadSalaries() {
                 const salaryDate = salary.salary_date || '-';
 
                 html += `
-                    <tr>
+                    <tr data-year="${salary.year}" data-month="${salary.month}" class="salary-row"
+                        title="Изменить ${monthName} ${salary.year}">
                         <td>${salary.year}</td>
                         <td>
                             <span class="badge bg-primary month-badge">${monthName}</span>
@@ -145,6 +154,7 @@ async function loadSalaries() {
             });
 
             tbody.innerHTML = html;
+            markSelectedRow();
         } else {
             tbody.innerHTML = `
                 <tr>
@@ -268,6 +278,47 @@ async function addSalary() {
     }
 }
 
+function openPeriodInForm(year, month) {
+    document.getElementById('year').value = year;
+    document.getElementById('month').value = month;
+    loadSalaryForPeriod();
+    // На узком экране форма выше таблицы — прокрутить к ней
+    document.getElementById('addSalaryForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('advance').focus({ preventScroll: true });
+}
+
+// Подсветить в таблице месяц, открытый в форме
+function markSelectedRow() {
+    const year = document.getElementById('year').value;
+    const month = document.getElementById('month').value;
+    document.querySelectorAll('#salariesTable tr[data-year]').forEach(row => {
+        row.classList.toggle('table-active', row.dataset.year === year && row.dataset.month === month);
+    });
+}
+
+// Кнопка и подсказка формы: новый месяц добавляется, заполненный — заменяется
+function setFormMode(existing, year, month) {
+    const button = document.getElementById('submitBtn');
+    const hint = document.getElementById('periodHint');
+    if (existing) {
+        const monthName = document.querySelector(`#month option[value="${month}"]`).textContent.toLowerCase();
+        button.innerHTML = '<i class="bi bi-pencil-square me-2"></i>Сохранить изменения';
+        hint.textContent = `За ${monthName} ${year} уже есть данные — сохранение заменит их.`;
+        hint.classList.remove('d-none');
+    } else {
+        button.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Добавить';
+        hint.textContent = '';
+        hint.classList.add('d-none');
+    }
+}
+
+function fillForm(data) {
+    document.getElementById('advance').value = data ? (data.advance ?? 0) : '';
+    document.getElementById('salary').value = data ? (data.salary ?? 0) : '';
+    document.getElementById('advance_date').value = data ? (data.advance_date ?? '') : '';
+    document.getElementById('salary_date').value = data ? (data.salary_date ?? '') : '';
+}
+
 async function loadSalaryForPeriod() {
     const year = parseInt(document.getElementById('year').value);
     const month = parseInt(document.getElementById('month').value);
@@ -276,25 +327,17 @@ async function loadSalaryForPeriod() {
         return;
     }
 
+    let data = null;
     try {
+        // 404 — за месяц ещё нет данных: форма для нового месяца
         const result = await makeRequest(`/api/salary/${year}/${month}`);
-        if (result.success && result.data) {
-            document.getElementById('advance').value = result.data.advance ?? 0;
-            document.getElementById('salary').value = result.data.salary ?? 0;
-            document.getElementById('advance_date').value = result.data.advance_date ?? '';
-            document.getElementById('salary_date').value = result.data.salary_date ?? '';
-        } else {
-            document.getElementById('advance').value = '';
-            document.getElementById('salary').value = '';
-            document.getElementById('advance_date').value = '';
-            document.getElementById('salary_date').value = '';
-        }
+        data = result.success && result.data ? result.data : null;
     } catch (error) {
-        document.getElementById('advance').value = '';
-        document.getElementById('salary').value = '';
-        document.getElementById('advance_date').value = '';
-        document.getElementById('salary_date').value = '';
+        data = null;
     }
+    fillForm(data);
+    setFormMode(Boolean(data), year, month);
+    markSelectedRow();
 }
 
 function refreshData() {
