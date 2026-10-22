@@ -25,6 +25,8 @@ from desktop.views.constants import DEFAULT_ADVANCE_COLOR, DEFAULT_SALARY_COLOR,
 from desktop.views.main.month_cell import MonthCell, MonthCellStyle
 from desktop.widgets.auto_hide_scrollbar import AutoHideScrollbar
 
+MONTH_CELL_PAD = 2  # отступ вокруг ячейки месяца в сетке
+
 
 class MainView(BaseView):
     """Класс главной вкладки с отображением истории зарплат по годам"""
@@ -500,6 +502,9 @@ class MainView(BaseView):
             row_minsize = 80
             col_minsize = 100
 
+        # Все строки — не ниже ячейки с данными (с отступами): строка из «Нет данных»
+        # иначе ниже, и свёрнутые годы под развёрнутыми встают «лесенкой»
+        row_minsize = max(row_minsize, self._cell_style.data_cell_height + 2 * MONTH_CELL_PAD)
         for i in range(rows_count):
             months_grid.grid_rowconfigure(i, weight=1, minsize=row_minsize)
         for j in range(cols_count):
@@ -516,7 +521,7 @@ class MainView(BaseView):
                         months[idx],
                         self._cell_style,
                         on_click=lambda y=year, m=idx + 1: self._edit_month(y, m),
-                    ).grid(row=i, column=j, padx=2, pady=2, sticky="nsew")
+                    ).grid(row=i, column=j, padx=MONTH_CELL_PAD, pady=MONTH_CELL_PAD, sticky="nsew")
 
     def _create_cell_style(self) -> MonthCellStyle:
         """Собрать шрифты и цвета ячеек месяцев из текущих настроек отображения."""

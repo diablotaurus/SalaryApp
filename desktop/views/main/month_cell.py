@@ -82,6 +82,15 @@ class MonthCellStyle:
         )
 
     @property
+    def data_cell_height(self) -> int:
+        """
+        Высота ячейки с авансом и зарплатой. По ней выравниваются все строки
+        сетки месяцев: иначе строка из «Нет данных» ниже, развёрнутые годы
+        разной высоты, и свёрнутые карточки под ними встают «лесенкой».
+        """
+        return _cell_height(self, self.payments_area_height)
+
+    @property
     def payments_area_height(self) -> int:
         """
         Фиксированная высота зоны выплат (2 строки), чтобы «Итого» не прыгало.
@@ -95,6 +104,20 @@ class MonthCellStyle:
 def _text_height(font: tkfont.Font) -> int:
     """Высота строки так, как её занимает tk.Label с этим шрифтом."""
     return int(font.metrics("linespace")) + 2 * LABEL_PAD
+
+
+def _title_bottom(style: "MonthCellStyle") -> int:
+    return BORDER + TITLE_PADY[0] + _text_height(style.title_font) + TITLE_PADY[1]
+
+
+def _cell_height(style: "MonthCellStyle", payments_height: int) -> int:
+    """Высота ячейки с данными: название, зона выплат, «Итого»."""
+    return (
+        _title_bottom(style)
+        + payments_height + PAYMENTS_PADY_BOTTOM
+        + TOTAL_PADY[0] + _text_height(style.total_font) + TOTAL_PADY[1]
+        + BORDER
+    )
 
 
 class MonthCell(tk.Canvas):
@@ -194,18 +217,13 @@ class MonthCell(tk.Canvas):
         return max(widths) + 2 * BORDER
 
     def _title_bottom(self) -> int:
-        return BORDER + TITLE_PADY[0] + _text_height(self._style.title_font) + TITLE_PADY[1]
+        return _title_bottom(self._style)
 
     def _natural_height(self) -> int:
         style = self._style
         if not self._has_data:
             return self._title_bottom() + _text_height(style.no_data_font) + BORDER
-        return (
-            self._title_bottom()
-            + self._payments_height() + PAYMENTS_PADY_BOTTOM
-            + TOTAL_PADY[0] + _text_height(style.total_font) + TOTAL_PADY[1]
-            + BORDER
-        )
+        return _cell_height(style, self._payments_height())
 
     # --- Отрисовка -------------------------------------------------------
 

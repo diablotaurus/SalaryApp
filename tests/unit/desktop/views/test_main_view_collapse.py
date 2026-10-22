@@ -201,3 +201,23 @@ def test_click_on_month_cell_opens_that_month(root, layout):
 
     assert opened == [(2026, 10), (2025, 1)]
     assert cells[0].cget("cursor") == "hand2"
+
+
+@pytest.mark.parametrize("layout", ["standard", "quarterly"])
+def test_expanded_years_have_equal_height_even_with_empty_months(root, layout):
+    # У текущего года последние месяцы пустые («Нет данных»): раньше его карточка
+    # была ниже, и свёрнутые годы под развёрнутыми вставали «лесенкой»
+    partial = _year(2026)
+    partial["months"] = [
+        month if index < 9 else {**month, "has_data": False, "advance": 0.0, "salary": 0.0, "total": 0.0}
+        for index, month in enumerate(partial["months"])
+    ]
+    view = _view(root, layout)
+    view.display_years([partial, _year(2025)], default_expanded_year=2026)
+    view._toggle_year(2025)
+    root.update_idletasks()
+
+    heights = {year: view._year_cards[year]["card"].winfo_reqheight() for year in (2025, 2026)}
+    assert heights[2025] == heights[2026]
+    empty, filled = _cell_list(view._year_cards[2026]["body"])[11], _cell_list(view._year_cards[2025]["body"])[11]
+    assert empty.winfo_reqheight() <= filled.winfo_reqheight()  # пустая ячейка растягивается сеткой
