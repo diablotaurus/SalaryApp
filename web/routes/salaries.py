@@ -97,6 +97,58 @@ def get_statistics():
     return jsonify(payload), status
 
 
+@salaries_bp.route("/api/extras", methods=["GET"])
+def list_extras():
+    """Доп. выплаты месяца: ?year=2026&month=8."""
+    try:
+        payload, status = finalize_response(
+            SalaryAPI.get_extra_payments(request.args.get("year", type=int), request.args.get("month", type=int)),
+            is_production=config.app.is_production,
+        )
+    except Exception as exc:  # fallback at route boundary
+        payload, status = payload_from_exception(exc, is_production=config.app.is_production)
+    return jsonify(payload), status
+
+
+@salaries_bp.route("/api/extras", methods=["POST"])
+def add_extra():
+    """Добавить доп. выплату (JSON: year, month, kind, amount, paid_date, comment)."""
+    try:
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            payload, status = finalize_response(
+                {"success": False, "message": "JSON body is required", "error": "required"},
+                is_production=config.app.is_production,
+            )
+            return jsonify(payload), status
+        payload, status = finalize_response(
+            SalaryAPI.add_extra_payment(
+                data.get("year"),
+                data.get("month"),
+                data.get("kind"),
+                data.get("amount"),
+                data.get("paid_date") or None,
+                data.get("comment") or None,
+            ),
+            is_production=config.app.is_production,
+        )
+    except Exception as exc:  # fallback at route boundary
+        payload, status = payload_from_exception(exc, is_production=config.app.is_production)
+    return jsonify(payload), status
+
+
+@salaries_bp.route("/api/extras/<int:payment_id>", methods=["DELETE"])
+def delete_extra(payment_id: int):
+    try:
+        payload, status = finalize_response(
+            SalaryAPI.delete_extra_payment(payment_id),
+            is_production=config.app.is_production,
+        )
+    except Exception as exc:  # fallback at route boundary
+        payload, status = payload_from_exception(exc, is_production=config.app.is_production)
+    return jsonify(payload), status
+
+
 @salaries_bp.route("/api/forecast", methods=["GET"])
 def forecast():
     """Прогноз итога текущего года по МСК (data=null — прогноза нет)."""

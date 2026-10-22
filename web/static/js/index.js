@@ -46,6 +46,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     attachDateMask(document.getElementById('advance_date'));
     attachDateMask(document.getElementById('salary_date'));
+    attachDateMask(document.getElementById('extraDate'));
+
+    document.getElementById('addExtraBtn').addEventListener('click', addExtra);
+    document.getElementById('extrasList').addEventListener('click', function(e) {
+        const button = e.target.closest('[data-extra-id]');
+        if (button) {
+            deleteExtra(Number(button.dataset.extraId), button.dataset.extraLabel);
+        }
+    });
 });
 
 async function loadStatistics() {
@@ -72,6 +81,7 @@ async function loadStatistics() {
                     <div class="col-6 mb-3">
                         <h6 class="text-muted">Среднемесячно</h6>
                         <h4 class="text-success">${formatCurrency(stats.average_monthly)}</h4>
+                        ${stats.total_extras > 0 ? `<small class="text-muted">регулярный ${formatCurrency(stats.regular_average_monthly)}</small>` : ''}
                     </div>
                     <div class="col-6">
                         <h6 class="text-muted">Всего записей</h6>
@@ -115,7 +125,7 @@ async function loadSalaries() {
     const tbody = document.getElementById('salariesTable');
     tbody.innerHTML = `
         <tr>
-            <td colspan="7" class="text-center">
+            <td colspan="8" class="text-center">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Загрузка...</span>
                 </div>
@@ -140,7 +150,7 @@ async function loadSalaries() {
             if (salaries.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center text-muted">
+                        <td colspan="8" class="text-center text-muted">
                             <i class="bi bi-info-circle me-2"></i>
                             Нет данных для отображения
                         </td>
@@ -152,7 +162,9 @@ async function loadSalaries() {
             let html = '';
             salaries.forEach(salary => {
                 const monthName = salary.month_name || salary.month;
-                const total = (salary.advance || 0) + (salary.salary || 0);
+                // Итог месяца — с доп. выплатами (отпускные, премии…)
+                const total = salary.total ?? ((salary.advance || 0) + (salary.salary || 0));
+                const extras = salary.extras_total || 0;
                 const advanceDate = salary.advance_date || '-';
                 const salaryDate = salary.salary_date || '-';
 
@@ -168,6 +180,7 @@ async function loadSalaries() {
                         <td>${advanceDate}</td>
                         <td>${formatCurrency(salary.salary)}</td>
                         <td>${salaryDate}</td>
+                        <td>${extras ? formatCurrency(extras) : '-'}</td>
                         <td><strong>${formatCurrency(total)}</strong></td>
                     </tr>
                 `;
@@ -178,7 +191,7 @@ async function loadSalaries() {
         } else {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center text-danger">
+                    <td colspan="8" class="text-center text-danger">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         ${result.message}
                     </td>
@@ -188,7 +201,7 @@ async function loadSalaries() {
     } catch (error) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-danger">
+                <td colspan="8" class="text-center text-danger">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     Ошибка сети: ${error.message}
                 </td>
@@ -361,6 +374,88 @@ async function loadSalaryForPeriod() {
     fillForm(data);
     setFormMode(Boolean(data), year, month);
     markSelectedRow();
+    loadExtras(year, month);
+}
+
+// --- Доп. выплаты месяца (отпускные, премии…): сохраняются сразу, без «Сохранить» ---
+
+function formPeriod() {
+    return {
+        year: parseInt(document.getElementById('year').value),
+        month: parseInt(document.getElementById('month').value)
+    };
+}
+
+async function loadExtras(year, month) {
+    const list = document.getElementById('extrasList');
+    let items = [];
+    try {
+        const result = await makeRequest(`/api/extras?year=${year}&month=${month}`);
+        items = result.success ? (result.data || []) : [];
+    } catch (error) {
+        items = [];
+    }
+    list.innerHTML = items.map(item => {
+        const label = `${item.kind_name} ${formatCurrency(item.amount)}`;
+        const details = [item.paid_date, item.comment].filter(Boolean).map(escapeHtml).join(' · ');
+        return `
+            <li class="list-group-item d-flex justify-content-between align-items-center py-1">
+                <span><strong>${escapeHtml(item.kind_name)}</strong> ${formatCurrency(item.amount)}
+                    ${details ? `<small class="text-muted ms-1">${details}</small>` : ''}</span>
+                <button type="button" class="btn btn-sm btn-link text-danger p-0"
+                        data-extra-id="${item.id}" data-extra-label="${escapeHtml(label)}" title="Удалить">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </li>`;
+    }).join('');
+}
+
+async function addExtra() {
+    const { year, month } = formPeriod();
+    const amount = parseFloat(document.getElementById('extraAmount').value);
+    const paidDate = document.getElementById('extraDate').value.trim();
+    if (!(amount > 0)) {
+        showStatus('Укажите сумму доп. выплаты больше нуля', 'error');
+        return;
+    }
+    if (!isValidDateString(paidDate)) {
+        showStatus('Неверный формат даты доп. выплаты. Ожидается ДД.ММ.ГГГГ', 'error');
+        return;
+    }
+    try {
+        const result = await makeRequest('/api/extras', {
+            method: 'POST',
+            body: JSON.stringify({
+                year, month,
+                kind: document.getElementById('extraKind').value,
+                amount,
+                paid_date: paidDate,
+                comment: document.getElementById('extraComment').value.trim()
+            })
+        });
+        if (result.success) {
+            ['extraAmount', 'extraDate', 'extraComment'].forEach(id => { document.getElementById(id).value = ''; });
+            showStatus('Доп. выплата сохранена', 'success');
+            loadExtras(year, month);
+            loadSalaries();
+            loadStatistics();
+        }
+    } catch (error) {
+        showStatus('Ошибка: ' + error.message, 'error');
+    }
+}
+
+async function deleteExtra(id, label) {
+    if (!confirm(`Удалить доп. выплату «${label}»?`)) return;
+    try {
+        await makeRequest(`/api/extras/${id}`, { method: 'DELETE' });
+        const { year, month } = formPeriod();
+        loadExtras(year, month);
+        loadSalaries();
+        loadStatistics();
+    } catch (error) {
+        showStatus('Ошибка: ' + error.message, 'error');
+    }
 }
 
 function refreshData() {

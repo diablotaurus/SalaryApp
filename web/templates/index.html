@@ -83,6 +83,37 @@
                         <input type="text" class="form-control" id="note" maxlength="200"
                                placeholder="Необязательно: отпуск, повышение…">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Доп. выплаты месяца
+                            <small class="text-muted">(сохраняются сразу)</small></label>
+                        <ul class="list-group mb-2" id="extrasList"></ul>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <select class="form-select form-select-sm" id="extraKind">
+                                    {% for kind, name in extra_kinds.items() %}
+                                    <option value="{{ kind }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <input type="number" class="form-control form-control-sm" id="extraAmount"
+                                       min="0.01" step="0.01" placeholder="Сумма">
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control form-control-sm" id="extraDate"
+                                       placeholder="Дата ДД.ММ.ГГГГ" inputmode="numeric" maxlength="10">
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control form-control-sm" id="extraComment"
+                                       maxlength="200" placeholder="Комментарий">
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-sm btn-outline-primary w-100" id="addExtraBtn">
+                                    <i class="bi bi-plus-circle me-1"></i>Добавить доп. выплату
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <button type="submit" id="submitBtn" class="btn btn-primary w-100">
                         <i class="bi bi-plus-circle me-2"></i>Добавить
                     </button>
@@ -118,12 +149,13 @@
                                 <th>Дата аванса</th>
                                 <th>Зарплата</th>
                                 <th>Дата зарплаты</th>
+                                <th title="Отпускные, премии, больничные и прочее">Доп.</th>
                                 <th>Всего</th>
                             </tr>
                         </thead>
                         <tbody id="salariesTable">
                             <tr>
-                                <td colspan="6" class="text-center">
+                                <td colspan="8" class="text-center">
                                     <div class="spinner-border text-primary" role="status">
                                         <span class="visually-hidden">Загрузка...</span>
                                     </div>

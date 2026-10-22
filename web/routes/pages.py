@@ -3,12 +3,15 @@ Page routes.
 """
 from flask import Blueprint, render_template
 
+from core.models.extra_payment import EXTRA_KINDS
+
 pages_bp = Blueprint("pages", __name__)
 
 
 @pages_bp.route("/")
 def index():
-    return render_template("index.html")
+    # Виды доп. выплат — для списка в форме месяца
+    return render_template("index.html", extra_kinds=EXTRA_KINDS)
 
 
 @pages_bp.route("/reports")

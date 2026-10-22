@@ -13,7 +13,8 @@ const COLORS = {
     salary: '#36A2EB',
     total: '#4BC0C0',
     yearly: '#4A90E2',
-    growth: '#FF8C42'
+    growth: '#FF8C42',
+    extras: '#9966FF'
 };
 
 const FILL = {
@@ -149,14 +150,17 @@ function buildMonthlyChartData(dto) {
     const advances = dto.items.map(i => i.advance || 0);
     const salaries = dto.items.map(i => i.salary || 0);
     const totals = dto.items.map(i => i.total || 0);
-    return {
-        labels,
-        datasets: [
-            lineDataset('Аванс', advances, COLORS.advance),
-            lineDataset('Зарплата', salaries, COLORS.salary),
-            lineDataset('Итого', totals, COLORS.total)
-        ]
-    };
+    const extras = dto.items.map(i => i.extras || 0);
+    const datasets = [
+        lineDataset('Аванс', advances, COLORS.advance),
+        lineDataset('Зарплата', salaries, COLORS.salary),
+        lineDataset('Итого', totals, COLORS.total)
+    ];
+    if (extras.some(value => value > 0)) {
+        // Доп. выплаты — только если были в году (иначе график прежний)
+        datasets.splice(2, 0, lineDataset('Доп. выплаты', extras, COLORS.extras));
+    }
+    return { labels, datasets };
 }
 
 function buildYearlyChartData(dto) {

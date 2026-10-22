@@ -81,3 +81,36 @@ def test_web_form_saves_and_clears_note(temp_db):
 
 def test_index_page_has_note_field():
     assert 'id="note"' in _client().get("/").get_data(as_text=True)
+
+
+def test_extras_endpoints_add_list_delete(temp_db):
+    client = _client()
+    client.post("/api/salary", json={"year": 2026, "month": 8, "advance": 100, "salary": 200})
+
+    added = client.post("/api/extras", json={
+        "year": 2026, "month": 8, "kind": "vacation", "amount": 35000, "paid_date": "10.08.2026", "comment": "",
+    })
+    assert added.status_code == 200
+    payment_id = added.get_json()["data"]["id"]
+
+    listed = client.get("/api/extras?year=2026&month=8").get_json()["data"]
+    assert [(p["kind_name"], p["amount"]) for p in listed] == [("Отпускные", 35000.0)]
+    assert client.get("/api/salary/2026/8").get_json()["data"]["total"] == 35300.0
+
+    assert client.delete(f"/api/extras/{payment_id}").status_code == 200
+    assert client.delete(f"/api/extras/{payment_id}").status_code == 404
+    assert client.get("/api/extras?year=2026&month=8").get_json()["data"] == []
+
+
+def test_invalid_extra_is_400(temp_db):
+    response = _client().post("/api/extras", json={"year": 2026, "month": 8, "kind": "bonus", "amount": 0})
+
+    assert response.status_code == 400
+    assert "больше нуля" in response.get_json()["message"]
+
+
+def test_index_lists_extra_kinds():
+    html = _client().get("/").get_data(as_text=True)
+
+    assert 'id="extrasList"' in html
+    assert '<option value="vacation">Отпускные</option>' in html
