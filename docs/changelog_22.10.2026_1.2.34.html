@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.34 - ровные строки месяцев на «Главной»</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.34</h1>
+            <p class="subtitle">Ровная «Главная»: строки месяцев одной высоты, свёрнутые годы без «лесенки»</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 22 октября 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.33 current</p>
+            <p><strong>Новая версия:</strong> 1.2.34 current; скрипт деплоя записывает в production 1.2.34 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> desktop (главная вкладка), тесты. Web, Telegram-бот, база данных и зависимости не менялись.</p>
+            <p><strong>Основание:</strong> замечание пользователя по скриншоту «Главной»: свёрнутые годы под развёрнутыми стояли на разной высоте. Исправление пользователь проверил вручную.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_22.10.2026_1.2.33.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.34 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>Без «лесенки»</strong>Свёрнутые годы на одном уровне</div>
+            <div class="summary-item summary-data"><strong>Одна высота</strong>У всех строк месяцев</div>
+            <div class="summary-item summary-tests"><strong>439 тестов</strong>+2 к версии 1.2.33</div>
+        </div>
+
+        <section class="section" id="fix">
+            <h2>1. Что было и что изменено</h2>
+            <table>
+                <thead><tr><th>Было</th><th>Причина</th><th>Стало</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>При двух развёрнутых годах свёрнутые карточки под ними стояли на разной высоте («лесенкой»): например, 2024 выше, 2023 ниже.</td>
+                        <td>Ячейки «Нет данных» ниже ячеек с суммами. У текущего года последние месяцы ещё пустые, поэтому его развёрнутая карточка была короче примерно на 34 px.</td>
+                        <td>Все строки сетки месяцев — не ниже ячейки с авансом и зарплатой. Развёрнутые годы одной высоты, свёрнутые под ними стоят ровно; «Нет данных» — по центру ячейки.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span>Минимальная высота строки сетки месяцев равна высоте ячейки с данными (<code>MonthCellStyle.data_cell_height</code>) с учётом отступов. Работает в обеих раскладках истории — «стандартной» и «по кварталам».</li>
+                <li><span class="change-type refactored">REFACTORED</span>Расчёт высоты ячейки вынесен в общую функцию <code>_cell_height</code>: им пользуются и сама ячейка, и сетка, так что высоты не разойдутся.</li>
+                <li>Вид заполненных ячеек не изменился. Строка с доп. выплатами по-прежнему делает свою ячейку выше — только у таких месяцев.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>2. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>439 тестов успешно (в 1.2.33 было 437).</td></tr>
+                    <tr><td>Новый тест</td><td>Развёрнутые годы одинаковой высоты, когда у одного из них пустые последние месяцы, — в обеих раскладках; тест падает на прежнем коде.</td></tr>
+                    <tr><td>Внешний вид</td><td>Скриншот «Главной» на копии production-БД в раскладке пользователя: 2026 и 2025 развёрнуты, 2024 и 2023 свёрнуты и стоят на одном уровне.</td></tr>
+                    <tr><td>Ruff / UTF-8</td><td>Правила CI пройдены; файлы в UTF-8 без BOM.</td></tr>
+                    <tr><td>Production</td><td>Правка задеплоена до релиза; пользователь проверил её вручную.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>desktop/app.py</code>, <code>bot/main.py</code> не менялись.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="files">
+            <h2>3. Карта изменённых файлов</h2>
+            <div class="file">desktop/views/main/month_cell.py; desktop/views/main/main_view.py; tests/unit/desktop/views/test_main_view_collapse.py</div>
+            <p><strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>4. Обновление production</h2>
+            <ol>
+                <li>Закрыть desktop-приложение production.</li>
+                <li>Запустить деплой; перезапуск web и бота не нужен — они не менялись.</li>
+                <li>Открыть desktop и проверить «Главную» с двумя развёрнутыми годами.</li>
+            </ol>
+            <pre><code>python scripts/deploy_to_prod.py</code></pre>
+            <p class="note"><strong>Совместимость:</strong> база данных и зависимости не менялись; возврат к 1.2.33 — обычным деплоем предыдущего кода.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.34 · 22.10.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>
