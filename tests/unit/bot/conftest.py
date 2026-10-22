@@ -17,3 +17,8 @@ def no_month_comparison(monkeypatch):
         "bot.handlers.reports.SalaryAPI.compare_year_to_date",
         lambda year: {"success": True, "data": None},
     )
+    # И для прогноза года
+    monkeypatch.setattr(
+        "bot.handlers.reports.SalaryAPI.forecast_year",
+        lambda year: {"success": True, "data": None},
+    )

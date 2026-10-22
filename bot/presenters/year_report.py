@@ -51,8 +51,17 @@ def _year_to_date_line(ytd: Optional[dict]) -> Optional[str]:
     return f"{period}: {_percent(ytd['percent'])} к тому же периоду {ytd['year'] - 1}"
 
 
-def format_year_overview(years_data: list[dict], year: int, ytd: Optional[dict] = None) -> str:
-    """Короткая сводка года: итог, среднее и его изменение, год к году, последние месяцы."""
+def format_forecast(forecast: Optional[dict]) -> Optional[str]:
+    """«Прогноз на год: ≈ 1 290 000» — только для текущего года."""
+    if not forecast:
+        return None
+    return f"Прогноз на год: ≈ {MoneyUtils.format_rounded(forecast['forecast'])}"
+
+
+def format_year_overview(
+    years_data: list[dict], year: int, ytd: Optional[dict] = None, forecast: Optional[dict] = None
+) -> str:
+    """Короткая сводка года: итог, среднее и его изменение, год к году, прогноз, последние месяцы."""
     years = _by_year(years_data)
     if year not in years:
         return f"📅 {year} год\n\nДанных пока нет."
@@ -73,6 +82,9 @@ def format_year_overview(years_data: list[dict], year: int, ytd: Optional[dict] 
     if ytd_line:
         lines.append(ytd_line)
     lines.append(f"Месяцев с данными: {summary['months_with_data']}")
+    forecast_line = format_forecast(forecast)
+    if forecast_line:
+        lines.append(forecast_line)
     filled = [month for month in years[year]["months"] if month.get("has_data")]
     if filled:
         lines += ["", "Последние месяцы:"]

@@ -10,6 +10,7 @@ from flask import Blueprint, jsonify, request, send_file
 
 from api.salary_api import SalaryAPI
 from core.config.settings import config
+from core.utils.dates import DateUtils
 from web.routes.response import finalize_response, payload_from_exception
 
 salaries_bp = Blueprint("salaries_api", __name__)
@@ -88,6 +89,20 @@ def get_statistics():
         year = request.args.get("year", type=int)
         payload, status = finalize_response(
             SalaryAPI.get_statistics(year),
+            is_production=config.app.is_production,
+        )
+    except Exception as exc:  # fallback at route boundary
+        payload, status = payload_from_exception(exc, is_production=config.app.is_production)
+    return jsonify(payload), status
+
+
+@salaries_bp.route("/api/forecast", methods=["GET"])
+def forecast():
+    """Прогноз итога текущего года по МСК (data=null — прогноза нет)."""
+    try:
+        year, _ = DateUtils.get_current_period()
+        payload, status = finalize_response(
+            SalaryAPI.forecast_year(year),
             is_production=config.app.is_production,
         )
     except Exception as exc:  # fallback at route boundary

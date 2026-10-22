@@ -50,13 +50,23 @@ def _year_to_date(year: int) -> Optional[dict]:
     return response.get("data") if response.get("success") else None
 
 
+def _forecast(year: int) -> Optional[dict]:
+    """Прогноз итога года — только для текущего (необязательная строка сводки)."""
+    response = SalaryAPI.forecast_year(year)
+    return response.get("data") if response.get("success") else None
+
+
+def _overview(data: list[dict], year: int) -> str:
+    return format_year_overview(data, year, _year_to_date(year), _forecast(year))
+
+
 async def _send_year(message: types.Message, year: int) -> None:
     data = _years_data()
     if data is None:
         await message.answer(DATA_ERROR)
         return
     await message.answer(
-        format_year_overview(data, year, _year_to_date(year)),
+        _overview(data, year),
         reply_markup=menu.year_overview_keyboard(year, _years(data)),
     )
 
@@ -103,11 +113,7 @@ async def show_year(callback: types.CallbackQuery):
     if data is None:
         await callback.answer(DATA_ERROR)
         return
-    await _show(
-        callback,
-        format_year_overview(data, year, _year_to_date(year)),
-        menu.year_overview_keyboard(year, _years(data)),
-    )
+    await _show(callback, _overview(data, year), menu.year_overview_keyboard(year, _years(data)))
 
 
 @router.callback_query(F.data.startswith(menu.YEAR_DETAILS_PREFIX))

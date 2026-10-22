@@ -203,3 +203,10 @@ def test_annual_report_waits_until_due(annual_api):
 
     assert asyncio.run(send_annual_report(bot, (1,))) == 0
     assert bot.photos == [] and annual_api["marked"] == []
+
+
+def test_overview_shows_forecast_line():
+    text = format_year_overview(DATA, 2026, None, {"year": 2026, "forecast": 1289512.4})
+
+    assert "Прогноз на год: ≈ 1 290 000" in text
+    assert "Прогноз" not in format_year_overview(DATA, 2026)

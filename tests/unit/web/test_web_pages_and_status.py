@@ -49,3 +49,20 @@ def test_filled_month_is_returned(temp_db):
 
     assert response.status_code == 200
     assert response.get_json()["data"]["total"] == 3
+
+
+def test_forecast_endpoint(monkeypatch):
+    called = {}
+
+    def fake_forecast(year):
+        called["year"] = year
+        return {"success": True, "data": {"year": year, "forecast": 1289512.4}}
+
+    monkeypatch.setattr("api.salary_api.SalaryAPI.forecast_year", fake_forecast)
+    monkeypatch.setattr("web.routes.salaries.DateUtils.get_current_period", lambda: (2026, 10))
+
+    response = _client().get("/api/forecast")
+
+    assert response.status_code == 200
+    assert called["year"] == 2026
+    assert response.get_json()["data"]["forecast"] == 1289512.4

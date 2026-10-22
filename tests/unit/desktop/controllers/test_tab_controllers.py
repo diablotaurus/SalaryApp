@@ -106,6 +106,7 @@ def test_report_tab_controller_refresh_reports(monkeypatch):
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_growth_rate_dto", lambda: {"success": True, "data": []})
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_average_by_month_dto", lambda: {"success": True, "data": []})
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_statistics", lambda year=None: {"success": True, "data": {}})
+    monkeypatch.setattr("api.salary_api.SalaryAPI.forecast_year", lambda year: {"success": True, "data": None})
     monkeypatch.setattr(
         "api.settings_api.SettingsAPI.get_settings",
         lambda: {
@@ -213,6 +214,7 @@ def _patch_report_api(monkeypatch, monthly_calls):
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_growth_rate_dto", lambda: {"success": True, "data": []})
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_average_by_month_dto", lambda: {"success": True, "data": []})
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_statistics", lambda year=None: {"success": True, "data": {}})
+    monkeypatch.setattr("api.salary_api.SalaryAPI.forecast_year", lambda year: {"success": True, "data": None})
     monkeypatch.setattr("api.salary_api.SalaryAPI.get_salaries_by_year", lambda year: {"success": True, "data": []})
     monkeypatch.setattr(
         "api.settings_api.SettingsAPI.get_settings",

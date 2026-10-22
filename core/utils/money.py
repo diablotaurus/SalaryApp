@@ -67,6 +67,16 @@ class MoneyUtils:
         return f"{amount:,.2f}".replace(",", " ").replace(".", ",")
 
     @staticmethod
+    def format_rounded(amount: Union[float, int], step: int = 1000) -> str:
+        """
+        Округлённая сумма для оценок и прогнозов: «1 290 000».
+
+        Копейки и точность до рубля у прогноза — ложная точность.
+        """
+        rounded = round(float(amount) / step) * step
+        return f"{rounded:,.0f}".replace(",", " ")
+
+    @staticmethod
     def format_kpi_amount(amount: Union[float, int], currency: str = None) -> str:
         """
         Форматировать сумму для KPI (ключевых показателей).

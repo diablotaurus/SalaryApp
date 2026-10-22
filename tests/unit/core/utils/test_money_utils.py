@@ -53,3 +53,9 @@ def test_parse_amount_error_names_the_field():
 
 def test_format_amount_plain():
     assert MoneyUtils.format_amount_plain(12345.6) == "12 345,60"
+
+
+def test_format_rounded_for_estimates():
+    assert MoneyUtils.format_rounded(1289512.4) == "1 290 000"
+    assert MoneyUtils.format_rounded(499.0) == "0"
+    assert MoneyUtils.format_rounded(12345, step=100) == "12 300"

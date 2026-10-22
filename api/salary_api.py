@@ -115,6 +115,10 @@ class SalaryAPI:
         return analytics.compare_year_to_date(year)
 
     @staticmethod
+    def forecast_year(year: int) -> dict:
+        return analytics.forecast_year(year)
+
+    @staticmethod
     def get_records() -> dict:
         return analytics.get_records()
 

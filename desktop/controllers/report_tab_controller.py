@@ -6,6 +6,7 @@ from api.salary_api import SalaryAPI
 from api.settings_api import SettingsAPI
 from core.config.settings import config
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
+from core.utils.dates import DateUtils
 from desktop.controllers.render_cache import RenderCache
 
 
@@ -107,6 +108,12 @@ class ReportTabController:
                 best_month = best_response.get("data", {}).get("best_month")
                 best_year = best_response.get("data", {}).get("best_year")
 
+        # Прогноз — для «всех годов» и для текущего года
+        forecast = None
+        current_year, _ = DateUtils.get_current_period()
+        if selected_year in (None, current_year):
+            forecast = self._response_data(SalaryAPI.forecast_year(current_year))
+
         show_best_year = show_best_year_always or not selected_year
         return {
             "summary": summary,
@@ -115,6 +122,7 @@ class ReportTabController:
             "selected_year": selected_year,
             "show_best_year_always": show_best_year,
             "currency": currency,
+            "forecast": forecast,
         }
 
     def on_year_selected(self, _year: int):

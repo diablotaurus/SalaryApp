@@ -81,14 +81,33 @@ async function loadStatistics() {
                         <h6 class="text-muted">${yearsLabel}</h6>
                         <h5>${yearsValue}</h5>
                     </div>
+                    <div class="col-12 mt-2 d-none" id="forecastLine"></div>
                 </div>
             `;
             document.getElementById('statistics').innerHTML = html;
+            loadForecast(isAllYears);
         } else {
             showStatus('Ошибка загрузки статистики: ' + result.message, 'error');
         }
     } catch (error) {
         showStatus('Ошибка загрузки статистики: ' + error.message, 'error');
+    }
+}
+
+// Прогноз итога текущего года (по МСК) — для «всех годов» и текущего года
+async function loadForecast(isAllYears) {
+    const { year } = moscowYearMonth();
+    if (!isAllYears && Number(currentYearFilter) !== year) return;
+    try {
+        const result = await makeRequest('/api/forecast');
+        const line = document.getElementById('forecastLine');
+        if (result.success && result.data && line) {
+            const rounded = Math.round(result.data.forecast / 1000) * 1000;
+            line.innerHTML = `<small class="text-muted">Прогноз на ${result.data.year}: ≈ ${rounded.toLocaleString('ru-RU')} ₽</small>`;
+            line.classList.remove('d-none');
+        }
+    } catch (error) {
+        // прогноз необязателен — без него статистика остаётся как есть
     }
 }
 

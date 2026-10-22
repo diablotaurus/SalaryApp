@@ -85,6 +85,40 @@ class StatisticsService:
         return calculate_average_monthly(records, now)
     
     @staticmethod
+    def forecast_year(year: int, now: datetime | None = None) -> Optional[Dict[str, Any]]:
+        """
+        Прогноз итога текущего года: уже полученное + среднее × оставшиеся месяцы.
+
+        Полученное — месяцы года с выплаченной зарплатой; среднее — по выплаченным
+        месяцам из RECENT_MONTHS месяцев до текущего (правило is_payment_complete).
+        Месяц, где пока только аванс, считается оставшимся. None — для не текущего
+        года (по МСК) или если для среднего меньше MIN_MONTHS_TO_COMPARE месяцев.
+        """
+        now = now or moscow_now()
+        if year != now.year:
+            return None
+        records = SalaryRepository.get_all()
+        current_index = now.year * 12 + now.month
+        recent = [
+            record for record in records
+            if 0 < current_index - (record.year * 12 + record.month) <= RECENT_MONTHS
+            and is_payment_complete(record, now)
+        ]
+        if len(recent) < MIN_MONTHS_TO_COMPARE:
+            return None
+        paid_this_year = [record for record in records if record.year == year and is_payment_complete(record, now)]
+        average = sum(record.total for record in recent) / len(recent)
+        earned = sum(record.total for record in paid_this_year)
+        remaining = 12 - len(paid_this_year)
+        return {
+            "year": year,
+            "earned": earned,
+            "average": average,
+            "remaining_months": remaining,
+            "forecast": earned + average * remaining,
+        }
+
+    @staticmethod
     def compare_year_to_date(year: int, now: datetime | None = None) -> Optional[Dict[str, Any]]:
         """
         Год к году за одинаковый период: январь — последний выплаченный месяц года.

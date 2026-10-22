@@ -97,6 +97,7 @@ TEXT_KPI_BEST_MONTH = "Лучший месяц"
 TEXT_KPI_BEST_YEAR = "Лучший год"
 TEXT_KPI_RECORDS = "Месяцев с данными"
 TEXT_KPI_PERIOD = "Период"
+TEXT_KPI_FORECAST = "Прогноз на {year}"
 # Названия вкладок
 TAB_MONTHLY_DATA = "Помесячные данные"
 TAB_YEARLY_COMPARISON = "Сравнение по годам"

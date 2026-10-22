@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 from core.utils.money import MoneyUtils
 from core.utils.dates import DateUtils
+from desktop.views.constants import TEXT_KPI_FORECAST
 
 
 class ChartPresenter:
@@ -171,6 +172,7 @@ class ChartPresenter:
         selected_year: Any,
         show_best_year_always: bool,
         currency: str,
+        forecast: Dict[str, Any] | None = None,
     ) -> Dict[str, Any]:
         total_amount = 0.0
         avg_monthly = 0.0
@@ -214,5 +216,7 @@ class ChartPresenter:
             "best_month": best_month_value,
             "best_year": best_year_value,
             "period": period_value,
-            "show_best_year": bool(show_best_year_always)
+            "show_best_year": bool(show_best_year_always),
+            "forecast_title": TEXT_KPI_FORECAST.format(year=forecast["year"]) if forecast else "",
+            "forecast": f"≈ {MoneyUtils.format_rounded(forecast['forecast'])} {currency}" if forecast else "",
         }

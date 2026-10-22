@@ -109,3 +109,34 @@ def test_annual_report_only_once_in_january_evening_and_when_enabled(temp_db):
 
 def test_no_annual_report_without_data(temp_db):
     assert AnnualReportService.year_to_report(_msk_evening(25)) is None
+
+
+# --- Прогноз года ----------------------------------------------------------------------------
+
+
+def test_forecast_adds_average_for_remaining_months(temp_db):
+    for month in range(1, 13):
+        _add(2025, month, 50000.0, 50000.0)  # 100 000 в месяц
+    for month in range(1, 10):
+        _add(2026, month, 55000.0, 55000.0)  # 110 000 в месяц, январь–сентябрь
+    _add(2026, 10, 55000.0, 0.0)  # октябрь — пока только аванс: считается оставшимся
+
+    result = StatisticsService.forecast_year(2026, now=datetime(2026, 10, 22, tzinfo=timezone.utc))
+
+    # среднее за 12 месяцев (окт 2025 – сен 2026): 3 × 100 000 + 9 × 110 000
+    average = (3 * 100000.0 + 9 * 110000.0) / 12
+    assert result["earned"] == 9 * 110000.0
+    assert result["remaining_months"] == 3
+    assert result["average"] == pytest.approx(average)
+    assert result["forecast"] == pytest.approx(9 * 110000.0 + 3 * average)
+
+
+def test_forecast_only_for_current_year_with_enough_history(temp_db):
+    now = datetime(2026, 10, 22, tzinfo=timezone.utc)
+    _add(2026, 8, 1.0, 1.0)
+    _add(2026, 9, 1.0, 1.0, "14.10.2026")
+
+    assert StatisticsService.forecast_year(2026, now) is None  # всего 2 выплаченных месяца
+    _add(2026, 7, 1.0, 1.0)
+    assert StatisticsService.forecast_year(2026, now) is not None
+    assert StatisticsService.forecast_year(2025, now) is None  # прошлый год — уже не прогноз

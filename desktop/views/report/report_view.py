@@ -176,6 +176,7 @@ class ReportView(BaseView):
         - Средний доход
         - Лучший месяц
         - Лучший год
+        - Прогноз на текущий год (только для текущего года или «все годы»)
         """
         self.kpi_labels = {}  # Словарь для меток со значениями
         self.kpi_title_labels = {}  # Словарь для меток с заголовками
@@ -191,6 +192,7 @@ class ReportView(BaseView):
             ("avg", TEXT_KPI_AVG, 1, 0),
             ("best_month", TEXT_KPI_BEST_MONTH, 1, 1),
             ("best_year", TEXT_KPI_BEST_YEAR, 1, 2),
+            ("forecast", "", 0, 3),
         ]
 
         # Создание ячеек KPI
@@ -211,7 +213,7 @@ class ReportView(BaseView):
             self.kpi_labels[key] = value_label
 
         # Настройка растягивания колонок и строк
-        for col in range(3):
+        for col in range(4):
             kpi_frame.grid_columnconfigure(col, weight=1)
         for row in range(2):
             kpi_frame.grid_rowconfigure(row, weight=1)
@@ -720,6 +722,7 @@ class ReportView(BaseView):
         selected_year=None,
         show_best_year_always=True,
         currency="руб.",
+        forecast=None,
     ):
         """
         Обновить панель быстрых итогов (KPI).
@@ -730,6 +733,7 @@ class ReportView(BaseView):
             best_year: Данные о лучшем годе
             selected_year: Выбранный год (или None для всех)
             show_best_year_always: Показывать ли лучший год всегда
+            forecast: Прогноз итога текущего года или None
         """
         if not hasattr(self, "kpi_labels"):
             return
@@ -742,6 +746,7 @@ class ReportView(BaseView):
             selected_year,
             show_best_year_always,
             currency,
+            forecast,
         )
 
         # Обновление значений KPI
@@ -762,3 +767,7 @@ class ReportView(BaseView):
         # Остальные KPI
         self.kpi_labels["records"].config(text=model["records"])
         self.kpi_labels["period"].config(text=model["period"])
+
+        # Прогноз — только когда он есть (текущий год), иначе ячейка пустая
+        self.kpi_title_labels["forecast"].config(text=model["forecast_title"])
+        self.kpi_labels["forecast"].config(text=model["forecast"])
