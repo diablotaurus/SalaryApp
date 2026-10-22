@@ -66,3 +66,18 @@ def test_forecast_endpoint(monkeypatch):
     assert response.status_code == 200
     assert called["year"] == 2026
     assert response.get_json()["data"]["forecast"] == 1289512.4
+
+
+def test_web_form_saves_and_clears_note(temp_db):
+    client = _client()
+    base = {"year": 2026, "month": 10, "advance": 1, "salary": 2}
+
+    client.post("/api/salary", json={**base, "note": "отпуск"})
+    assert client.get("/api/salary/2026/10").get_json()["data"]["note"] == "отпуск"
+
+    client.post("/api/salary", json={**base, "note": ""})  # поле формы стёрли
+    assert client.get("/api/salary/2026/10").get_json()["data"]["note"] == ""
+
+
+def test_index_page_has_note_field():
+    assert 'id="note"' in _client().get("/").get_data(as_text=True)

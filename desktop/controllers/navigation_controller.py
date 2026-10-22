@@ -70,6 +70,7 @@ class NavigationController:
         salary: float,
         advance_date: Optional[str] = None,
         salary_date: Optional[str] = None,
+        note: Optional[str] = None,
     ) -> bool:
         return self._main_tab.save_salary_data(
             year,
@@ -78,6 +79,7 @@ class NavigationController:
             salary,
             advance_date=advance_date,
             salary_date=salary_date,
+            note=note,
         )
 
     def get_salary_data(self, year: int, month: int) -> Optional[Dict[str, Any]]:

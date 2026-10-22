@@ -44,6 +44,7 @@ def add_salary():
                 data.get("salary", 0),
                 data.get("advance_date"),
                 data.get("salary_date"),
+                data.get("note"),
             ),
             is_production=config.app.is_production,
         )

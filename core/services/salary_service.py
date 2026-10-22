@@ -24,7 +24,8 @@ class SalaryService:
         advance: float,
         salary: float,
         advance_date: Optional[str] = None,
-        salary_date: Optional[str] = None
+        salary_date: Optional[str] = None,
+        note: Optional[str] = None,
     ) -> Salary:
         """
         Добавить или обновить запись о зарплате.
@@ -53,6 +54,9 @@ class SalaryService:
             - пустая строка — дата очищена в форме и стирается
               (формы desktop и web подставляют сохранённые даты в поля);
             - ДД.ММ.ГГГГ — дата заменяется.
+
+        Заметка к месяцу — по тем же правилам: None оставляет сохранённую,
+        пустая строка стирает, текст заменяет.
         """
         year, month = SalaryService._validate_period(year, month)
         advance = normalize_amount(advance, "сумма аванса")
@@ -65,12 +69,48 @@ class SalaryService:
             salary=salary,
             advance_date=SalaryService.parse_payment_date(advance_date, "даты аванса"),
             salary_date=SalaryService.parse_payment_date(salary_date, "даты зарплаты"),
+            note=SalaryService.normalize_note(note),
         )
         return SalaryRepository.upsert(
             new_salary,
             keep_advance_date=advance_date is None,
             keep_salary_date=salary_date is None,
+            keep_note=note is None,
         )
+
+    NOTE_MAX_LENGTH = 200
+
+    @staticmethod
+    def normalize_note(note: Optional[str]) -> Optional[str]:
+        """
+        Заметка в одну строку без лишних пробелов; пустая — None.
+
+        Raises:
+            ValueError: Длиннее NOTE_MAX_LENGTH символов
+        """
+        if note is None:
+            return None
+        text = " ".join(str(note).split())
+        if len(text) > SalaryService.NOTE_MAX_LENGTH:
+            raise ValueError(
+                f"Заметка длиннее {SalaryService.NOTE_MAX_LENGTH} символов ({len(text)})"
+            )
+        return text or None
+
+    @staticmethod
+    def set_note(year: int, month: int, note: Optional[str]) -> Salary:
+        """
+        Заменить только заметку месяца (пустая строка или None — удалить).
+
+        Raises:
+            ValueError: Месяц ещё не внесён или заметка слишком длинная
+        """
+        year, month = SalaryService._validate_period(year, month)
+        if not SalaryRepository.set_note(year, month, SalaryService.normalize_note(note)):
+            raise ValueError(
+                f"За {DateUtils.get_month_name(month).lower()} {year} ещё нет данных — сначала внесите месяц"
+            )
+        return SalaryRepository.get_by_year_month(year, month)
 
     @staticmethod
     def _validate_period(year: Any, month: Any) -> tuple[int, int]:
@@ -273,6 +313,7 @@ class SalaryService:
                     'total': salary.total,
                     'advance_date': salary_dict.get('advance_date', ''),
                     'salary_date': salary_dict.get('salary_date', ''),
+                    'note': salary_dict.get('note', ''),
                     'has_data': True
                 })
             else:
@@ -285,6 +326,7 @@ class SalaryService:
                     'total': 0.0,
                     'advance_date': '',
                     'salary_date': '',
+                    'note': '',
                     'has_data': False
                 })
         

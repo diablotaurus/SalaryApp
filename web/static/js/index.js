@@ -162,6 +162,7 @@ async function loadSalaries() {
                         <td>${salary.year}</td>
                         <td>
                             <span class="badge bg-primary month-badge">${monthName}</span>
+                            ${salary.note ? `<i class="bi bi-sticky ms-1 text-muted" title="${escapeHtml(salary.note)}"></i>` : ''}
                         </td>
                         <td>${formatCurrency(salary.advance)}</td>
                         <td>${advanceDate}</td>
@@ -259,7 +260,9 @@ async function addSalary() {
         advance: parseFloat(document.getElementById('advance').value) || 0,
         salary: parseFloat(document.getElementById('salary').value) || 0,
         advance_date: document.getElementById('advance_date').value || '',
-        salary_date: document.getElementById('salary_date').value || ''
+        salary_date: document.getElementById('salary_date').value || '',
+        // Поле подставлено из базы: пустое — заметку стёрли
+        note: document.getElementById('note').value.trim()
     };
 
     if (formData.advance < 0 || formData.salary < 0) {
@@ -336,6 +339,7 @@ function fillForm(data) {
     document.getElementById('salary').value = data ? (data.salary ?? 0) : '';
     document.getElementById('advance_date').value = data ? (data.advance_date ?? '') : '';
     document.getElementById('salary_date').value = data ? (data.salary_date ?? '') : '';
+    document.getElementById('note').value = data ? (data.note ?? '') : '';
 }
 
 async function loadSalaryForPeriod() {

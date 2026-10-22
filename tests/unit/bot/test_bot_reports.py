@@ -198,7 +198,7 @@ def test_year_commands_routing():
     assert _route_message("/2024") is cmd_year_stats
 
 
-def test_saved_month_shows_comparison_and_menu(monkeypatch):
+def test_saved_month_shows_comparison_and_note_button(monkeypatch):
     from bot.handlers.salary import process_salary_date
     from bot_fakes import FakeState
 
@@ -219,4 +219,4 @@ def test_saved_month_shows_comparison_and_menu(monkeypatch):
 
     text, kwargs = msg.answers[-1]
     assert text.endswith("📈 На 5 % выше среднего за последние 12 месяцев (110 000,00).")
-    assert kwargs["reply_markup"].keyboard[0][1].text == menu.MENU_YEAR
+    assert buttons(kwargs["reply_markup"]) == [("📝 Заметка к месяцу", "note:2026:10")]

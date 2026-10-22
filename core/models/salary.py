@@ -23,6 +23,7 @@ class Salary:
     advance_date: Optional[datetime] = None  # Дата получения аванса (календарная дата)
     salary_date: Optional[datetime] = None  # Дата получения зарплаты (календарная дата)
     created_at: datetime = None  # Момент создания записи, timezone-aware UTC
+    note: Optional[str] = None  # Заметка к месяцу («отпуск», «повышение»)
 
     def __post_init__(self):
         """Инициализация после создания экземпляра"""
@@ -50,7 +51,8 @@ class Salary:
             "total": self.total,
             "month_name": self.month_name,
             "advance_date": self._format_date(self.advance_date),
-            "salary_date": self._format_date(self.salary_date)
+            "salary_date": self._format_date(self.salary_date),
+            "note": self.note or "",
         }
 
     @staticmethod

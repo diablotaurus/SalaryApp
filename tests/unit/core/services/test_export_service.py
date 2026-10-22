@@ -90,7 +90,7 @@ def test_export_to_excel_writes_three_sheets_with_data(temp_db, tmp_path: Path):
     data = workbook["Данные"]
     assert [cell.value for cell in data[1]] == [
         "Год", "Месяц", "Аванс", "Дата аванса", "Зарплата",
-        "Дата зарплаты", "Итого", "Дата создания (МСК)",
+        "Дата зарплаты", "Итого", "Дата создания (МСК)", "Заметка",
     ]
     assert [cell.value for cell in data[2]][:7] == [
         2025, 9, 11111.0, "2025-09-10", 22222.0, "2025-09-25", 33333.0,

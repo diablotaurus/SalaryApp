@@ -6,7 +6,7 @@ from desktop.widgets.dialogs import BaseDialog
 from desktop.views.constants import (
     DIALOG_SALARY_TITLE, TEXT_SELECT_YEAR, TEXT_SELECT_MONTH,
     TEXT_ADVANCE, TEXT_SALARY, TEXT_RUBLES,
-    TEXT_ADVANCE_DATE, TEXT_SALARY_DATE, TEXT_DATE_HINT,
+    TEXT_ADVANCE_DATE, TEXT_SALARY_DATE, TEXT_DATE_HINT, TEXT_NOTE, TEXT_NOTE_HINT,
     TEXT_SAVE, TEXT_CLEAR, TEXT_CLOSE,
     DIALOG_TITLE_ERROR, ERROR_NO_YEAR_MONTH, ERROR_NEGATIVE_AMOUNTS,
     ERROR_INVALID_FORMAT, ERROR_SAVE_FAILED,
@@ -62,6 +62,7 @@ class SalaryDialog(BaseDialog):
         self.salary_var = tk.StringVar(value=ZERO_AMOUNT_TEXT)
         self.advance_date_var = tk.StringVar(value="")
         self.salary_date_var = tk.StringVar(value="")
+        self.note_var = tk.StringVar(value="")
         
         # Список лет (от 2020 до текущего по МСК + 1)
         current_year, _ = DateUtils.get_current_period()
@@ -181,6 +182,19 @@ class SalaryDialog(BaseDialog):
         )
         self.salary_date_entry.grid(row=row, column=1, sticky=tk.W, pady=(0, 10))
 
+        # Заметка к месяцу (необязательно) — своя сетка: широкое поле не должно
+        # раздвигать колонку «руб.» у сумм
+        note_frame = ttk.Frame(main_frame)
+        note_frame.pack(fill=tk.X)
+        ttk.Label(note_frame, text=TEXT_NOTE, width=label_width, anchor=tk.W).grid(
+            row=0, column=0, sticky=tk.W, padx=(0, PADX_DEFAULT), pady=(0, 2)
+        )
+        self.note_entry = ttk.Entry(note_frame, textvariable=self.note_var, width=ENTRY_WIDTH * 2)
+        self.note_entry.grid(row=0, column=1, sticky=tk.W, pady=(0, 2))
+        ttk.Label(
+            note_frame, text=TEXT_NOTE_HINT, font=('Segoe UI', 8), foreground="#666666"
+        ).grid(row=1, column=1, sticky=tk.W, pady=(0, 10))
+
         # Подсказка по формату дат
         ttk.Label(
             main_frame,
@@ -255,12 +269,14 @@ class SalaryDialog(BaseDialog):
                 )
                 self.advance_date_var.set(data.get('advance_date') or "")
                 self.salary_date_var.set(data.get('salary_date') or "")
+                self.note_var.set(data.get('note') or "")
             else:
                 # Очищаем поля если данных нет
                 self.advance_var.set(ZERO_AMOUNT_TEXT)
                 self.salary_var.set(ZERO_AMOUNT_TEXT)
                 self.advance_date_var.set("")
                 self.salary_date_var.set("")
+                self.note_var.set("")
             self.clear_pending = False
     
     def _save_data(self):
@@ -273,6 +289,8 @@ class SalaryDialog(BaseDialog):
             salary = MoneyUtils.parse_amount(self.salary_var.get(), "зарплата")
             advance_date = self.advance_date_var.get().strip()
             salary_date = self.salary_date_var.get().strip()
+            # Поле подставлено из базы: пустое — заметку стёрли
+            note = self.note_var.get().strip()
             
             # Валидация
             if not year or not month:
@@ -318,7 +336,7 @@ class SalaryDialog(BaseDialog):
             self.clear_pending = False
             
             # Сохраняем через контроллер
-            if self.controller.save_salary_data(year, month, advance, salary, advance_date, salary_date):
+            if self.controller.save_salary_data(year, month, advance, salary, advance_date, salary_date, note):
                 # Спрашиваем, продолжить ли ввод
                 if messagebox.askyesno(
                     SUCCESS_TITLE,
@@ -335,6 +353,7 @@ class SalaryDialog(BaseDialog):
                     self.salary_var.set(ZERO_AMOUNT_TEXT)
                     self.advance_date_var.set("")
                     self.salary_date_var.set("")
+                    self.note_var.set("")
                     self._load_existing_data()
                     
                     # Фокус на поле аванса
@@ -356,6 +375,7 @@ class SalaryDialog(BaseDialog):
         self.salary_var.set(ZERO_AMOUNT_TEXT)
         self.advance_date_var.set("")
         self.salary_date_var.set("")
+        self.note_var.set("")
 
         # Фокус на поле аванса
         self.advance_entry.focus_set()

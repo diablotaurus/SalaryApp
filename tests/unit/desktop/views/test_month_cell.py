@@ -81,3 +81,13 @@ def test_payment_rows_do_not_overlap_total(root, data_size):
     total_top = bbox_of("Итого:")[1]
     assert salary_bottom <= total_top
     assert bbox_of("Итого:")[3] <= cell.winfo_height()
+
+
+def test_note_mark_only_when_month_has_note(root):
+    plain = MonthCell(root, _month(), _style(root))
+    noted = MonthCell(root, {**_month(), "note": "отпуск 2 недели"}, _style(root))
+    _render(root, plain)
+    _render(root, noted)
+
+    assert "✎" not in _texts(plain)
+    assert "✎" in _texts(noted)

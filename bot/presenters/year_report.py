@@ -107,6 +107,7 @@ def format_year_details(years_data: list[dict], year: int) -> str:
             f"  Аванс: {_amount(month['advance'])}  •  {month.get('advance_date') or '-'}",
             f"  Зарплата: {_amount(month['salary'])}  •  {month.get('salary_date') or '-'}",
             f"  Итого: {_amount(month['total'])}",
+            *([f"  📝 {month['note']}"] if month.get("note") else []),
         ]))
     blocks.append(f"Итого за год: {_amount(years[year]['summary']['total'])}")
     return "\n\n".join(blocks)

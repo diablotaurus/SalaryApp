@@ -45,6 +45,13 @@ function validateYear(year, minYear = 2000, maxYear = 2100) {
     return !!year && year >= minYear && year <= maxYear;
 }
 
+// Текст пользователя (заметки, комментарии) в HTML — только экранированным
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    })[character]);
+}
+
 function formatMoney(amount) {
     return parseFloat(amount || 0).toLocaleString('ru-RU', {
         minimumFractionDigits: 2,

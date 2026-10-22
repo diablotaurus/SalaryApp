@@ -12,3 +12,9 @@ class SalaryStates(StatesGroup):
     waiting_for_advance_date = State()
     waiting_for_salary = State()
     waiting_for_salary_date = State()
+
+
+class NoteStates(StatesGroup):
+    """Заметка к уже внесённому месяцу (кнопка после сохранения)."""
+
+    waiting_for_text = State()

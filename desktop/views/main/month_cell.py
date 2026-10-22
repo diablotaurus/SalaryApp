@@ -17,11 +17,15 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from core.utils.money import MoneyUtils
 from desktop.views.constants import FONT_MONTH_NO_DATA
+from desktop.widgets.tooltip import Tooltip
 
 FONT_FAMILY = "Segoe UI"
 TEXT_NO_DATA = "Нет данных"
 NO_DATA_COLOR = "gray"
 BORDER_COLOR = "black"
+NOTE_MARK = "✎"           # значок заметки в правом верхнем углу ячейки
+NOTE_MARK_COLOR = "#6c757d"
+NOTE_MARK_PAD = 4
 
 BORDER = 1                # Рамка ячейки (relief="solid", borderwidth=1)
 LABEL_PAD = 3             # Поле tk.Label вокруг текста: padx/pady=1 + borderwidth=2
@@ -113,6 +117,7 @@ class MonthCell(tk.Canvas):
         self._total_text = (
             f"Итого: {MoneyUtils.format_amount(month_info['total'], '')}" if self._has_data else ""
         )
+        self._note = str(month_info.get("note") or "")
 
         super().__init__(
             parent,
@@ -125,7 +130,9 @@ class MonthCell(tk.Canvas):
         )
         self.bind("<Configure>", self._redraw)
         if on_click:
-            self.bind("<Button-1>", lambda _event: on_click())
+            self.bind("<Button-1>", lambda _event: on_click(), add="+")
+        if self._note:
+            Tooltip(self, self._note)
 
     @staticmethod
     def _build_rows(month_info: Dict[str, Any], style: MonthCellStyle) -> List[PaymentRow]:
@@ -195,6 +202,11 @@ class MonthCell(tk.Canvas):
         self.create_rectangle(0, 0, width - 1, height - 1, outline=BORDER_COLOR)
 
         self._draw_centered(self._title, style.title_font, BORDER + TITLE_PADY[0], width)
+        if self._note:
+            self.create_text(
+                width - BORDER - NOTE_MARK_PAD, BORDER + TITLE_PADY[0] + LABEL_PAD,
+                text=NOTE_MARK, font=style.data_font, fill=NOTE_MARK_COLOR, anchor="ne",
+            )
 
         top = self._title_bottom()
         if not self._has_data:

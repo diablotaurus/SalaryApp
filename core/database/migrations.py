@@ -93,6 +93,7 @@ class MigrationManager:
             ("003_add_settings", self._migration_003_add_settings),
             ("004_add_payment_dates", self._migration_004_add_payment_dates),
             ("005_salary_integrity", self._migration_005_salary_integrity),
+            ("006_month_notes", self._migration_006_month_notes),
         ]
         
         # Применение каждой миграции
@@ -302,6 +303,19 @@ class MigrationManager:
             """
         )
     
+    def _migration_006_month_notes(self):
+        """
+        Заметка к месяцу («отпуск 2 недели», «повышение с 1-го»).
+
+        Только добавление колонки (NULL у существующих записей): данные не
+        переписываются, поэтому копия перед миграцией не нужна. Прежние версии
+        приложения колонку не читают и не мешают ей (INSERT перечисляет колонки).
+        """
+        cursor = self.conn.execute("PRAGMA table_info(salaries)")
+        if "note" not in {row["name"] for row in cursor.fetchall()}:
+            self.conn.execute("ALTER TABLE salaries ADD COLUMN note TEXT")
+
+
 def apply_all_migrations():
     """
     Основная функция для применения всех миграций при запуске приложения.

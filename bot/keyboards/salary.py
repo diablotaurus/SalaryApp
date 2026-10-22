@@ -18,6 +18,7 @@ DATE_SKIP = "date:skip"
 KEEP_PREFIX = "keep:"      # keep:advance — оставить сохранённую сумму
 REMIND_PREFIX = "remind:"  # remind:salary:2026:9 — открыть ввод по напоминанию
 SNOOZE_PREFIX = "snooze:"  # snooze:salary:2026:9 — больше не напоминать
+NOTE_PREFIX = "note:"      # note:2026:10 — заметка к месяцу
 
 # Винительный падеж для кнопки «Внести …»
 PAYMENT_ACCUSATIVE = {"advance": "аванс", "salary": "зарплату"}
@@ -92,6 +93,23 @@ def parse_payment(data: str) -> tuple[str, int, int]:
     if kind not in PAYMENT_ACCUSATIVE:
         raise ValueError(f"Неизвестный вид выплаты: {kind}")
     return kind, int(year), int(month)
+
+
+def note_keyboard(year: int, month: int) -> InlineKeyboardMarkup:
+    """Под сообщением о сохранении: добавить или изменить заметку к месяцу."""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📝 Заметка к месяцу", callback_data=f"{NOTE_PREFIX}{year}:{month}")],
+    ])
+
+
+def parse_note(data: str) -> tuple[int, int]:
+    """«note:2026:10» -> (2026, 10)."""
+    year, month = data[len(NOTE_PREFIX):].split(":")
+    return int(year), int(month)
+
+
+def cancel_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[_cancel_row()])
 
 
 def parse_period(data: str) -> tuple[int, int]:

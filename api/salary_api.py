@@ -19,6 +19,7 @@ class SalaryAPI:
         salary: float,
         advance_date: str | None = None,
         salary_date: str | None = None,
+        note: str | None = None,
     ) -> dict:
         # Kept in facade for backward compatibility with tests that patch
         # api.salary_api.SalaryService.add_salary.
@@ -30,6 +31,7 @@ class SalaryAPI:
                 salary,
                 advance_date=advance_date,
                 salary_date=salary_date,
+                note=note,
             )
             return {
                 "success": True,
@@ -45,6 +47,18 @@ class SalaryAPI:
                 "error": str(app_exc),
                 "message": app_exc.user_message,
             }
+
+    @staticmethod
+    def set_note(year: int, month: int, note: str | None) -> dict:
+        """Заменить только заметку месяца (пустая — удалить)."""
+        try:
+            salary_obj = SalaryService.set_note(year, month, note)
+            return {"success": True, "data": salary_obj.to_dict(), "message": "Заметка сохранена"}
+        except ValueError as exc:
+            return {"success": False, "error": str(exc), "message": str(exc)}
+        except RECOVERABLE_EXCEPTIONS as exc:
+            app_exc = to_app_error(exc, "Ошибка при сохранении заметки")
+            return {"success": False, "error": str(app_exc), "message": app_exc.user_message}
 
     @staticmethod
     def validate_payment_date(value: str, field_label: str = "даты") -> dict:

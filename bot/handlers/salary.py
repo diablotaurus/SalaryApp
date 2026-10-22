@@ -12,7 +12,7 @@ from api.salary_api import SalaryAPI
 from bot.keyboards import menu
 from bot.keyboards import salary as keyboards
 from bot.presenters.year_report import format_month_comparison
-from bot.states import SalaryStates
+from bot.states import NoteStates, SalaryStates
 from core.utils.clock import moscow_today
 from core.utils.dates import DateUtils
 from core.utils.money import MoneyUtils
@@ -59,7 +59,8 @@ def _format_existing_month_warning(data: dict) -> str:
         f"⚠️ За {data.get('month_name', '')} {data.get('year', '')} уже есть данные:\n"
         f"  Аванс: {advance}  •  {data.get('advance_date') or '-'}\n"
         f"  Зарплата: {salary}  •  {data.get('salary_date') or '-'}\n"
-        "Новые значения заменят их, пропуск даты («-») оставит прежнюю.\n"
+        + (f"  📝 {data['note']}\n" if data.get("note") else "")
+        + "Новые значения заменят их, пропуск даты («-») оставит прежнюю.\n"
         "Отмена — /cancel"
     )
 
@@ -97,7 +98,7 @@ async def _cancel(message: types.Message, state: FSMContext) -> None:
 # Отмена регистрируется раньше обработчиков шагов ввода:
 # иначе «/cancel» был бы принят шагом как ответ (например, как сумма).
 @router.message(Command("cancel"))
-@router.message(StateFilter(SalaryStates), _is_cancel_text)
+@router.message(StateFilter(SalaryStates, NoteStates), _is_cancel_text)
 async def cmd_cancel(message: types.Message, state: FSMContext):
     await _cancel(message, state)
 
@@ -274,7 +275,7 @@ async def _save_month(message: types.Message, state: FSMContext, salary_date: Op
         line = format_month_comparison(comparison.get("data")) if comparison.get("success") else None
         if line:
             text += f"\n\n{line}"
-        await message.answer(text, reply_markup=menu.main_menu())
+        await message.answer(text, reply_markup=keyboards.note_keyboard(data["year"], data["month"]))
     else:
         await message.answer(f"❌ Ошибка: {response.get('message')}")
 
@@ -289,9 +290,29 @@ async def process_salary_date(message: types.Message, state: FSMContext):
     await _save_month(message, state, salary_date)
 
 
+NOTE_DELETE_WORDS = {"-", "удалить", "нет"}
+
+
+@router.message(NoteStates.waiting_for_text, F.text)
+async def process_note(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    text = message.text.strip()
+    note = "" if text.lower() in NOTE_DELETE_WORDS else text
+    response = SalaryAPI.set_note(data["year"], data["month"], note)
+    if not response.get("success"):
+        # Например, длиннее 200 символов — переспросить, не сбрасывая ввод
+        await message.answer(f"❌ {response.get('message')}\nНапишите заметку короче или «-», чтобы удалить:")
+        return
+    await state.clear()
+    saved = response["data"]
+    period = f"{saved['month_name']} {saved['year']}"
+    reply = f"📝 Заметка к месяцу «{period}»: {saved['note']}" if saved["note"] else f"Заметка к месяцу «{period}» удалена."
+    await message.answer(reply, reply_markup=menu.main_menu())
+
+
 # Регистрируется последним среди сообщений: стикер, фото или голосовое на любом
 # шаге ввода раньше приводили к ошибке в обработчике (у таких сообщений нет текста).
-@router.message(StateFilter(SalaryStates))
+@router.message(StateFilter(SalaryStates, NoteStates))
 async def process_non_text(message: types.Message):
     await message.answer("Пришлите ответ текстом или /cancel для отмены.")
 
@@ -337,6 +358,22 @@ async def snooze_reminder(callback: types.CallbackQuery):
         await _confirm_choice(callback, "Больше не напомню об этой выплате")
     else:
         await callback.answer(response.get("message") or "Не удалось отключить напоминание")
+
+
+@router.callback_query(F.data.startswith(keyboards.NOTE_PREFIX))
+async def ask_note(callback: types.CallbackQuery, state: FSMContext):
+    """Кнопка «📝 Заметка к месяцу» после сохранения: следующий ответ — текст заметки."""
+    year, month = keyboards.parse_note(callback.data)
+    await _confirm_choice(callback, "Заметка")
+    await state.clear()
+    await state.set_state(NoteStates.waiting_for_text)
+    await state.update_data(year=year, month=month)
+    period = f"{DateUtils.get_month_name(month)} {year}"
+    await callback.message.answer(
+        f"Напишите заметку к месяцу «{period}» (до 200 символов), например «отпуск 2 недели».\n"
+        "«-» — удалить заметку.",
+        reply_markup=keyboards.cancel_keyboard(),
+    )
 
 
 @router.callback_query(SalaryStates.waiting_for_advance, F.data == f"{keyboards.KEEP_PREFIX}advance")

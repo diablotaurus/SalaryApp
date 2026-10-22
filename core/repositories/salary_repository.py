@@ -51,7 +51,7 @@ class SalaryRepository:
             """
             UPDATE salaries
             SET year = ?, month = ?, advance = ?, salary = ?,
-                advance_date = ?, salary_date = ?
+                advance_date = ?, salary_date = ?, note = ?
             WHERE id = ?
             RETURNING *
             """,
@@ -62,6 +62,7 @@ class SalaryRepository:
                 to_cents(salary.salary),
                 advance_date,
                 salary_date,
+                salary.note,
                 salary.id,
             ),
         )
@@ -75,6 +76,7 @@ class SalaryRepository:
         *,
         keep_advance_date: bool = True,
         keep_salary_date: bool = True,
+        keep_note: bool = True,
     ) -> Salary:
         """
         Атомарно вставить или обновить запись за год/месяц.
@@ -84,6 +86,7 @@ class SalaryRepository:
             keep_advance_date: При обновлении и пустой дате аванса оставить
                 сохранённую дату (иначе пустая дата стирает её)
             keep_salary_date: То же для даты зарплаты
+            keep_note: То же для заметки к месяцу
         """
         conn = DatabaseConnection.get_connection()
         advance_date = (
@@ -95,9 +98,9 @@ class SalaryRepository:
         cursor = conn.execute(
             """
             INSERT INTO salaries (
-                year, month, advance, salary, advance_date, salary_date
+                year, month, advance, salary, advance_date, salary_date, note
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(year, month) DO UPDATE SET
                 advance = excluded.advance,
                 salary = excluded.salary,
@@ -106,7 +109,10 @@ class SalaryRepository:
                     ELSE excluded.advance_date END,
                 salary_date = CASE WHEN ?
                     THEN COALESCE(excluded.salary_date, salaries.salary_date)
-                    ELSE excluded.salary_date END
+                    ELSE excluded.salary_date END,
+                note = CASE WHEN ?
+                    THEN COALESCE(excluded.note, salaries.note)
+                    ELSE excluded.note END
             RETURNING *
             """,
             (
@@ -116,8 +122,10 @@ class SalaryRepository:
                 to_cents(salary.salary),
                 advance_date,
                 salary_date,
+                salary.note,
                 keep_advance_date,
                 keep_salary_date,
+                keep_note,
             ),
         )
         row = cursor.fetchone()
@@ -243,6 +251,17 @@ class SalaryRepository:
         return year_summary
 
     @staticmethod
+    def set_note(year: int, month: int, note: Optional[str]) -> bool:
+        """Заменить только заметку месяца; False — записи за месяц нет."""
+        conn = DatabaseConnection.get_connection()
+        cursor = conn.execute(
+            "UPDATE salaries SET note = ? WHERE year = ? AND month = ?",
+            (note, year, month),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+    @staticmethod
     def delete_by_year_month(year: int, month: int) -> bool:
         """
         Удалить запись по году и месяцу.
@@ -342,5 +361,6 @@ class SalaryRepository:
             salary_date=datetime.fromisoformat(row['salary_date']) if has_salary_date and row['salary_date'] else None,
             # created_at пишет SQLite (CURRENT_TIMESTAMP) — это UTC без метки пояса;
             # может быть NULL в старых записях
-            created_at=parse_utc(row['created_at']) if row['created_at'] else None
+            created_at=parse_utc(row['created_at']) if row['created_at'] else None,
+            note=row['note'] if 'note' in row.keys() else None,
         )

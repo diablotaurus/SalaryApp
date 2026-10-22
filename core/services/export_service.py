@@ -60,7 +60,7 @@ class ExportService:
             # Заголовки столбцов на русском языке
             writer.writerow([
                 'Год', 'Месяц', 'Аванс', 'Дата аванса',
-                'Зарплата', 'Дата зарплаты', 'Итого', CREATED_AT_HEADER
+                'Зарплата', 'Дата зарплаты', 'Итого', CREATED_AT_HEADER, 'Заметка'
             ])
             
             # Запись данных построчно
@@ -74,6 +74,7 @@ class ExportService:
                     salary_record.salary_date.date().isoformat() if salary_record.salary_date else "",
                     ExportService._csv_amount(salary_record.total),
                     ExportService._created_at_text(salary_record.created_at),
+                    salary_record.note or "",
                 ])
 
         return str(filepath)
@@ -185,6 +186,7 @@ class ExportService:
                 item.salary_date.date().isoformat() if item.salary_date else None,
                 round(item.total, 2),
                 ExportService._created_at_text(item.created_at) or None,
+                item.note or None,
             ]
             for item in salaries
         ]
@@ -219,7 +221,7 @@ class ExportService:
         ExportService._write_sheet(
             workbook, 'Данные',
             ['Год', 'Месяц', 'Аванс', 'Дата аванса', 'Зарплата',
-             'Дата зарплаты', 'Итого', CREATED_AT_HEADER],
+             'Дата зарплаты', 'Итого', CREATED_AT_HEADER, 'Заметка'],
             data_rows,
         )
         ExportService._write_sheet(

@@ -132,12 +132,6 @@ async function deleteBackup(filename) {
     if (result.success) await listBackups();
 }
 
-function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, character => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-    })[character]);
-}
-
 async function exportData(format) {
     try {
         window.open(`/api/export?format=${format}`, '_blank');

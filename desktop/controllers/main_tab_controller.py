@@ -135,6 +135,7 @@ class MainTabController:
         salary: float,
         advance_date: Optional[str] = None,
         salary_date: Optional[str] = None,
+        note: Optional[str] = None,
     ) -> bool:
         try:
             response = SalaryAPI.add_salary(
@@ -144,6 +145,7 @@ class MainTabController:
                 salary,
                 advance_date=advance_date,
                 salary_date=salary_date,
+                note=note,
             )
             if response["success"]:
                 self.navigation.refresh_history()
