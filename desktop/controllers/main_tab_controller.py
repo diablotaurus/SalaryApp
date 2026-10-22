@@ -165,6 +165,44 @@ class MainTabController:
         except RECOVERABLE_EXCEPTIONS:
             return None
 
+    def get_extra_payments(self, year: int, month: int) -> List[Dict[str, Any]]:
+        try:
+            response = SalaryAPI.get_extra_payments(year, month)
+            return response["data"] if response["success"] else []
+        except RECOVERABLE_EXCEPTIONS:
+            return []
+
+    def add_extra_payment(
+        self,
+        year: int,
+        month: int,
+        kind: str,
+        amount: float,
+        paid_date: Optional[str] = None,
+        comment: Optional[str] = None,
+    ) -> bool:
+        """Сохранить доп. выплату сразу (без кнопки «Сохранить» месяца)."""
+        try:
+            response = SalaryAPI.add_extra_payment(year, month, kind, amount, paid_date, comment)
+        except RECOVERABLE_EXCEPTIONS as exc:
+            response = {"success": False, "message": to_app_error(exc, "Не удалось сохранить доп. выплату").user_message}
+        if response["success"]:
+            self.navigation.refresh_history()
+            return True
+        self.navigation.show_message("Ошибка", response["message"], "error")
+        return False
+
+    def delete_extra_payment(self, payment_id: int) -> bool:
+        try:
+            response = SalaryAPI.delete_extra_payment(payment_id)
+        except RECOVERABLE_EXCEPTIONS as exc:
+            response = {"success": False, "message": to_app_error(exc, "Не удалось удалить доп. выплату").user_message}
+        if response["success"]:
+            self.navigation.refresh_history()
+            return True
+        self.navigation.show_message("Ошибка", response["message"], "error")
+        return False
+
     def delete_salary_data(self, year: int, month: int) -> Dict[str, Any]:
         try:
             response = SalaryAPI.delete_salary(year, month)

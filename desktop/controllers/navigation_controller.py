@@ -88,6 +88,15 @@ class NavigationController:
     def delete_salary_data(self, year: int, month: int) -> Dict[str, Any]:
         return self._main_tab.delete_salary_data(year, month)
 
+    def get_extra_payments(self, year: int, month: int) -> List[Dict[str, Any]]:
+        return self._main_tab.get_extra_payments(year, month)
+
+    def add_extra_payment(self, year, month, kind, amount, paid_date=None, comment=None) -> bool:
+        return self._main_tab.add_extra_payment(year, month, kind, amount, paid_date, comment)
+
+    def delete_extra_payment(self, payment_id: int) -> bool:
+        return self._main_tab.delete_extra_payment(payment_id)
+
     def get_next_month(self, year: int, month: int) -> tuple[int, int]:
         return self._main_tab.get_next_month(year, month)
 

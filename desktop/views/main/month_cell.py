@@ -23,6 +23,8 @@ FONT_FAMILY = "Segoe UI"
 TEXT_NO_DATA = "Нет данных"
 NO_DATA_COLOR = "gray"
 BORDER_COLOR = "black"
+EXTRAS_LABEL = "Доп."     # строка доп. выплат (отпускные, премии…)
+EXTRAS_COLOR = "#6f42c1"
 NOTE_MARK = "✎"           # значок заметки в правом верхнем углу ячейки
 NOTE_MARK_COLOR = "#6c757d"
 NOTE_MARK_PAD = 4
@@ -118,6 +120,7 @@ class MonthCell(tk.Canvas):
             f"Итого: {MoneyUtils.format_amount(month_info['total'], '')}" if self._has_data else ""
         )
         self._note = str(month_info.get("note") or "")
+        self._tooltip_text = self._build_tooltip(self._note, month_info.get("extras") or [])
 
         super().__init__(
             parent,
@@ -131,8 +134,8 @@ class MonthCell(tk.Canvas):
         self.bind("<Configure>", self._redraw)
         if on_click:
             self.bind("<Button-1>", lambda _event: on_click(), add="+")
-        if self._note:
-            Tooltip(self, self._note)
+        if self._tooltip_text:
+            Tooltip(self, self._tooltip_text)
 
     @staticmethod
     def _build_rows(month_info: Dict[str, Any], style: MonthCellStyle) -> List[PaymentRow]:
@@ -144,7 +147,27 @@ class MonthCell(tk.Canvas):
         for name, amount, date, color in payments:
             if amount > 0:
                 rows.append((name, date or "-", MoneyUtils.format_amount(amount, ""), color))
+        extras = float(month_info.get("extras_total") or 0)
+        if extras > 0:
+            rows.append((EXTRAS_LABEL, "", MoneyUtils.format_amount(extras, ""), EXTRAS_COLOR))
         return rows
+
+    @staticmethod
+    def _build_tooltip(note: str, extras: List[Dict[str, Any]]) -> str:
+        """Подсказка при наведении: заметка и состав доп. выплат."""
+        lines = [f"✎ {note}"] if note else []
+        for payment in extras:
+            line = f"{payment['kind_name']}: {MoneyUtils.format_amount_plain(payment['amount'])}"
+            if payment.get("paid_date"):
+                line += f" • {payment['paid_date']}"
+            if payment.get("comment"):
+                line += f" — {payment['comment']}"
+            lines.append(line)
+        return "\n".join(lines)
+
+    def _payments_height(self) -> int:
+        """Зона выплат: две строки, как у всех ячеек; третья — только при доп. выплатах."""
+        return max(self._style.payments_area_height, len(self._rows) * _text_height(self._style.data_font))
 
     # --- Размеры ---------------------------------------------------------
 
@@ -179,7 +202,7 @@ class MonthCell(tk.Canvas):
             return self._title_bottom() + _text_height(style.no_data_font) + BORDER
         return (
             self._title_bottom()
-            + style.payments_area_height + PAYMENTS_PADY_BOTTOM
+            + self._payments_height() + PAYMENTS_PADY_BOTTOM
             + TOTAL_PADY[0] + _text_height(style.total_font) + TOTAL_PADY[1]
             + BORDER
         )

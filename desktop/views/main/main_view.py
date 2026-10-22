@@ -457,6 +457,10 @@ class MainView(BaseView):
 
         total_text = f"Общий доход: {MoneyUtils.format_amount(summary['total'], '')}"
         avg_text = f"Среднемесячный: {MoneyUtils.format_amount(summary['average_monthly'], '')}"
+        if float(summary.get('total_extras') or 0) > 0:
+            # С доп. выплатами среднее «всего» и регулярный доход расходятся
+            regular = MoneyUtils.format_amount(summary.get('regular_average_monthly') or 0, '')
+            avg_text += f" (регулярный {regular})"
         months_text = f"Месяцев с данными: {summary['months_with_data']}"
 
         if self._main_stats_layout_mode == "column":

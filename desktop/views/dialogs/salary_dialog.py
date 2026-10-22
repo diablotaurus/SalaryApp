@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from core.utils.dates import DateUtils
 from core.utils.money import MoneyUtils
+from desktop.views.dialogs.extra_payment_dialog import ExtraPaymentDialog
 from desktop.widgets.dialogs import BaseDialog
 from desktop.views.constants import (
     DIALOG_SALARY_TITLE, TEXT_SELECT_YEAR, TEXT_SELECT_MONTH,
@@ -195,6 +196,8 @@ class SalaryDialog(BaseDialog):
             note_frame, text=TEXT_NOTE_HINT, font=('Segoe UI', 8), foreground="#666666"
         ).grid(row=1, column=1, sticky=tk.W, pady=(0, 10))
 
+        self._create_extras_section(main_frame)
+
         # Подсказка по формату дат
         ttk.Label(
             main_frame,
@@ -242,6 +245,54 @@ class SalaryDialog(BaseDialog):
         self.bind('<Return>', lambda e: self._save_data())
         self.bind('<Escape>', lambda e: self.destroy())
     
+    def _create_extras_section(self, parent) -> None:
+        """Доп. выплаты месяца (отпускные, премии…): список, «Добавить», «Удалить»."""
+        frame = ttk.LabelFrame(parent, text="Доп. выплаты месяца (сохраняются сразу)", padding=8)
+        frame.pack(fill=tk.X, pady=(0, PADY_DEFAULT))
+        columns = ("kind", "amount", "date", "comment")
+        self.extras_tree = ttk.Treeview(frame, columns=columns, show="headings", height=3, selectmode="browse")
+        for column, title, width, anchor in (
+            ("kind", "Вид", 100, tk.W), ("amount", "Сумма", 100, tk.E),
+            ("date", "Дата", 90, tk.CENTER), ("comment", "Комментарий", 190, tk.W),
+        ):
+            self.extras_tree.heading(column, text=title)
+            self.extras_tree.column(column, width=width, anchor=anchor, stretch=column == "comment")
+        self.extras_tree.pack(fill=tk.X)
+        self.extras_tree.bind("<<TreeviewSelect>>", self._on_extra_selected)
+
+        buttons = ttk.Frame(frame)
+        buttons.pack(anchor=tk.W, pady=(6, 0))
+        ttk.Button(buttons, text="Добавить…", command=self._add_extra).pack(side=tk.LEFT, padx=(0, PADX_DEFAULT))
+        self.delete_extra_button = ttk.Button(buttons, text="Удалить", command=self._delete_extra, state=tk.DISABLED)
+        self.delete_extra_button.pack(side=tk.LEFT)
+
+    def _load_extras(self) -> None:
+        self.extras_tree.delete(*self.extras_tree.get_children())
+        year, month = self.year_var.get(), self.current_month_number
+        for payment in self.controller.get_extra_payments(year, month) if year and month else []:
+            self.extras_tree.insert("", tk.END, iid=str(payment["id"]), values=(
+                payment["kind_name"],
+                MoneyUtils.format_amount_plain(payment["amount"]),
+                payment.get("paid_date") or "-",
+                payment.get("comment") or "",
+            ))
+        self.delete_extra_button.config(state=tk.DISABLED)
+
+    def _on_extra_selected(self, _event=None) -> None:
+        self.delete_extra_button.config(state=tk.NORMAL if self.extras_tree.selection() else tk.DISABLED)
+
+    def _add_extra(self) -> None:
+        ExtraPaymentDialog(self, self.controller, self.year_var.get(), self.current_month_number, self._load_extras)
+
+    def _delete_extra(self) -> None:
+        selection = self.extras_tree.selection()
+        if not selection:
+            return
+        kind, amount = self.extras_tree.item(selection[0], "values")[:2]
+        if messagebox.askyesno(CONFIRM_TITLE, f"Удалить доп. выплату «{kind}» на {amount}?", parent=self):
+            if self.controller.delete_extra_payment(int(selection[0])):
+                self._load_extras()
+
     def _on_year_month_changed(self, event=None):
         """Обработчик изменения года или месяца"""
         # Обновляем номер месяца на основе выбранного названия
@@ -278,6 +329,7 @@ class SalaryDialog(BaseDialog):
                 self.salary_date_var.set("")
                 self.note_var.set("")
             self.clear_pending = False
+            self._load_extras()
     
     def _save_data(self):
         """Сохранить данные"""

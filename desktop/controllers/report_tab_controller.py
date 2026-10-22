@@ -89,14 +89,12 @@ class ReportTabController:
             salaries_response = SalaryAPI.get_salaries_by_year(selected_year)
             if isinstance(salaries_response, dict) and salaries_response.get("success") and salaries_response.get("data"):
                 records = salaries_response.get("data", [])
-                best_record = max(
-                    records,
-                    key=lambda item: (item.get("advance", 0) or 0) + (item.get("salary", 0) or 0),
-                )
+                # Итог месяца — с доп. выплатами (отпускные, премии), как везде
+                best_record = max(records, key=lambda item: item.get("total", 0) or 0)
                 best_month = {
                     "year": best_record.get("year"),
                     "month_name": best_record.get("month_name", ""),
-                    "total": (best_record.get("advance", 0) or 0) + (best_record.get("salary", 0) or 0),
+                    "total": best_record.get("total", 0) or 0,
                 }
             if show_best_year_always:
                 best_response = SalaryAPI.get_best_periods()

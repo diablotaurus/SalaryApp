@@ -481,8 +481,9 @@ class ReportView(BaseView):
                     ax.legend()
                 else:
                     # График для конкретного года (раздельно аванс и зарплата)
-                    width = 0.25
-                    for i, dataset in enumerate(datasets[:3]):  # Ограничение 3 наборами данных
+                    # 3 серии — как раньше (ширина 0.25); 4-я — доп. выплаты, если были
+                    width = 0.75 / len(datasets[:4])
+                    for i, dataset in enumerate(datasets[:4]):
                         values = dataset.get("data", [])
                         label = dataset.get("label", "")
                         color = dataset.get("backgroundColor", default_colors[i] if i < len(default_colors) else f"C{i}")
@@ -495,7 +496,7 @@ class ReportView(BaseView):
                             alpha=0.7
                         )
                         tooltip_items.extend(zip(bars, dataset.get("tooltips", [])))
-                    ax.set_xticks([pos + width for pos in x])
+                    ax.set_xticks([pos + width * (len(datasets[:4]) - 1) / 2 for pos in x])
                     ax.set_xticklabels(labels, rotation=0)
                     ax.legend()
 
@@ -752,6 +753,7 @@ class ReportView(BaseView):
         # Обновление значений KPI
         self.kpi_labels["total"].config(text=model["total"])
         self.kpi_labels["avg"].config(text=model["avg"])
+        self.kpi_title_labels["avg"].config(text=model["avg_title"])
         self.kpi_labels["best_month"].config(text=model["best_month"])
 
         # Условное отображение лучшего года

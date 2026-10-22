@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 from core.utils.money import MoneyUtils
 from core.utils.dates import DateUtils
-from desktop.views.constants import TEXT_KPI_FORECAST
+from desktop.views.constants import TEXT_KPI_AVG, TEXT_KPI_FORECAST
 
 
 class ChartPresenter:
@@ -57,11 +57,15 @@ class ChartPresenter:
         advances = [float(i.get("advance", 0) or 0) for i in items]
         salaries = [float(i.get("salary", 0) or 0) for i in items]
         totals = [float(i.get("total", 0) or 0) for i in items]
+        extras = [float(i.get("extras", 0) or 0) for i in items]
         datasets = [
             {"label": "Аванс", "data": advances, "backgroundColor": "#FF6384"},
             {"label": "Зарплата", "data": salaries, "backgroundColor": "#36A2EB"},
             {"label": "Итого", "data": totals, "backgroundColor": "#4BC0C0"},
         ]
+        if any(extras):
+            # Серия доп. выплат — только если они были в году (иначе график прежний)
+            datasets.insert(2, {"label": "Доп. выплаты", "data": extras, "backgroundColor": "#9966FF"})
         for dataset in datasets:
             dataset["tooltips"] = [
                 self._format_monthly_tooltip(item, dataset["label"], value)
@@ -212,6 +216,11 @@ class ChartPresenter:
         return {
             "total": MoneyUtils.format_kpi_amount(total_amount, currency),
             "avg": MoneyUtils.format_kpi_amount(avg_monthly, currency),
+            # С доп. выплатами — второе число: регулярный доход (аванс + зарплата)
+            "avg_title": (
+                f"{TEXT_KPI_AVG} · регулярный {MoneyUtils.format_rounded(summary.get('regular_average_monthly') or 0)}"
+                if summary and float(summary.get("total_extras") or 0) > 0 else TEXT_KPI_AVG
+            ),
             "records": str(records),
             "best_month": best_month_value,
             "best_year": best_year_value,
