@@ -7,6 +7,7 @@ from core.config.settings import config
 from core.models.salary import Salary
 from core.repositories.salary_repository import SalaryRepository
 from core.services.export_service import ExportService
+from core.services.extra_payment_service import ExtraPaymentService
 
 
 def _seed_salary_row():
@@ -43,7 +44,8 @@ def test_export_to_csv_creates_file_with_data(temp_db, tmp_path: Path):
         assert rows[1][0] == "2025"
         assert rows[1][1] == "Сентябрь"
         # Суммы с запятой — русский Excel читает их как числа
-        assert (rows[1][2], rows[1][4], rows[1][6]) == ("11111,00", "22222,00", "33333,00")
+        assert rows[0][6:8] == ["Доп. выплаты", "Итого"]
+        assert (rows[1][2], rows[1][4], rows[1][6], rows[1][7]) == ("11111,00", "22222,00", "0,00", "33333,00")
     finally:
         config.export.export_dir = old_export_dir
 
@@ -81,24 +83,27 @@ def _export_excel(tmp_path: Path):
     return load_workbook(filepath)
 
 
-def test_export_to_excel_writes_three_sheets_with_data(temp_db, tmp_path: Path):
+def test_export_to_excel_writes_sheets_with_data(temp_db, tmp_path: Path):
     _seed_salary_row()
+    ExtraPaymentService.add(2025, 9, "bonus", 5000.0, "15.09.2025", "за квартал")
 
     workbook = _export_excel(tmp_path)
 
-    assert workbook.sheetnames == ["Данные", "Сводка по годам", "Статистика"]
+    assert workbook.sheetnames == ["Данные", "Сводка по годам", "Статистика", "Доп. выплаты"]
     data = workbook["Данные"]
     assert [cell.value for cell in data[1]] == [
         "Год", "Месяц", "Аванс", "Дата аванса", "Зарплата",
-        "Дата зарплаты", "Итого", "Дата создания (МСК)", "Заметка",
+        "Дата зарплаты", "Доп. выплаты", "Итого", "Дата создания (МСК)", "Заметка",
     ]
-    assert [cell.value for cell in data[2]][:7] == [
-        2025, 9, 11111.0, "2025-09-10", 22222.0, "2025-09-25", 33333.0,
+    assert [cell.value for cell in data[2]][:8] == [
+        2025, 9, 11111.0, "2025-09-10", 22222.0, "2025-09-25", 5000.0, 38333.0,
     ]
     yearly = [cell.value for cell in workbook["Сводка по годам"][2]]
-    assert yearly == [2025, 11111.0, 22222.0, 33333.0, 1]
+    assert yearly == [2025, 11111.0, 22222.0, 5000.0, 38333.0, 1]
     stats = [cell.value for cell in workbook["Статистика"][2]]
-    assert stats == [1, 11111.0, 22222.0, 33333.0, 2025, 2025]
+    assert stats == [1, 11111.0, 22222.0, 5000.0, 38333.0, 2025, 2025]
+    extras = [cell.value for cell in workbook["Доп. выплаты"][2]]
+    assert extras == [2025, 9, "Премия", 5000.0, "2025-09-15", "за квартал"]
 
 
 def test_export_to_excel_keeps_header_style(temp_db, tmp_path: Path):
@@ -116,7 +121,8 @@ def test_export_to_excel_works_on_empty_database(temp_db, tmp_path: Path):
     workbook = _export_excel(tmp_path)
 
     assert workbook["Данные"].max_row == 1  # только заголовок
-    assert [cell.value for cell in workbook["Статистика"][2]] == [0, 0, 0, 0, None, None]
+    assert [cell.value for cell in workbook["Статистика"][2]] == [0, 0, 0, 0, 0, None, None]
+    assert workbook["Доп. выплаты"].max_row == 1
 
 
 def _set_created_at(utc_text: str) -> None:
@@ -140,9 +146,9 @@ def test_export_shows_created_at_in_moscow(temp_db, tmp_path: Path):
 
     with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
         rows = list(csv.reader(f, delimiter=";"))
-    assert rows[0][7] == "Дата создания (МСК)"
-    assert rows[1][7] == "2026-10-15 00:38:43"
-    assert _export_excel(tmp_path)["Данные"]["H2"].value == "2026-10-15 00:38:43"
+    assert rows[0][8] == "Дата создания (МСК)"
+    assert rows[1][8] == "2026-10-15 00:38:43"
+    assert _export_excel(tmp_path)["Данные"]["I2"].value == "2026-10-15 00:38:43"
 
 
 def test_json_export_date_is_utc(temp_db, tmp_path: Path):

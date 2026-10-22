@@ -3,7 +3,7 @@ Public Salary API facade.
 """
 from __future__ import annotations
 
-from api.salary_api_modules import analytics, commands, maintenance, queries, reminders
+from api.salary_api_modules import analytics, commands, extras, maintenance, queries, reminders
 from core.exceptions import RECOVERABLE_EXCEPTIONS, to_app_error
 from core.services.salary_service import SalaryService
 
@@ -72,6 +72,31 @@ class SalaryAPI:
     @staticmethod
     def get_salary(year: int, month: int) -> dict:
         return queries.get_salary(year, month)
+
+    @staticmethod
+    def get_extra_kinds() -> dict:
+        """Виды доп. выплат: код и подпись."""
+        return extras.get_extra_kinds()
+
+    @staticmethod
+    def add_extra_payment(
+        year: int,
+        month: int,
+        kind: str,
+        amount: float,
+        paid_date: str | None = None,
+        comment: str | None = None,
+    ) -> dict:
+        """Добавить доп. выплату к месяцу получения."""
+        return extras.add_extra_payment(year, month, kind, amount, paid_date, comment)
+
+    @staticmethod
+    def delete_extra_payment(payment_id: int) -> dict:
+        return extras.delete_extra_payment(payment_id)
+
+    @staticmethod
+    def get_extra_payments(year: int, month: int) -> dict:
+        return extras.get_extra_payments(year, month)
 
     @staticmethod
     def get_reminders_to_send() -> dict:

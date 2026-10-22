@@ -102,6 +102,7 @@ def test_analytics_returns_rubles_from_kopeck_storage(temp_db):
             "year": 2026,
             "total_advance": 400.75,
             "total_salary": 601.25,
+            "total_extras": 0.0,
             "total": 1002.0,
             "months_count": 2,
         }

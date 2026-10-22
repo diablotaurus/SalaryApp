@@ -33,12 +33,19 @@ def is_payment_complete(record: Any, now: datetime) -> bool:
 
 
 def calculate_average_monthly(
-    records: Iterable[Any], now: datetime | None = None
+    records: Iterable[Any], now: datetime | None = None, include_extras: bool = True
 ) -> float:
-    """Calculate the average for months whose salary payment is complete."""
+    """
+    Среднее по месяцам с выплаченной зарплатой (is_payment_complete).
+
+    include_extras=False — «регулярный доход»: только аванс и зарплата,
+    без доп. выплат (отпускные, премии), чтобы они не искажали динамику.
+    """
     current = now or moscow_now()
     totals = [
-        float(getattr(record, "advance", 0) or 0) + float(getattr(record, "salary", 0) or 0)
+        float(getattr(record, "advance", 0) or 0)
+        + float(getattr(record, "salary", 0) or 0)
+        + (float(getattr(record, "extras_total", 0) or 0) if include_extras else 0.0)
         for record in records or []
         if is_payment_complete(record, current)
     ]
@@ -52,6 +59,7 @@ class YearSummary:
     total_advance: float = 0.0
     total_salary: float = 0.0
     records: List[Salary] = None
+    total_extras: float = 0.0
     month_details: dict = None
     
     def __post_init__(self):
@@ -62,11 +70,16 @@ class YearSummary:
     
     @property
     def total(self) -> float:
-        """Общая сумма за год"""
-        return self.total_advance + self.total_salary
-    
+        """Общая сумма за год, включая доп. выплаты"""
+        return self.total_advance + self.total_salary + self.total_extras
+
     @property
     def average_monthly(self) -> float:
-        """Среднемесячная зарплата"""
+        """Среднемесячно всего (с доп. выплатами)"""
         return calculate_average_monthly(self.records)
+
+    @property
+    def regular_average_monthly(self) -> float:
+        """Среднемесячный регулярный доход (аванс + зарплата)"""
+        return calculate_average_monthly(self.records, include_extras=False)
     

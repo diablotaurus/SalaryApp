@@ -18,9 +18,10 @@ class AnalyticsRepository:
             SELECT year,
                    SUM(advance) / 100.0 AS total_advance,
                    SUM(salary) / 100.0 AS total_salary,
-                   SUM(advance + salary) / 100.0 AS total,
+                   SUM(extras_total) / 100.0 AS total_extras,
+                   SUM(advance + salary + extras_total) / 100.0 AS total,
                    COUNT(*) AS months_count
-            FROM salaries
+            FROM month_totals
             GROUP BY year
             ORDER BY year {order}
             """
@@ -32,8 +33,8 @@ class AnalyticsRepository:
         conn = DatabaseConnection.get_connection()
         row = conn.execute(
             """
-            SELECT year, month, SUM(advance + salary) / 100.0 AS total
-            FROM salaries
+            SELECT year, month, SUM(advance + salary + extras_total) / 100.0 AS total
+            FROM month_totals
             GROUP BY year, month
             ORDER BY total DESC, year DESC, month DESC
             LIMIT 1
@@ -46,8 +47,8 @@ class AnalyticsRepository:
         conn = DatabaseConnection.get_connection()
         row = conn.execute(
             """
-            SELECT year, SUM(advance + salary) / 100.0 AS total
-            FROM salaries
+            SELECT year, SUM(advance + salary + extras_total) / 100.0 AS total
+            FROM month_totals
             GROUP BY year
             ORDER BY total DESC, year DESC
             LIMIT 1
@@ -65,9 +66,10 @@ class AnalyticsRepository:
             SELECT COUNT(*) AS total_records,
                    SUM(advance) / 100.0 AS total_advance_all,
                    SUM(salary) / 100.0 AS total_salary_all,
+                   SUM(extras_total) / 100.0 AS total_extras_all,
                    MIN(year) AS first_year,
                    MAX(year) AS last_year
-            FROM salaries
+            FROM month_totals
             {where}
             """,
             params,
@@ -81,6 +83,7 @@ class AnalyticsRepository:
                 "year": item["year"],
                 "advance": item["total_advance"],
                 "salary": item["total_salary"],
+                "extras": item["total_extras"],
                 "months": item["months_count"],
             }
             for item in yearly

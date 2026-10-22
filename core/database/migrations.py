@@ -94,6 +94,7 @@ class MigrationManager:
             ("004_add_payment_dates", self._migration_004_add_payment_dates),
             ("005_salary_integrity", self._migration_005_salary_integrity),
             ("006_month_notes", self._migration_006_month_notes),
+            ("007_extra_payments", self._migration_007_extra_payments),
         ]
         
         # Применение каждой миграции
@@ -314,6 +315,45 @@ class MigrationManager:
         cursor = self.conn.execute("PRAGMA table_info(salaries)")
         if "note" not in {row["name"] for row in cursor.fetchall()}:
             self.conn.execute("ALTER TABLE salaries ADD COLUMN note TEXT")
+
+    def _migration_007_extra_payments(self):
+        """
+        Доп. выплаты (отпускные, премии, больничные, прочее) и представление
+        month_totals — месяц вместе с суммой его доп. выплат.
+
+        Чтения истории и SQL-аналитика идут через month_totals, поэтому итоги
+        везде включают доп. выплаты. Существующие данные не меняются; прежние
+        версии приложения новую таблицу и представление не используют.
+        """
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS extra_payments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                year INTEGER NOT NULL CHECK (year BETWEEN 2000 AND 2100),
+                month INTEGER NOT NULL CHECK (month BETWEEN 1 AND 12),
+                kind TEXT NOT NULL CHECK (kind IN ('vacation', 'bonus', 'sick', 'other')),
+                amount INTEGER NOT NULL CHECK (amount > 0),
+                paid_date TEXT,
+                comment TEXT,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        self.conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_extra_payments_year_month ON extra_payments(year, month)"
+        )
+        self.conn.execute(
+            """
+            CREATE VIEW IF NOT EXISTS month_totals AS
+            SELECT s.*, COALESCE(e.extras, 0) AS extras_total
+            FROM salaries AS s
+            LEFT JOIN (
+                SELECT year, month, SUM(amount) AS extras
+                FROM extra_payments
+                GROUP BY year, month
+            ) AS e ON e.year = s.year AND e.month = s.month
+            """
+        )
 
 
 def apply_all_migrations():

@@ -9,6 +9,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from core.models.salary import Salary
 from core.models.year import YearSummary
+from core.repositories.extra_payment_repository import ExtraPaymentRepository
 from core.repositories.salary_repository import SalaryRepository
 from core.utils.dates import DateUtils
 from core.utils.money_values import normalize_amount
@@ -270,6 +271,7 @@ class SalaryService:
                 "month": int(salary.month),
                 "advance": float(salary.advance),
                 "salary": float(salary.salary),
+                "extras": float(salary.extras_total),
                 "total": float(salary.total)
             })
 
@@ -297,6 +299,10 @@ class SalaryService:
         existing_salaries = SalaryRepository.get_by_year(year)
         # Преобразуем в словарь для удобства: месяц -> запись
         existing_by_month = {s.month: s for s in existing_salaries}
+        # Доп. выплаты по месяцам — для подсказок и списков в интерфейсах
+        extras_by_month: Dict[int, list] = {}
+        for payment in ExtraPaymentRepository.get_by_year(year):
+            extras_by_month.setdefault(payment.month, []).append(payment)
         
         # Создаем список всех месяцев (1-12)
         all_months = []
@@ -314,6 +320,8 @@ class SalaryService:
                     'advance_date': salary_dict.get('advance_date', ''),
                     'salary_date': salary_dict.get('salary_date', ''),
                     'note': salary_dict.get('note', ''),
+                    'extras_total': salary.extras_total,
+                    'extras': [payment.to_dict() for payment in extras_by_month.get(month, [])],
                     'has_data': True
                 })
             else:
@@ -327,6 +335,8 @@ class SalaryService:
                     'advance_date': '',
                     'salary_date': '',
                     'note': '',
+                    'extras_total': 0.0,
+                    'extras': [],
                     'has_data': False
                 })
         
@@ -340,7 +350,9 @@ class SalaryService:
                 'total_advance': summary.total_advance,
                 'total_salary': summary.total_salary,
                 'total': summary.total,
+                'total_extras': summary.total_extras,
                 'average_monthly': summary.average_monthly,
+                'regular_average_monthly': summary.regular_average_monthly,
                 'months_with_data': len(existing_salaries)
             },
             'months': all_months

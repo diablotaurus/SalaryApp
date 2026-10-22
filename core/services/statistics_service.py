@@ -360,6 +360,7 @@ class StatisticsService:
         total_records = stats.get("total_records", 0) or 0
         total_advance = float(stats.get("total_advance_all", 0) or 0)
         total_salary = float(stats.get("total_salary_all", 0) or 0)
+        total_extras = float(stats.get("total_extras_all", 0) or 0)
         
         # Определение первого и последнего года
         if year is not None:
@@ -374,13 +375,14 @@ class StatisticsService:
         
         # Дополнительные расчеты
         years_count = len(stats.get("by_year", []))
-        total_amount = total_advance + total_salary
-        
+        total_amount = total_advance + total_salary + total_extras
+
         # Формирование сводки
         summary = {
             "total_records": total_records,
             "total_advance": total_advance,
             "total_salary": total_salary,
+            "total_extras": total_extras,
             "first_year": first_year,
             "last_year": last_year,
             "years_count": years_count,
@@ -398,6 +400,8 @@ class StatisticsService:
 
         # Единое бизнес-правило среднемесячного для всех интерфейсов
         summary["avg_monthly_total"] = StatisticsService.calculate_average_monthly_from_records(records)
+        # Регулярный доход — без доп. выплат (отпускные, премии не искажают динамику)
+        summary["regular_average_monthly"] = calculate_average_monthly(records, include_extras=False)
 
         # Дополнительные поля для совместимости
         summary["total_all"] = summary["total_amount"]

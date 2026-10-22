@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 from core.config.settings import config
 from core.repositories.analytics_repository import AnalyticsRepository
+from core.services.extra_payment_service import ExtraPaymentService
 from core.services.salary_service import SalaryService
 from core.utils.clock import format_moscow, moscow_now, utc_now
 from core.utils.dates import DateUtils
@@ -22,6 +23,8 @@ from core.utils.dates import DateUtils
 
 # Момент создания записи показывается по МСК — подпись прямо в заголовке колонки
 CREATED_AT_HEADER = 'Дата создания (МСК)'
+# Сумма отпускных, премий и прочих доп. выплат месяца (входит в «Итого»)
+EXTRAS_HEADER = 'Доп. выплаты'
 
 
 class ExportService:
@@ -60,7 +63,7 @@ class ExportService:
             # Заголовки столбцов на русском языке
             writer.writerow([
                 'Год', 'Месяц', 'Аванс', 'Дата аванса',
-                'Зарплата', 'Дата зарплаты', 'Итого', CREATED_AT_HEADER, 'Заметка'
+                'Зарплата', 'Дата зарплаты', EXTRAS_HEADER, 'Итого', CREATED_AT_HEADER, 'Заметка'
             ])
             
             # Запись данных построчно
@@ -72,6 +75,7 @@ class ExportService:
                     salary_record.advance_date.date().isoformat() if salary_record.advance_date else "",
                     ExportService._csv_amount(salary_record.salary),
                     salary_record.salary_date.date().isoformat() if salary_record.salary_date else "",
+                    ExportService._csv_amount(salary_record.extras_total),
                     ExportService._csv_amount(salary_record.total),
                     ExportService._created_at_text(salary_record.created_at),
                     salary_record.note or "",
@@ -184,6 +188,7 @@ class ExportService:
                 item.advance_date.date().isoformat() if item.advance_date else None,
                 item.salary,
                 item.salary_date.date().isoformat() if item.salary_date else None,
+                item.extras_total,
                 round(item.total, 2),
                 ExportService._created_at_text(item.created_at) or None,
                 item.note or None,
@@ -196,6 +201,7 @@ class ExportService:
                 item["year"],
                 item["total_advance"],
                 item["total_salary"],
+                item["total_extras"] or 0,
                 item["total"],
                 item["months_count"],
             ]
@@ -207,11 +213,13 @@ class ExportService:
         stats = SalaryService.get_statistics()
         total_advance = stats.get('total_advance_all') or 0
         total_salary = stats.get('total_salary_all') or 0
+        total_extras = stats.get('total_extras_all') or 0
         stats_rows = [[
             stats.get('total_records') or 0,
             total_advance,
             total_salary,
-            round(total_advance + total_salary, 2),
+            total_extras,
+            round(total_advance + total_salary + total_extras, 2),
             stats.get('first_year'),
             stats.get('last_year'),
         ]]
@@ -221,19 +229,34 @@ class ExportService:
         ExportService._write_sheet(
             workbook, 'Данные',
             ['Год', 'Месяц', 'Аванс', 'Дата аванса', 'Зарплата',
-             'Дата зарплаты', 'Итого', CREATED_AT_HEADER, 'Заметка'],
+             'Дата зарплаты', EXTRAS_HEADER, 'Итого', CREATED_AT_HEADER, 'Заметка'],
             data_rows,
         )
         ExportService._write_sheet(
             workbook, 'Сводка по годам',
-            ['Год', 'Сумма авансов', 'Сумма зарплат', 'Общая сумма', 'Количество месяцев'],
+            ['Год', 'Сумма авансов', 'Сумма зарплат', EXTRAS_HEADER, 'Общая сумма', 'Количество месяцев'],
             yearly_rows,
         )
         ExportService._write_sheet(
             workbook, 'Статистика',
             ['Всего записей', 'Общая сумма авансов', 'Общая сумма зарплат',
-             'Общая сумма', 'Первый год', 'Последний год'],
+             EXTRAS_HEADER, 'Общая сумма', 'Первый год', 'Последний год'],
             stats_rows,
+        )
+        ExportService._write_sheet(
+            workbook, EXTRAS_HEADER,
+            ['Год', 'Месяц', 'Вид', 'Сумма', 'Дата', 'Комментарий'],
+            [
+                [
+                    payment.year,
+                    payment.month,
+                    payment.kind_name,
+                    payment.amount,
+                    payment.paid_date.date().isoformat() if payment.paid_date else None,
+                    payment.comment or None,
+                ]
+                for payment in ExtraPaymentService.get_all()
+            ],
         )
         workbook.save(filepath)
 

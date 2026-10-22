@@ -128,9 +128,10 @@ class SalaryRepository:
                 keep_note,
             ),
         )
-        row = cursor.fetchone()
+        cursor.fetchone()
         conn.commit()
-        return SalaryRepository._row_to_salary(row)
+        # Перечитать через month_totals: в итоге месяца — и его доп. выплаты
+        return SalaryRepository.get_by_year_month(salary.year, salary.month)
     
     @staticmethod
     def get_by_year_month(year: int, month: int) -> Optional[Salary]:
@@ -149,7 +150,7 @@ class SalaryRepository:
         """
         conn = DatabaseConnection.get_connection()
         cursor = conn.execute(
-            "SELECT * FROM salaries WHERE year = ? AND month = ?", 
+            "SELECT * FROM month_totals WHERE year = ? AND month = ?",
             (year, month)
         )
         row = cursor.fetchone()
@@ -170,7 +171,7 @@ class SalaryRepository:
         """
         conn = DatabaseConnection.get_connection()
         cursor = conn.execute(
-            "SELECT * FROM salaries ORDER BY year DESC, month DESC"
+            "SELECT * FROM month_totals ORDER BY year DESC, month DESC"
         )
         return [SalaryRepository._row_to_salary(row) for row in cursor.fetchall()]
     
@@ -191,7 +192,7 @@ class SalaryRepository:
         """
         conn = DatabaseConnection.get_connection()
         cursor = conn.execute(
-            "SELECT * FROM salaries WHERE year = ? ORDER BY month DESC",
+            "SELECT * FROM month_totals WHERE year = ? ORDER BY month DESC",
             (year,)
         )
         return [SalaryRepository._row_to_salary(row) for row in cursor.fetchall()]
@@ -241,7 +242,8 @@ class SalaryRepository:
             year=year,
             total_advance=sum(record.advance for record in records),
             total_salary=sum(record.salary for record in records),
-            records=records
+            records=records,
+            total_extras=sum(record.extras_total for record in records),
         )
         
         # Заполнение деталей по месяцам
@@ -249,6 +251,28 @@ class SalaryRepository:
             year_summary.month_details[salary.month] = salary.to_dict()
         
         return year_summary
+
+    @staticmethod
+    def ensure_month(year: int, month: int) -> None:
+        """Создать пустую запись месяца (0/0), если её нет — для доп. выплаты без аванса."""
+        conn = DatabaseConnection.get_connection()
+        conn.execute("INSERT OR IGNORE INTO salaries (year, month) VALUES (?, ?)", (year, month))
+        conn.commit()
+
+    @staticmethod
+    def delete_if_empty(year: int, month: int) -> bool:
+        """Удалить месяц без аванса, зарплаты, заметки и доп. выплат (остался от доп. выплаты)."""
+        conn = DatabaseConnection.get_connection()
+        cursor = conn.execute(
+            """
+            DELETE FROM salaries
+            WHERE year = ? AND month = ? AND advance = 0 AND salary = 0 AND note IS NULL
+              AND NOT EXISTS (SELECT 1 FROM extra_payments e WHERE e.year = ? AND e.month = ?)
+            """,
+            (year, month, year, month),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
 
     @staticmethod
     def set_note(year: int, month: int, note: Optional[str]) -> bool:
@@ -277,11 +301,18 @@ class SalaryRepository:
             - Уникальность пары (year, month) гарантирует удаление максимум одной записи
         """
         conn = DatabaseConnection.get_connection()
-        cursor = conn.execute(
-            "DELETE FROM salaries WHERE year = ? AND month = ?", 
-            (year, month)
-        )
-        conn.commit()
+        try:
+            # Вместе с месяцем — его доп. выплаты: иначе они «воскресли» бы
+            # при повторном вводе месяца
+            conn.execute("DELETE FROM extra_payments WHERE year = ? AND month = ?", (year, month))
+            cursor = conn.execute(
+                "DELETE FROM salaries WHERE year = ? AND month = ?",
+                (year, month)
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
         return cursor.rowcount > 0
     
     @staticmethod
@@ -299,11 +330,16 @@ class SalaryRepository:
             - Операция атомарна (один DELETE), частичного удаления быть не может
         """
         conn = DatabaseConnection.get_connection()
-        cursor = conn.execute(
-            "DELETE FROM salaries WHERE year = ?",
-            (year,)
-        )
-        conn.commit()
+        try:
+            conn.execute("DELETE FROM extra_payments WHERE year = ?", (year,))
+            cursor = conn.execute(
+                "DELETE FROM salaries WHERE year = ?",
+                (year,)
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
         return cursor.rowcount
 
     @staticmethod
@@ -363,4 +399,6 @@ class SalaryRepository:
             # может быть NULL в старых записях
             created_at=parse_utc(row['created_at']) if row['created_at'] else None,
             note=row['note'] if 'note' in row.keys() else None,
+            # Есть только в представлении month_totals (в RETURNING * таблицы — нет)
+            extras_total=from_cents(row['extras_total']) if 'extras_total' in row.keys() else 0.0,
         )

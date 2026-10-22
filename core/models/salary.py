@@ -24,6 +24,7 @@ class Salary:
     salary_date: Optional[datetime] = None  # Дата получения зарплаты (календарная дата)
     created_at: datetime = None  # Момент создания записи, timezone-aware UTC
     note: Optional[str] = None  # Заметка к месяцу («отпуск», «повышение»)
+    extras_total: float = 0.0  # Сумма доп. выплат месяца (отпускные, премии…)
 
     def __post_init__(self):
         """Инициализация после создания экземпляра"""
@@ -32,7 +33,12 @@ class Salary:
 
     @property
     def total(self) -> float:
-        """Общая сумма (аванс + зарплата)"""
+        """Общая сумма месяца: аванс + зарплата + доп. выплаты"""
+        return self.advance + self.salary + self.extras_total
+
+    @property
+    def regular_total(self) -> float:
+        """Регулярный доход месяца: аванс + зарплата (без доп. выплат)"""
         return self.advance + self.salary
 
     @property
@@ -49,6 +55,8 @@ class Salary:
             "advance": self.advance,
             "salary": self.salary,
             "total": self.total,
+            "regular_total": self.regular_total,
+            "extras_total": self.extras_total,
             "month_name": self.month_name,
             "advance_date": self._format_date(self.advance_date),
             "salary_date": self._format_date(self.salary_date),
