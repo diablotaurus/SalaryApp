@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.33 - доп. выплаты, регулярный доход, заметки и прогноз</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.33</h1>
+            <p class="subtitle">Доп. выплаты (отпускные, премии, больничные), регулярный доход, заметки к месяцам и прогноз года — во всех интерфейсах</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 22 октября 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.32 current</p>
+            <p><strong>Новая версия:</strong> 1.2.33 current; скрипт деплоя записывает в production 1.2.33 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> база данных (миграции 006 и 007), ядро (доп. выплаты, заметки, прогноз, два средних), desktop, web, Telegram-бот, экспорт, тесты.</p>
+            <p><strong>Основание:</strong> пакет Н из обзора возможностей. Решения пользователя: виды выплат — отпускные, премии, больничные, прочее; в истории они смешаны с авансом и зарплатой; среднее — двумя цифрами (регулярный доход и всего); доп. выплата относится к месяцу получения; в боте — отдельная кнопка меню. Каждая часть выпускалась отдельно и проверена пользователем.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_22.10.2026_1.2.32.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.33 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>💰 Доп. выплаты</strong>Отпускные, премии, больничные</div>
+            <div class="summary-item summary-data"><strong>2 средних</strong>Всего и регулярный доход</div>
+            <div class="summary-item summary-tests"><strong>437 тестов</strong>+54 к версии 1.2.32</div>
+        </div>
+
+        <section class="section" id="overview">
+            <h2>1. Основные результаты</h2>
+            <table>
+                <thead><tr><th>Возможность</th><th>Desktop</th><th>Web</th><th>Telegram-бот</th></tr></thead>
+                <tbody>
+                    <tr><td>Доп. выплаты</td><td>Раздел в окне месяца, строка «Доп.» в карточке, серия на графике</td><td>Раздел в форме месяца, колонка «Доп.», серия на графике</td><td>Кнопка «💰 Доп. выплата», состав в «Подробно»</td></tr>
+                    <tr><td>Регулярный доход</td><td>В карточке года и показателе «Среднемесячно»</td><td>Под «Среднемесячно»</td><td>В сводке года и годовом итоге</td></tr>
+                    <tr><td>Заметка к месяцу</td><td>Поле в окне месяца, значок ✎ с подсказкой</td><td>Поле в форме, значок в таблице</td><td>Кнопка «📝 Заметка к месяцу» после сохранения</td></tr>
+                    <tr><td>Прогноз года</td><td>«Прогноз на 2026» в быстрых итогах</td><td>Строка под статистикой</td><td>Строка в сводке текущего года</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section" id="extras">
+            <h2>2. Доп. выплаты</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Виды: отпускные, премия, больничные, прочее. У выплаты есть сумма, дата получения и комментарий; к месяцу можно добавить несколько выплат.</li>
+                <li>Выплата относится к <strong>месяцу получения</strong> — как пришла на карту. Если записи месяца ещё нет (например, премия пришла раньше аванса), создаётся пустая запись: месяц появляется в истории, а напоминания и правило средних работают как раньше. После удаления последней доп. выплаты пустой месяц без заметки убирается.</li>
+                <li>Итог месяца = аванс + зарплата + доп. выплаты. Это учитывается везде: карточки, итоги года, графики, рекорды, «лучший месяц/год», сравнения, прогноз, годовой итог, экспорт.</li>
+                <li><span class="change-type added">ADDED</span><strong>Два средних.</strong> Рядом со «Среднемесячно» (всего) показывается <strong>регулярный доход</strong> — только аванс и зарплата, чтобы отпускные и премии не искажали динамику. Вторая цифра появляется, только если в периоде были доп. выплаты.</li>
+                <li><strong>Desktop:</strong> в окне месяца — раздел «Доп. выплаты месяца (сохраняются сразу)» со списком, «Добавить…» и «Удалить»; окно добавления понимает суммы «35 000,50». В карточке месяца — строка «Доп.» (третья строка появляется только у таких месяцев) и подсказка с составом выплат. Серия «Доп. выплаты» на помесячном графике года; лучший месяц выбранного года учитывает доп. выплаты.</li>
+                <li><strong>Web:</strong> такой же раздел в форме месяца, колонка «Доп.» в таблице, серия на графике. Комментарии экранируются.</li>
+                <li><strong>Telegram-бот:</strong> «💰 Доп. выплата» (/extra): вид кнопкой → месяц (текущий, прошлый или «08.2026») → сумма → дата («Сегодня» или «Пропустить»), затем итог месяца. Посреди этого ввода работают кнопки меню, команды и «отмена».</li>
+                <li><strong>Экспорт:</strong> колонка «Доп. выплаты» в CSV и Excel и отдельный лист со всеми выплатами.</li>
+                <li class="note"><strong>История.</strong> В уже внесённых месяцах отпускные и премии смешаны с авансом и зарплатой. Пары «всплеск → провал» (апрель–май 2023, август–сентябрь 2024, март–апрель 2025, апрель–май и август–сентябрь 2026) похожи на отпуска. Разделить их можно вручную в окне месяца по расчётным листкам; автоматически данные не менялись.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="notes">
+            <h2>3. Заметка к месяцу</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Одна строка до 200 символов: «отпуск 2 недели», «повышение с 1-го».</li>
+                <li>Правила как у дат: поле формы стёрто — заметка удаляется; ввод без заметки (например, обычный ввод в боте) оставляет сохранённую.</li>
+                <li>Видна в карточке (значок ✎, текст при наведении), в таблице web, в «Подробно» и в предупреждении о заполненном месяце в боте, в экспорте.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="forecast">
+            <h2>4. Прогноз года</h2>
+            <ul>
+                <li><span class="change-type added">ADDED</span>Полученное в месяцах с выплаченной зарплатой + среднее по выплаченным месяцам за 12 месяцев до текущего × оставшиеся месяцы. Месяц, где пока только аванс, считается оставшимся.</li>
+                <li>Только для текущего года по МСК и при истории не меньше трёх выплаченных месяцев. Показывается округлённым до тысяч: «≈ 1 293 000» — точность до копейки у прогноза была бы ложной.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="database">
+            <h2>5. База данных</h2>
+            <table>
+                <thead><tr><th>Миграция</th><th>Что делает</th></tr></thead>
+                <tbody>
+                    <tr><td><code>006_month_notes</code></td><td>Колонка <code>salaries.note</code>. Только добавление, данные не переписываются.</td></tr>
+                    <tr><td><code>007_extra_payments</code></td><td>Таблица <code>extra_payments</code> (суммы в копейках, проверки вида, суммы и периода) и представление <code>month_totals</code> — месяц вместе с суммой доп. выплат. Чтения истории и SQL-аналитика идут через представление.</td></tr>
+                </tbody>
+            </table>
+            <ul>
+                <li>Удаление месяца или года удаляет и его доп. выплаты в той же транзакции — повторно внесённый месяц не «воскрешает» старые премии.</li>
+                <li>На production обе миграции применились при деплое; итоги до появления доп. выплат не изменились (4 327 325,78).</li>
+            </ul>
+        </section>
+
+        <section class="section" id="architecture">
+            <h2>6. Устройство</h2>
+            <ul>
+                <li>Ядро: <code>core/models/extra_payment.py</code>, <code>core/repositories/extra_payment_repository.py</code>, <code>core/services/extra_payment_service.py</code>; <code>Salary.total</code> — с доп. выплатами, <code>Salary.regular_total</code> — без них; <code>calculate_average_monthly(..., include_extras)</code>; <code>StatisticsService.forecast_year</code>; <code>SalaryService.set_note</code>.</li>
+                <li>API: доп. выплаты (<code>add/delete/get_extra_payments</code>, виды), заметки (<code>set_note</code>), прогноз (<code>forecast_year</code>); web-маршруты <code>/api/extras</code>, <code>/api/forecast</code>.</li>
+                <li>Бот: общие помощники ввода — <code>bot/handlers/common.py</code>; ввод доп. выплат — <code>bot/handlers/extras.py</code>; порядок роутеров — <code>bot/handlers.ROUTERS</code>.</li>
+                <li>Desktop: <code>desktop/views/dialogs/extra_payment_dialog.py</code>, всплывающая подсказка <code>desktop/widgets/tooltip.py</code>.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>7. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>437 тестов успешно (в 1.2.32 было 383).</td></tr>
+                    <tr><td>Ядро</td><td>Ввод и проверка доп. выплат; пустой месяц при выплате без аванса и его удаление; удаление месяца/года вместе с выплатами; итоги, годовые суммы, лучший месяц, статистика с доп. выплатами; два средних; заметки (сохранение, сохранение при None, стирание, длина, только заметка); прогноз; миграция старой базы.</td></tr>
+                    <tr><td>Desktop</td><td>Строка «Доп.» и подсказка в ячейке, значок заметки, серия графика только при доп. выплатах, подпись среднего, окно добавления. Окна и карточки просмотрены на копии production-БД с тестовыми выплатами; найденные дефекты исправлены (ширина колонки «руб.», лучший месяц без доп. выплат, регистр месяца).</td></tr>
+                    <tr><td>Web</td><td>Маршруты доп. выплат, прогноза, заметок; поле и виды в шаблоне. В браузере на dev-сервере: добавление, отображение в списке, таблице и статистике, удаление.</td></tr>
+                    <tr><td>Бот</td><td>Весь ввод доп. выплаты кнопками и текстом, ошибки ввода, заметки, тексты отчётов; маршрутизация посреди ввода на настоящих фильтрах aiogram.</td></tr>
+                    <tr><td>Production</td><td>Каждая часть задеплоена; миграции 006 и 007 применились; web и бот работают; пользователь проверил изменения.</td></tr>
+                    <tr><td>Ruff / UTF-8 / JS</td><td>Правила CI пройдены; файлы в UTF-8 без BOM; синтаксис JS проверен в Node.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>desktop/app.py</code> не менялись; все компилируются и прошли проверку деплоя.</li>
+                <li><code>bot/main.py</code>: подключение роутеров по общему списку, команда /extra в меню Telegram. Бот локально не запускался, чтобы не конфликтовать с production-ботом по токену.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="files">
+            <h2>8. Карта изменённых файлов</h2>
+            <h3>Новые компоненты</h3>
+            <div class="file">core/models/extra_payment.py; core/repositories/extra_payment_repository.py; core/services/extra_payment_service.py; api/salary_api_modules/extras.py</div>
+            <div class="file">bot/handlers/common.py; bot/handlers/extras.py; desktop/views/dialogs/extra_payment_dialog.py; desktop/widgets/tooltip.py</div>
+            <div class="file">tests/unit/core/services/test_extra_payments.py; test_month_notes.py; tests/unit/bot/test_bot_extras.py; test_bot_notes.py; tests/unit/desktop/test_extras_desktop.py; tests/unit/desktop/presenters/test_chart_presenter_kpi.py</div>
+            <h3>Обновлённые файлы</h3>
+            <div class="file">core/database/migrations.py; core/models/salary.py; core/models/year.py; core/repositories/salary_repository.py; core/repositories/analytics_repository.py; core/services/salary_service.py; core/services/statistics_service.py; core/services/export_service.py; core/utils/money.py</div>
+            <div class="file">api/salary_api.py; api/salary_api_modules/analytics.py; web/routes/pages.py; web/routes/salaries.py; web/templates/index.html; web/static/js/common.js; web/static/js/index.js; web/static/js/reports.js; web/static/js/settings.js</div>
+            <div class="file">bot/main.py; bot/handlers/__init__.py; bot/handlers/salary.py; bot/handlers/reports.py; bot/keyboards/menu.py; bot/keyboards/salary.py; bot/presenters/year_report.py; bot/states.py</div>
+            <div class="file">desktop/views/dialogs/salary_dialog.py; desktop/views/main/month_cell.py; desktop/views/main/main_view.py; desktop/views/report/report_view.py; desktop/presenters/chart_presenter.py; desktop/controllers/main_tab_controller.py; desktop/controllers/navigation_controller.py; desktop/controllers/report_tab_controller.py; desktop/views/constants/texts.py</div>
+            <p><strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>. Рабочие БД, токены, логи и пользовательские экспорты в коммит не включаются.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>9. Обновление production</h2>
+            <ol>
+                <li>Закрыть desktop-приложение production.</li>
+                <li>Запустить деплой с перезапуском сервисов: миграции 006 и 007 применятся при первом запуске web или бота.</li>
+                <li>Отправить боту <code>/start</code> — появится кнопка «💰 Доп. выплата».</li>
+            </ol>
+            <pre><code>python scripts/deploy_to_prod.py --restart-services</code></pre>
+            <p class="note"><strong>Совместимость:</strong> миграции только добавляют колонку, таблицу и представление; существующие данные не меняются. Прежние версии их не используют, поэтому возврат к 1.2.32 возможен обычным деплоем предыдущего кода — но внесённые доп. выплаты в нём не будут учитываться в итогах.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.33 · 22.10.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>

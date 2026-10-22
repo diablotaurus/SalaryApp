@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.32</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.33</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -37,33 +37,34 @@
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.32</h1>
-            <p class="subtitle">Краткий отчёт: Telegram-бот с меню и отчётами — сводка года с листанием, итоги по годам, графики, рекорды, Excel и годовой итог; прод на проверенных версиях библиотек</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.33</h1>
+            <p class="subtitle">Краткий отчёт: доп. выплаты (отпускные, премии, больничные), регулярный доход, заметки к месяцам и прогноз года — во всех интерфейсах</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.32</p>
+            <p><strong>Версия:</strong> v.1.2.33</p>
             <p><strong>Дата:</strong> 22 октября 2026 г.</p>
-            <p><strong>Предрелизные проверки:</strong> 383 теста на Flask 3.1.3 и aiogram 3.31.0; отчёты и графики на копии production-БД; маршрутизация меню посреди ввода; проверка остальных проектов общего Python; Ruff 0.12.12; UTF-8 без BOM; точки входа.</p>
-            <p><strong>Подробный отчёт:</strong> <a href="changelog_22.10.2026_1.2.32.html">docs/changelog_22.10.2026_1.2.32.html</a></p>
+            <p><strong>Предрелизные проверки:</strong> 437 тестов; миграции 006 и 007 на старой базе и на production; desktop на копии production-БД; web в браузере на dev-сервере; маршрутизация бота посреди ввода; Ruff; UTF-8 без BOM; точки входа.</p>
+            <p><strong>Подробный отчёт:</strong> <a href="changelog_22.10.2026_1.2.33.html">docs/changelog_22.10.2026_1.2.33.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.32 current</div>
+        <div class="version-display">SalaryApp v.1.2.33 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type added">BOT</span>Постоянное меню: «➕ Внести», «📅 Этот год», «📆 По годам», «📊 Отчёты», «❓ Помощь»; кнопка «Меню» Telegram со списком команд.</li>
-                <li><span class="change-type added">BOT</span>Сводка года вместо 12 блоков: итог, среднее и рост к прошлому году, «год к году» за тот же период, последние месяцы; ◀ ▶ по годам, «Подробно», «📈 График». Итоги по всем годам.</li>
-                <li><span class="change-type added">REPORTS</span>Графики картинкой (год против прошлого, среднемесячное по годам), рекорды, Excel-файл в чат, сравнение месяца со средним после ввода, годовой итог с графиком в январе.</li>
-                <li><span class="change-type fixed">OPS</span>Прод переведён на версии из requirements (Flask 3.1.3, aiogram 3.31.0) — те же, что проверяет CI; деплой сверяет версии зависимостей.</li>
+                <li><span class="change-type added">EXTRAS</span>Доп. выплаты — отпускные, премии, больничные, прочее — относятся к месяцу получения и входят во все итоги, графики, рекорды и экспорт. Ввод: раздел в окне месяца desktop и в форме web, кнопка «💰 Доп. выплата» в боте.</li>
+                <li><span class="change-type added">AVG</span>Два средних: всего и регулярный доход (аванс + зарплата) — отпускные и премии не искажают динамику.</li>
+                <li><span class="change-type added">NOTES</span>Заметка к месяцу: поле в desktop и web, значок ✎ с подсказкой, кнопка «📝 Заметка к месяцу» в боте, колонка в экспорте.</li>
+                <li><span class="change-type added">FORECAST</span>Прогноз итога текущего года: в боте, на «Аналитике» desktop и в web.</li>
             </ul>
-            <p><strong>Совместимость:</strong> схема БД не менялась, миграций нет. Чтобы увидеть новое меню бота, отправьте /start.</p>
+            <p><strong>Совместимость:</strong> миграции 006 (заметки) и 007 (доп. выплаты) только добавляют колонку, таблицу и представление; существующие данные не меняются.</p>
         </div>
 
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_22.10.2026_1.2.33.html">22-10-2026</a> - v.1.2.33 - доп. выплаты (отпускные, премии, больничные), регулярный доход, заметки к месяцам, прогноз года (подробный отчёт)</li>
                 <li><a href="changelog_22.10.2026_1.2.32.html">22-10-2026</a> - v.1.2.32 - бот с меню и отчётами: сводка года, итоги по годам, графики, рекорды, Excel, годовой итог; прод на версиях из requirements (подробный отчёт)</li>
                 <li><a href="changelog_22.10.2026_1.2.31.html">22-10-2026</a> - v.1.2.31 - напоминания в Telegram о вводе аванса и зарплаты: дни по истории, кнопки «Внести» и «Оставить», выключатель в desktop (подробный отчёт)</li>
                 <li><a href="changelog_21.10.2026_1.2.30.html">21-10-2026</a> - v.1.2.30 - клик по месяцу в desktop, кнопки в Telegram-боте, правка из таблицы web, рабочие настройки, единый формат сумм (подробный отчёт)</li>
