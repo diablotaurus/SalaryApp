@@ -11,7 +11,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.config import load_allowed_user_ids, load_bot_token, load_proxies
-from bot.handlers import reports_router, salary_router
+from bot.handlers import ROUTERS
 from bot.middlewares import BotAccessMiddleware
 from bot.reminders import run_reminders
 from core.config.settings import config
@@ -74,6 +74,7 @@ async def _create_bot(token: str) -> Bot:
 
 BOT_COMMANDS = [
     BotCommand(command="add", description="Внести аванс и зарплату"),
+    BotCommand(command="extra", description="Доп. выплата: отпускные, премия…"),
     BotCommand(command="current", description="Сводка за текущий год"),
     BotCommand(command="years", description="Итоги по годам"),
     BotCommand(command="reports", description="Графики, рекорды, Excel"),
@@ -103,9 +104,8 @@ async def main() -> None:
     access = BotAccessMiddleware(allowed_user_ids)
     dispatcher.message.outer_middleware(access)
     dispatcher.callback_query.outer_middleware(access)
-    # Отчёты раньше ввода: кнопки «Этот год»/«По годам» работают и посреди ввода
-    dispatcher.include_router(reports_router)
-    dispatcher.include_router(salary_router)
+    # Порядок важен (см. bot/handlers/__init__.py)
+    dispatcher.include_routers(*ROUTERS)
     await _set_commands(bot)
 
     logger.info("Бот запущен")

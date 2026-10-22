@@ -4,52 +4,28 @@ from __future__ import annotations
 from typing import Optional
 
 from aiogram import F, Router, types
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 
 from api.salary_api import SalaryAPI
+from bot.handlers.common import (
+    DATE_BUTTONS,
+    chosen_date as _chosen_date,
+    confirm_choice as _confirm_choice,
+    date_keyboard as _date_keyboard,
+    is_cancel_text as _is_cancel_text,
+    read_amount as _read_amount,
+    read_date as _read_date,
+)
 from bot.keyboards import menu
 from bot.keyboards import salary as keyboards
 from bot.presenters.year_report import format_month_comparison
-from bot.states import NoteStates, SalaryStates
-from core.utils.clock import moscow_today
+from bot.states import ExtraStates, NoteStates, SalaryStates
 from core.utils.dates import DateUtils
 from core.utils.money import MoneyUtils
 
 
 router = Router()
-
-CANCEL_WORDS = {"отмена", "отменить"}
-ASK_DATE_AGAIN = "Введите дату (ДД.ММ.ГГГГ) или '-' чтобы пропустить:"
-DATE_FORMAT = "%d.%m.%Y"
-
-
-def _parse_optional_date(text: str) -> Optional[str]:
-    value = text.strip()
-    return None if value in ("-", "нет", "skip", "пропустить") else value
-
-
-def _is_cancel_text(message: types.Message) -> bool:
-    return bool(message.text) and message.text.strip().lower() in CANCEL_WORDS
-
-
-async def _read_date(message: types.Message, field_label: str) -> tuple[bool, Optional[str]]:
-    """
-    Прочитать дату выплаты из ответа: (ок, дата ДД.ММ.ГГГГ или None при пропуске).
-
-    Дата проверяется сразу на своём шаге: раньше ошибка обнаруживалась
-    только при сохранении, и весь введённый месяц приходилось вводить заново.
-    """
-    value = _parse_optional_date(message.text)
-    if value is None:
-        return True, None
-    check = SalaryAPI.validate_payment_date(value, field_label)
-    if check.get("success"):
-        return True, check.get("data")
-    await message.answer(f"❌ {check.get('message')}\n{ASK_DATE_AGAIN}")
-    return False, None
-
 
 def _format_existing_month_warning(data: dict) -> str:
     """Предупреждение, что у месяца уже есть данные и новые значения их заменят."""
@@ -59,6 +35,10 @@ def _format_existing_month_warning(data: dict) -> str:
         f"⚠️ За {data.get('month_name', '')} {data.get('year', '')} уже есть данные:\n"
         f"  Аванс: {advance}  •  {data.get('advance_date') or '-'}\n"
         f"  Зарплата: {salary}  •  {data.get('salary_date') or '-'}\n"
+        + (
+            f"  Доп. выплаты: {MoneyUtils.format_amount_plain(float(data['extras_total']))}\n"
+            if float(data.get("extras_total") or 0) > 0 else ""
+        )
         + (f"  📝 {data['note']}\n" if data.get("note") else "")
         + "Новые значения заменят их, пропуск даты («-») оставит прежнюю.\n"
         "Отмена — /cancel"
@@ -72,8 +52,9 @@ HELP_TEXT = (
     f"{menu.MENU_YEAR} — сводка, ◀ ▶ листают годы\n"
     f"{menu.MENU_YEARS} — итоги и рост по годам\n"
     f"{menu.MENU_REPORTS} — графики, рекорды, Excel-файл\n"
+    f"{menu.MENU_EXTRA} — отпускные, премия, больничные\n"
     f"{menu.MENU_HELP} — эта справка\n\n"
-    "Команды: /add, /current, /years, /reports, /records, /2025 (любой год), /cancel\n"
+    "Команды: /add, /extra, /current, /years, /reports, /records, /2025 (любой год), /cancel\n"
     "Суммы: 87 432,71 или 87432.71\n"
     "Даты: ДД.ММ.ГГГГ, «-» — пропустить\n\n"
     "🔔 В дни выплат бот напомнит, если сумма не внесена, а в январе пришлёт итоги года."
@@ -98,7 +79,7 @@ async def _cancel(message: types.Message, state: FSMContext) -> None:
 # Отмена регистрируется раньше обработчиков шагов ввода:
 # иначе «/cancel» был бы принят шагом как ответ (например, как сумма).
 @router.message(Command("cancel"))
-@router.message(StateFilter(SalaryStates, NoteStates), _is_cancel_text)
+@router.message(StateFilter(SalaryStates, NoteStates, ExtraStates), _is_cancel_text)
 async def cmd_cancel(message: types.Message, state: FSMContext):
     await _cancel(message, state)
 
@@ -172,32 +153,6 @@ async def process_month(message: types.Message, state: FSMContext):
         await message.answer("Введите корректный месяц (1-12):")
         return
     await _start_month(message, state, month)
-
-
-async def _read_amount(message: types.Message, field_label: str, ask_again: str) -> Optional[float]:
-    """
-    Прочитать сумму из ответа по тем же правилам, что в desktop (MoneyUtils.parse_amount).
-
-    Понимает пробелы (в т.ч. неразрывные из банковских приложений) и запятую:
-    «87 432,71». Раньше бот принимал только float(): сумма с пробелами
-    отклонялась, а «nan» или «1e5» проходили шаг и падали лишь при сохранении,
-    и весь введённый месяц терялся.
-    """
-    try:
-        amount = MoneyUtils.parse_amount(message.text, field_label)
-    except ValueError as exc:
-        error = str(exc)
-        await message.answer(f"❌ {error[:1].upper()}{error[1:]}\n{ask_again}")
-        return None
-    if amount < 0:
-        await message.answer(f"Сумма не может быть отрицательной. {ask_again}")
-        return None
-    return amount
-
-
-def _date_keyboard():
-    """Кнопки «Сегодня» (по МСК) и «Пропустить» под вопросом о дате выплаты."""
-    return keyboards.date_keyboard(moscow_today().strftime(DATE_FORMAT))
 
 
 @router.message(SalaryStates.waiting_for_advance, F.text)
@@ -312,7 +267,7 @@ async def process_note(message: types.Message, state: FSMContext):
 
 # Регистрируется последним среди сообщений: стикер, фото или голосовое на любом
 # шаге ввода раньше приводили к ошибке в обработчике (у таких сообщений нет текста).
-@router.message(StateFilter(SalaryStates, NoteStates))
+@router.message(StateFilter(SalaryStates, NoteStates, ExtraStates))
 async def process_non_text(message: types.Message):
     await message.answer("Пришлите ответ текстом или /cancel для отмены.")
 
@@ -321,16 +276,6 @@ async def process_non_text(message: types.Message):
 # Каждая кнопка работает только на своём шаге. Нажатая кнопка убирается,
 # а выбор дописывается в то же сообщение — видно, что выбрано, и нельзя
 # нажать повторно.
-
-
-async def _confirm_choice(callback: types.CallbackQuery, choice: str) -> None:
-    await callback.answer()
-    message = callback.message
-    try:
-        await message.edit_text(f"{message.text}\n➜ {choice}")
-    except TelegramBadRequest:
-        # Сообщение слишком старое или уже изменено — выбор всё равно принят
-        pass
 
 
 @router.callback_query(F.data == keyboards.CANCEL)
@@ -403,16 +348,6 @@ async def choose_month(callback: types.CallbackQuery, state: FSMContext):
     month = keyboards.parse_month(callback.data)
     await _confirm_choice(callback, DateUtils.get_month_name(month))
     await _start_month(callback.message, state, month)
-
-
-async def _chosen_date(callback: types.CallbackQuery) -> Optional[str]:
-    """Дата по кнопке: сегодня по МСК или None («Пропустить»)."""
-    value = moscow_today().strftime(DATE_FORMAT) if callback.data == keyboards.DATE_TODAY else None
-    await _confirm_choice(callback, value or "без даты")
-    return value
-
-
-DATE_BUTTONS = {keyboards.DATE_TODAY, keyboards.DATE_SKIP}
 
 
 @router.callback_query(SalaryStates.waiting_for_advance_date, F.data.in_(DATE_BUTTONS))

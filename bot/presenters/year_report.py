@@ -28,6 +28,17 @@ def _percent(value: Optional[float]) -> str:
     return f"{sign}{abs(value):.1f} %".replace(".", ",")
 
 
+def _extras_lines(summary: dict) -> list[str]:
+    """«в т.ч. доп. выплаты: …» — только если они были."""
+    extras = float(summary.get("total_extras") or 0)
+    return [f"в т.ч. доп. выплаты: {_amount(extras)}"] if extras > 0 else []
+
+
+def _extras_text(extras: list[dict]) -> str:
+    """«Отпускные 35 000,00, Премия 20 000,00»."""
+    return ", ".join(f"{item['kind_name']} {_amount(item['amount'])}" for item in extras)
+
+
 def _by_year(years_data: list[dict]) -> dict[int, dict]:
     return {int(item["year"]): item for item in years_data}
 
@@ -72,12 +83,11 @@ def format_year_overview(
     if change is not None:
         average_line += f" ({_percent(change)} к {year - 1})"
 
-    lines = [
-        f"📅 {year} год",
-        "",
-        f"Итого: {_amount(summary['total'])}",
-        average_line,
-    ]
+    lines = [f"📅 {year} год", "", f"Итого: {_amount(summary['total'])}"]
+    lines += _extras_lines(summary)
+    lines.append(average_line)
+    if float(summary.get("total_extras") or 0) > 0:
+        lines.append(f"Регулярный доход: {_amount(summary.get('regular_average_monthly'))} в месяц")
     ytd_line = _year_to_date_line(ytd)
     if ytd_line:
         lines.append(ytd_line)
@@ -107,6 +117,7 @@ def format_year_details(years_data: list[dict], year: int) -> str:
             f"  Аванс: {_amount(month['advance'])}  •  {month.get('advance_date') or '-'}",
             f"  Зарплата: {_amount(month['salary'])}  •  {month.get('salary_date') or '-'}",
             f"  Итого: {_amount(month['total'])}",
+            *([f"  Доп.: {_extras_text(month['extras'])}"] if month.get("extras") else []),
             *([f"  📝 {month['note']}"] if month.get("note") else []),
         ]))
     blocks.append(f"Итого за год: {_amount(years[year]['summary']['total'])}")
@@ -184,6 +195,7 @@ def format_annual_report(years_data: list[dict], year: int) -> str:
         f"🎉 Итоги {year} года",
         "",
         f"Заработано: {_amount(summary['total'])}",
+        *_extras_lines(summary),
         average_line,
         f"Месяцев с данными: {summary['months_with_data']}",
     ]

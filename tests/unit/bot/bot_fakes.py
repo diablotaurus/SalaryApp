@@ -4,8 +4,7 @@ from datetime import datetime as _dt
 
 from aiogram.types import CallbackQuery, Chat, Message, User
 
-from bot.handlers import reports_router, salary_router
-from bot.handlers.salary import router
+from bot.handlers import ROUTERS
 
 
 class FakeMessage:
@@ -76,10 +75,12 @@ def route_callback(data, state=None):
     )
 
     async def _find():
-        for handler in router.callback_query.handlers:
-            matched, _ = await handler.check(callback, raw_state=state.state if state else None, bot=None)
-            if matched:
-                return handler.callback
+        # Порядок роутеров — как в bot/main.py
+        for router in ROUTERS:
+            for handler in router.callback_query.handlers:
+                matched, _ = await handler.check(callback, raw_state=state.state if state else None, bot=None)
+                if matched:
+                    return handler.callback
         return None
 
     return asyncio.run(_find())
@@ -121,7 +122,7 @@ def route_message(text, state=None):
     )
 
     async def _find():
-        for router in (reports_router, salary_router):
+        for router in ROUTERS:
             for handler in router.message.handlers:
                 matched, _ = await handler.check(message, raw_state=state.state if state else None, bot=None)
                 if matched:

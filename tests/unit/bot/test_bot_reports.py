@@ -84,7 +84,7 @@ def test_main_menu_buttons():
     markup = menu.main_menu()
 
     assert [[b.text for b in row] for row in markup.keyboard] == [
-        ["➕ Внести", "📅 Этот год"], ["📆 По годам", "📊 Отчёты"], ["❓ Помощь"],
+        ["➕ Внести", "📅 Этот год"], ["📆 По годам", "📊 Отчёты"], ["💰 Доп. выплата", "❓ Помощь"],
     ]
     assert markup.is_persistent and markup.resize_keyboard
 

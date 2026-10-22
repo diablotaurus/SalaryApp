@@ -19,7 +19,9 @@ MENU_ADD = "➕ Внести"
 MENU_YEAR = "📅 Этот год"
 MENU_YEARS = "📆 По годам"
 MENU_REPORTS = "📊 Отчёты"
+MENU_EXTRA = "💰 Доп. выплата"
 MENU_HELP = "❓ Помощь"
+MENU_TEXTS = {MENU_ADD, MENU_YEAR, MENU_YEARS, MENU_REPORTS, MENU_EXTRA, MENU_HELP}
 
 YEAR_PREFIX = "year:"            # year:2026 — сводка года
 YEAR_DETAILS_PREFIX = "yeardet:"  # yeardet:2026 — подробно по месяцам
@@ -34,7 +36,7 @@ def main_menu() -> ReplyKeyboardMarkup:
         keyboard=[
             [KeyboardButton(text=MENU_ADD), KeyboardButton(text=MENU_YEAR)],
             [KeyboardButton(text=MENU_YEARS), KeyboardButton(text=MENU_REPORTS)],
-            [KeyboardButton(text=MENU_HELP)],
+            [KeyboardButton(text=MENU_EXTRA), KeyboardButton(text=MENU_HELP)],
         ],
         resize_keyboard=True,
         is_persistent=True,

@@ -14,6 +14,15 @@ class SalaryStates(StatesGroup):
     waiting_for_salary_date = State()
 
 
+class ExtraStates(StatesGroup):
+    """Доп. выплата: вид → месяц получения → сумма → дата."""
+
+    waiting_for_kind = State()
+    waiting_for_month = State()
+    waiting_for_amount = State()
+    waiting_for_date = State()
+
+
 class NoteStates(StatesGroup):
     """Заметка к уже внесённому месяцу (кнопка после сохранения)."""
 

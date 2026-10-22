@@ -107,7 +107,7 @@ def test_month_button_after_typed_year(no_existing_month):
 
 
 def test_today_button_uses_moscow_date(monkeypatch):
-    monkeypatch.setattr("bot.handlers.salary.moscow_today", lambda: date(2026, 10, 21))
+    monkeypatch.setattr("bot.handlers.common.moscow_today", lambda: date(2026, 10, 21))
     callback = FakeCallback(keyboards.DATE_TODAY, FakeMessage("Введите дату аванса"))
     state = FakeState({"advance": 1.0}, SalaryStates.waiting_for_advance_date)
 

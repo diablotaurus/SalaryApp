@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from core.models.extra_payment import EXTRA_KINDS
 from core.utils.dates import DateUtils
 
 CANCEL = "cancel"
@@ -19,6 +20,8 @@ KEEP_PREFIX = "keep:"      # keep:advance — оставить сохранён�
 REMIND_PREFIX = "remind:"  # remind:salary:2026:9 — открыть ввод по напоминанию
 SNOOZE_PREFIX = "snooze:"  # snooze:salary:2026:9 — больше не напоминать
 NOTE_PREFIX = "note:"      # note:2026:10 — заметка к месяцу
+EXTRA_KIND_PREFIX = "extrakind:"      # extrakind:bonus — вид доп. выплаты
+EXTRA_PERIOD_PREFIX = "extraperiod:"  # extraperiod:2026:10 — месяц доп. выплаты
 
 # Винительный падеж для кнопки «Внести …»
 PAYMENT_ACCUSATIVE = {"advance": "аванс", "salary": "зарплату"}
@@ -93,6 +96,34 @@ def parse_payment(data: str) -> tuple[str, int, int]:
     if kind not in PAYMENT_ACCUSATIVE:
         raise ValueError(f"Неизвестный вид выплаты: {kind}")
     return kind, int(year), int(month)
+
+
+def extra_kind_keyboard() -> InlineKeyboardMarkup:
+    """Виды доп. выплат по два в ряд и «Отмена»."""
+    buttons= [
+        InlineKeyboardButton(text=name, callback_data=f"{EXTRA_KIND_PREFIX}{kind}")
+        for kind, name in EXTRA_KINDS.items()
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=[buttons[0:2], buttons[2:4], _cancel_row()])
+
+
+def extra_period_keyboard(year: int, month: int) -> InlineKeyboardMarkup:
+    """Текущий и прошлый месяц для доп. выплаты."""
+    previous = DateUtils.get_previous_month(year, month)
+    buttons = [
+        InlineKeyboardButton(text=period_label(y, m), callback_data=f"{EXTRA_PERIOD_PREFIX}{y}:{m}")
+        for y, m in ((year, month), previous)
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=[buttons, _cancel_row()])
+
+
+def parse_extra_kind(data: str) -> str:
+    return data[len(EXTRA_KIND_PREFIX):]
+
+
+def parse_extra_period(data: str) -> tuple[int, int]:
+    year, month = data[len(EXTRA_PERIOD_PREFIX):].split(":")
+    return int(year), int(month)
 
 
 def note_keyboard(year: int, month: int) -> InlineKeyboardMarkup:

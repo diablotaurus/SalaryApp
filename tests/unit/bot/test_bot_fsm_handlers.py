@@ -2,11 +2,12 @@ import asyncio
 
 import pytest
 
+from bot.handlers.common import parse_optional_date as _parse_optional_date
+
 from bot.handlers.salary import (
     SalaryStates,
     _is_cancel_text,
-    _parse_optional_date,
-    cmd_cancel,
+cmd_cancel,
     process_advance,
     process_advance_date,
     process_month,
