@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog: SalaryApp 1.2.35 - быстрая «Аналитика» в desktop</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; color: #333; letter-spacing: 0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4a6fa5; }
+        h1 { color: #2c3e50; font-size: 2em; margin: 0 0 10px; }
+        .subtitle { color: #59686a; font-size: 1.1em; margin: 0; }
+        .meta { background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .meta p { margin: 5px 0; }
+        .version-display { font-size: 1.7em; font-weight: bold; color: #2c3e50; text-align: center; margin: 20px 0; padding: 14px; background: #edf3f8; border: 2px solid #4a6fa5; border-radius: 6px; }
+        .section { margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd; }
+        .section h2 { color: #2c3e50; margin: 0 0 15px; border-left: 4px solid #3498db; padding-left: 12px; font-size: 1.4em; }
+        .section h3 { color: #286b8d; margin: 20px 0 8px; font-size: 1.1em; }
+        ul, ol { padding-left: 24px; }
+        li { margin: 8px 0; }
+        a { color: #175ea8; text-underline-offset: 3px; }
+        code, .file { font-family: Consolas, 'Courier New', monospace; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 3px; }
+        code, .file, a { overflow-wrap: anywhere; }
+        .change-type { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 7px; }
+        .added { background: #d4edda; color: #155724; }
+        .changed { background: #fff3cd; color: #856404; }
+        .fixed { background: #d1ecf1; color: #0c5460; }
+        .refactored { background: #e3f2fd; color: #0d47a1; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid #d89912; background: #fff5d7; }
+        .result-box { padding: 15px; margin: 20px 0; border-left: 4px solid #298354; background: #e8f5ed; }
+        .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+        .summary-item { padding: 15px; text-align: center; border-radius: 6px; }
+        .summary-item strong { display: block; font-size: 1.2em; }
+        .summary-security { background: #e3f2fd; }
+        .summary-data { background: #e8f5e9; }
+        .summary-tests { background: #fff3cd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 15px 0; }
+        th, td { border: 1px solid #d9e1e5; text-align: left; vertical-align: top; padding: 10px; overflow-wrap: anywhere; }
+        th { background: #edf2f5; color: #2c3e50; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        .file { background: #f3f5f6; padding: 9px 12px; margin: 7px 0; border-left: 3px solid #3498db; font-size: 0.92em; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f6; padding: 15px; border: 1px solid #d9e1e5; }
+        pre code { background: transparent; padding: 0; }
+        footer { text-align: center; border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; color: #59686a; }
+        @media (max-width: 650px) {
+            body { padding: 8px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5em; }
+            .summary { grid-template-columns: 1fr; }
+            .section h2 { font-size: 1.2em; }
+            th, td { padding: 7px; font-size: 0.9em; }
+        }
+        @media print {
+            body, .container { padding: 0; background: white; }
+            h2, h3 { break-after: avoid; }
+            tr, .note, .result-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>SalaryApp 1.2.35</h1>
+            <p class="subtitle">Быстрая «Аналитика»: вкладка открывается примерно вчетверо быстрее и не падает без прогноза</p>
+        </header>
+
+        <div class="meta">
+            <p><strong>Дата:</strong> 11 ноября 2026 г.</p>
+            <p><strong>Предыдущая версия:</strong> 1.2.34 current</p>
+            <p><strong>Новая версия:</strong> 1.2.35 current; скрипт деплоя записывает в production 1.2.35 без служебного суффикса.</p>
+            <p><strong>Область изменений:</strong> desktop (вкладка «Аналитика»), тесты. Web, Telegram-бот, база данных и зависимости не менялись.</p>
+            <p><strong>Основание:</strong> вопрос пользователя об ускорении программы. Переход на другой язык отклонён: паузы дают импорт и отрисовка matplotlib, а не Python-код проекта, поэтому сделаны точечные правки по замерам. Ошибку «Не удалось обновить аналитику» пользователь нашёл при проверке на тестовой базе.</p>
+            <p><strong>Отчёты:</strong> <a href="changelog.html">краткий changelog и история</a>; <a href="changelog_22.10.2026_1.2.34.html">отчёт предыдущей версии</a>.</p>
+        </div>
+
+        <div class="version-display">SalaryApp v.1.2.35 current</div>
+        <div class="summary">
+            <div class="summary-item summary-security"><strong>≈ 0,5 с</strong>Первое открытие «Аналитики» вместо ≈ 2,0 с</div>
+            <div class="summary-item summary-data"><strong>Без ошибки</strong>Вкладка работает, когда прогноза нет</div>
+            <div class="summary-item summary-tests"><strong>448 тестов</strong>+9 к версии 1.2.34</div>
+        </div>
+
+        <section class="section" id="speed">
+            <h2>1. Ускорение «Аналитики»</h2>
+            <p>Замеры на копии production-БД, окно развёрнуто на весь экран, по три прогона до и после.</p>
+            <table>
+                <thead><tr><th>Действие</th><th>Было (1.2.34)</th><th>Стало (1.2.35)</th></tr></thead>
+                <tbody>
+                    <tr><td>Первое открытие «Аналитики» через 2 с после запуска</td><td>1,9–2,1 с</td><td>0,5–0,6 с</td></tr>
+                    <tr><td>Первое открытие сразу после запуска</td><td>2,0 с</td><td>1,4 с</td></tr>
+                    <tr><td>Смена года</td><td>0,4–0,5 с</td><td>0,2–0,3 с</td></tr>
+                    <tr><td>Переход на другую вкладку с графиком</td><td>0,11–0,15 с</td><td>0,15–0,25 с</td></tr>
+                    <tr><td>Запуск приложения</td><td>0,9–1,4 с</td><td>0,9–1,4 с</td></tr>
+                </tbody>
+            </table>
+            <ul>
+                <li><span class="change-type added">ADDED</span>matplotlib подгружается фоновым потоком через 0,3 с после показа окна (<code>ChartBackendLoader</code>). В потоке выполняется только импорт модулей, виджеты Tk там не создаются. Если открыть «Аналитику» раньше, чем загрузка закончилась, приложение дождётся её; если фоновая загрузка не удалась, импорт повторяется обычным путём.</li>
+                <li><span class="change-type changed">CHANGED</span>Графики больше не отрисовываются пустыми сразу после создания: следом они всё равно заполняются данными.</li>
+                <li><span class="change-type changed">CHANGED</span>Перерисовывается только график открытой вкладки. Остальные три помечаются и дорисовываются при переходе на них, поэтому этот переход стал чуть медленнее, а смена года — заметно быстрее.</li>
+                <li><span class="change-type refactored">REFACTORED</span>Четыре почти одинаковых метода создания графиков сведены к одному; описания вкладок собраны в <code>CHART_TABS</code>.</li>
+            </ul>
+            <p class="note"><strong>Запуск приложения не изменился:</strong> matplotlib по-прежнему не загружается при старте, это проверяет существующий тест точек входа.</p>
+        </section>
+
+        <section class="section" id="fix">
+            <h2>2. Исправление: «Не удалось обновить аналитику»</h2>
+            <table>
+                <thead><tr><th>Было</th><th>Причина</th><th>Стало</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>При открытии «Аналитики» появлялось окно «Не удалось обновить аналитику», графики и быстрые итоги оставались пустыми.</td>
+                        <td>Ошибка из версии 1.2.33 (прогноз года). Когда прогноз посчитать не из чего — мало месяцев с выплатами за последний год, — API отвечает «успех» без поля <code>data</code>, а контроллер вкладки обращался к этому полю напрямую.</td>
+                        <td>Отсутствие прогноза — обычная ситуация: ячейка прогноза пустая, остальная вкладка работает.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <ul>
+                <li><span class="change-type fixed">FIXED</span><code>ReportTabController._response_data</code> читает данные ответа безопасно.</li>
+                <li><span class="change-type fixed">FIXED</span>Заглушки в тестах контроллера возвращали ответ не в том виде, что настоящий API, и ошибку не ловили. Теперь они повторяют настоящий ответ; без исправления два теста падают.</li>
+                <li>В production ошибка не проявлялась, потому что там прогноз есть; она проявилась бы при тех же условиях, что и на тестовой базе.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="verification">
+            <h2>3. Выполненные проверки</h2>
+            <table>
+                <thead><tr><th>Проверка</th><th>Результат / покрытие</th></tr></thead>
+                <tbody>
+                    <tr><td>Полный pytest</td><td>448 тестов успешно (в 1.2.34 было 439).</td></tr>
+                    <tr><td>Новые тесты</td><td>Загрузчик: загрузка по требованию один раз, фоновый поток, ожидание незаконченной загрузки, отсутствие matplotlib, повтор после сбоя в фоне. Отрисовка: видимый график рисуется сразу, скрытый — при переходе на вкладку.</td></tr>
+                    <tr><td>Замеры</td><td>До и после на копии production-БД, см. таблицу в разделе 1.</td></tr>
+                    <tr><td>Внешний вид</td><td>Снимки «Помесячных данных», «Темпов роста» и вкладки после смены года на копии production-БД. «Сравнение по годам», «Средние значения» и подсказки на столбцах по снимкам не проверялись.</td></tr>
+                    <tr><td>Ошибка без прогноза</td><td>Воспроизведена на тестовой базе до исправления и не воспроизводится после.</td></tr>
+                    <tr><td>Ruff / UTF-8</td><td>Новых замечаний нет; файлы в UTF-8 без BOM.</td></tr>
+                    <tr><td>Production</td><td>Обе правки задеплоены до релиза; пользователь проверил их вручную.</td></tr>
+                </tbody>
+            </table>
+            <h3>Обязательные точки входа</h3>
+            <ul>
+                <li><code>desktop/app.py</code>: добавлен отложенный вызов фоновой загрузки графиков после создания окна.</li>
+                <li><code>StartSalary.pyw</code>, <code>run_web.py</code>, <code>run_bot.py</code>, <code>bot/main.py</code> не менялись.</li>
+            </ul>
+        </section>
+
+        <section class="section" id="files">
+            <h2>4. Карта изменённых файлов</h2>
+            <div class="file">desktop/views/report/chart_backend.py (новый); desktop/views/report/report_view.py; desktop/app.py; desktop/controllers/report_tab_controller.py</div>
+            <div class="file">tests/unit/desktop/views/test_chart_loading.py (новый); tests/unit/desktop/controllers/test_tab_controllers.py</div>
+            <p><strong>Релизные файлы:</strong> <code>version.txt</code>, этот отчёт и <code>docs/changelog.html</code>.</p>
+        </section>
+
+        <section class="section" id="upgrade">
+            <h2>5. Обновление production</h2>
+            <ol>
+                <li>Закрыть desktop-приложение production.</li>
+                <li>Запустить деплой; web и бот не менялись, перезапуск нужен только чтобы они показывали новую версию.</li>
+                <li>Открыть desktop, подождать пару секунд и открыть «Аналитику».</li>
+            </ol>
+            <pre><code>python scripts/deploy_to_prod.py --restart-services</code></pre>
+            <p class="note"><strong>Совместимость:</strong> база данных и зависимости не менялись; возврат к 1.2.34 — обычным деплоем предыдущего кода.</p>
+        </section>
+
+        <footer>
+            <p>SalaryApp v.1.2.35 · 11.11.2026 · UTF-8 без BOM</p>
+            <p><a href="changelog.html">Краткий отчёт и история версий</a></p>
+        </footer>
+    </main>
+</body>
+</html>
