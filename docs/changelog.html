@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangeLog: SalaryApp - версия v.1.2.35</title>
+    <title>ChangeLog: SalaryApp - версия v.1.2.36</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -37,24 +37,23 @@
 <body>
     <div class="container">
         <header>
-            <h1>ChangeLog: SalaryApp - версия v.1.2.35</h1>
-            <p class="subtitle">Краткий отчёт: быстрая «Аналитика» — вкладка открывается примерно вчетверо быстрее и не падает без прогноза</p>
+            <h1>ChangeLog: SalaryApp - версия v.1.2.36</h1>
+            <p class="subtitle">Краткий отчёт: на графиках «Аналитики» подпись оси слева не обрезается в нешироком окне</p>
         </header>
 
         <div class="meta">
-            <p><strong>Версия:</strong> v.1.2.35</p>
+            <p><strong>Версия:</strong> v.1.2.36</p>
             <p><strong>Дата:</strong> 11 ноября 2026 г.</p>
-            <p><strong>Предрелизные проверки:</strong> 448 тестов; замеры до и после на копии production-БД; снимки графиков; Ruff; UTF-8 без BOM.</p>
-            <p><strong>Подробный отчёт:</strong> <a href="changelog_11.11.2026_1.2.35.html">docs/changelog_11.11.2026_1.2.35.html</a></p>
+            <p><strong>Предрелизные проверки:</strong> 460 тестов; отрисовка графиков из окна минимального размера на копии production-БД; Ruff; UTF-8 без BOM.</p>
+            <p><strong>Подробный отчёт:</strong> <a href="changelog_11.11.2026_1.2.36.html">docs/changelog_11.11.2026_1.2.36.html</a></p>
         </div>
 
-        <div class="version-display">SalaryApp v.1.2.35 current</div>
+        <div class="version-display">SalaryApp v.1.2.36 current</div>
 
         <div class="section">
             <h2>Кратко по проделанной работе</h2>
             <ul>
-                <li><span class="change-type changed">SPEED</span>«Аналитика» в desktop открывается за ≈ 0,5 с вместо ≈ 2,0 с: matplotlib подгружается в фоне после показа окна, графики не рисуются лишний раз, перерисовывается только открытая вкладка. Смена года — 0,2–0,3 с вместо 0,4–0,5 с.</li>
-                <li><span class="change-type fixed">FIX</span>«Аналитика» больше не показывает «Не удалось обновить аналитику», когда прогноз на год посчитать не из чего (ошибка из 1.2.33).</li>
+                <li><span class="change-type fixed">UI</span>Графики «Аналитики»: подпись оси слева («Сумма, руб.») больше не обрезается в окне минимального размера и при увеличенном масштабе экрана — левое поле графика теперь не уже одного дюйма.</li>
             </ul>
             <p><strong>Совместимость:</strong> изменился только desktop; база данных, web, бот и зависимости — без изменений.</p>
         </div>
@@ -62,6 +61,7 @@
         <div class="section">
             <h2>История изменений</h2>
             <ul>
+                <li><a href="changelog_11.11.2026_1.2.36.html">11-11-2026</a> - v.1.2.36 - подпись оси на графиках «Аналитики» не обрезается в нешироком окне (подробный отчёт)</li>
                 <li><a href="changelog_11.11.2026_1.2.35.html">11-11-2026</a> - v.1.2.35 - «Аналитика» открывается вчетверо быстрее и не падает без прогноза (подробный отчёт)</li>
                 <li><a href="changelog_22.10.2026_1.2.34.html">22-10-2026</a> - v.1.2.34 - строки месяцев одной высоты, свёрнутые годы без «лесенки» (подробный отчёт)</li>
                 <li><a href="changelog_22.10.2026_1.2.33.html">22-10-2026</a> - v.1.2.33 - доп. выплаты (отпускные, премии, больничные), регулярный доход, заметки к месяцам, прогноз года (подробный отчёт)</li>
