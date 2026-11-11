@@ -6,11 +6,13 @@
 """
 
 import tkinter as tk
+from dataclasses import dataclass
 from tkinter import ttk
 
 from desktop.views.base_view import BaseView
 from desktop.presenters import ChartPresenter
 from desktop.views.report.bar_chart_tooltip import BarChartTooltip
+from desktop.views.report.chart_backend import ChartBackendLoader
 from desktop.views.constants import (
     PADX_DEFAULT, PADY_DEFAULT,
     TEXT_CHART_SETTINGS, TEXT_REFRESH_CHARTS, TEXT_ALL_YEARS, TEXT_YEAR,
@@ -25,24 +27,44 @@ from desktop.views.constants import (
 )
 
 
-def _load_matplotlib():
-    """
-    Загрузить matplotlib с Tk-бэкендом.
+@dataclass(frozen=True)
+class ChartSpec:
+    """Описание одной вкладки с графиком."""
 
-    Импорт тяжёлый (~1 с), поэтому выполняется только при первом открытии
-    вкладки аналитики, а не при запуске приложения.
+    key: str
+    tab_text: str
+    title: str
+    xlabel: str
+    ylabel: str
+    zero_line: bool = False    # нулевая линия (темпы роста)
+    bar_tooltip: bool = False  # подсказка при наведении на столбец
 
-    Returns:
-        (FigureCanvasTkAgg, Figure) или None, если matplotlib не установлен.
+
+CHART_TABS = (
+    # Доход по месяцам выбранного года или за всё время
+    ChartSpec("monthly", TAB_MONTHLY_DATA, CHART_MONTHLY_TITLE, AXIS_X_MONTHS, AXIS_Y_AMOUNT, bar_tooltip=True),
+    # Общий доход по каждому году
+    ChartSpec("yearly", TAB_YEARLY_COMPARISON, CHART_YEARLY_TITLE, AXIS_X_YEARS, AXIS_Y_TOTAL),
+    # Изменение дохода относительно предыдущего периода
+    ChartSpec("growth", TAB_GROWTH_RATES, CHART_GROWTH_TITLE, AXIS_X_PERIODS, AXIS_Y_GROWTH, zero_line=True),
+    # Средний доход по месяцам — сезонность
+    ChartSpec("average", TAB_AVERAGE_VALUES, CHART_AVERAGE_TITLE, AXIS_X_MONTHS, AXIS_Y_AVERAGE),
+)
+
+
+def _redraw(chart):
     """
-    try:
-        import matplotlib
-        matplotlib.use('TkAgg')  # Использование Tk-совместимого бэкенда
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-        from matplotlib.figure import Figure
-    except ImportError:
-        return None
-    return FigureCanvasTkAgg, Figure
+    Перерисовать график, если его вкладка открыта; иначе отложить до показа.
+
+    Отрисовка — самая дорогая часть обновления (~0,1 с на график), а виден
+    всегда только один график из четырёх.
+    """
+    is_visible = chart.get('is_visible')
+    if is_visible is None or is_visible():
+        chart['dirty'] = False
+        chart['canvas'].draw_idle()
+    else:
+        chart['dirty'] = True
 
 
 class ReportView(BaseView):
@@ -59,7 +81,12 @@ class ReportView(BaseView):
         self.charts = {}  # Словарь для хранения объектов графиков
         self.presenter = ChartPresenter()  # Presenter для подготовки данных графиков
         self._is_built = False
+        self._backend_loader = ChartBackendLoader()
         super().__init__(parent, controller)
+
+    def preload_charts(self):
+        """Начать фоновую загрузку matplotlib, чтобы первое открытие вкладки было быстрым."""
+        self._backend_loader.start()
 
     def _create_widgets(self):
         """
@@ -76,7 +103,8 @@ class ReportView(BaseView):
         if self._is_built:
             return
         self._is_built = True
-        # Показываем «Загрузка графиков…» на время импорта matplotlib и построения графиков
+        # Показываем «Загрузка графиков…» на время построения графиков
+        # (и импорта matplotlib, если фоновая загрузка ещё не закончилась)
         self.update_idletasks()
         try:
             self._build_widgets()
@@ -90,7 +118,7 @@ class ReportView(BaseView):
         main_container.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
 
         # Проверка доступности matplotlib
-        backend = _load_matplotlib()
+        backend = self._backend_loader.get()
         if backend is None:
             # Показать сообщение об ошибке если matplotlib не установлен
             error_frame = ttk.Frame(main_container)
@@ -219,162 +247,62 @@ class ReportView(BaseView):
             kpi_frame.grid_rowconfigure(row, weight=1)
 
     def _create_chart_tabs(self):
-        """Создать вкладки с различными графиками"""
-        # Вкладка 1: Помесячные данные
-        monthly_frame = ttk.Frame(self.notebook)
-        self.notebook.add(monthly_frame, text=TAB_MONTHLY_DATA)
-        self._create_monthly_chart(monthly_frame)
-        
-        # Вкладка 2: Сравнение по годам
-        yearly_frame = ttk.Frame(self.notebook)
-        self.notebook.add(yearly_frame, text=TAB_YEARLY_COMPARISON)
-        self._create_yearly_chart(yearly_frame)
-        
-        # Вкладка 3: Темпы роста
-        growth_frame = ttk.Frame(self.notebook)
-        self.notebook.add(growth_frame, text=TAB_GROWTH_RATES)
-        self._create_growth_chart(growth_frame)
-        
-        # Вкладка 4: Средние значения
-        avg_frame = ttk.Frame(self.notebook)
-        self.notebook.add(avg_frame, text=TAB_AVERAGE_VALUES)
-        self._create_average_chart(avg_frame)
-    
-    def _create_monthly_chart(self, parent):
+        """Создать вкладки с графиками (описания — в CHART_TABS)."""
+        for spec in CHART_TABS:
+            tab = ttk.Frame(self.notebook)
+            self.notebook.add(tab, text=spec.tab_text)
+            self._create_chart(tab, spec)
+        # Графики скрытых вкладок дорисовываются при переходе на них
+        self.notebook.bind("<<NotebookTabChanged>>", self._draw_pending_charts)
+
+    def _create_chart(self, tab, spec):
         """
-        Создать график помесячных данных.
-        
-        Отображает доход по месяцам выбранного года или за все время.
-        Может показывать раздельно аванс и зарплату или общую сумму.
+        Создать пустой график на вкладке.
+
+        Здесь он не отрисовывается: сразу после построения вкладки графики
+        заполняются данными (update_*_chart), а пустой холст Tk нарисует сам
+        при первом показе.
         """
-        frame = ttk.Frame(parent)
+        frame = ttk.Frame(tab)
         frame.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
-        
-        # Создание фигуры matplotlib с оптимальным размером
-        fig = self._figure_cls(figsize=(8, 4.7), dpi=100)
+
+        fig = self._figure_cls(figsize=(8, 5), dpi=100)
         ax = fig.add_subplot(111)
-        
+
         # Настройка заголовка и подписей осей
-        ax.set_title(CHART_MONTHLY_TITLE, fontsize=14, fontweight='bold')
-        ax.set_xlabel(AXIS_X_MONTHS)
-        ax.set_ylabel(AXIS_Y_AMOUNT)
+        ax.set_title(spec.title, fontsize=14, fontweight='bold')
+        ax.set_xlabel(spec.xlabel)
+        ax.set_ylabel(spec.ylabel)
         ax.grid(True, alpha=0.3)  # Сетка с прозрачностью
-        
+        if spec.zero_line:
+            ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)  # Нулевая линия
+
         # Уменьшение пустых полей вокруг графика
         fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
-        
-        # Создание холста для отображения графика в Tkinter
+
+        # Холст для отображения графика в Tkinter
         canvas = self._figure_canvas_cls(fig, master=frame)
-        canvas.draw()
-        
-        # Использование grid для контроля размера
-        canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
-        
-        # Настройка растягивания
-        frame.grid_rowconfigure(0, weight=1)
-        frame.grid_columnconfigure(0, weight=1)
-        
-        tooltip = BarChartTooltip(ax, canvas, canvas.get_tk_widget())
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
         # Сохранение объектов графика для последующего обновления
-        self.charts['monthly'] = {
+        chart = {
             'fig': fig,
             'ax': ax,
             'canvas': canvas,
-            'tooltip': tooltip
+            'dirty': False,
+            'is_visible': lambda: self.notebook.select() == str(tab),
         }
-    
-    def _create_yearly_chart(self, parent):
-        """
-        Создать график сравнения по годам.
-        
-        Столбчатая диаграмма, показывающая общий доход по каждому году.
-        """
-        frame = ttk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
-        
-        fig = self._figure_cls(figsize=(8, 5), dpi=100)
-        ax = fig.add_subplot(111)
-        
-        ax.set_title(CHART_YEARLY_TITLE, fontsize=14, fontweight='bold')
-        ax.set_xlabel(AXIS_X_YEARS)
-        ax.set_ylabel(AXIS_Y_TOTAL)
-        ax.grid(True, alpha=0.3)
-        
-        # Уменьшение пустых полей
-        fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
+        if spec.bar_tooltip:
+            chart['tooltip'] = BarChartTooltip(ax, canvas, canvas.get_tk_widget())
+        self.charts[spec.key] = chart
 
-        canvas = self._figure_canvas_cls(fig, master=frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        self.charts['yearly'] = {
-            'fig': fig,
-            'ax': ax,
-            'canvas': canvas
-        }
-    
-    def _create_growth_chart(self, parent):
-        """
-        Создать график темпов роста.
-        
-        Линейный график, показывающий процентное изменение доходов
-        относительно предыдущего периода (месяца или года).
-        """
-        frame = ttk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
-        
-        fig = self._figure_cls(figsize=(8, 5), dpi=100)
-        ax = fig.add_subplot(111)
-        
-        ax.set_title(CHART_GROWTH_TITLE, fontsize=14, fontweight='bold')
-        ax.set_xlabel(AXIS_X_PERIODS)
-        ax.set_ylabel(AXIS_Y_GROWTH)
-        ax.grid(True, alpha=0.3)
-        ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)  # Нулевая линия
-        
-        fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
+    def _draw_pending_charts(self, _event=None):
+        """Дорисовать график открытой вкладки, если он менялся, пока был скрыт."""
+        for chart in self.charts.values():
+            if chart.get('dirty') and chart['is_visible']():
+                chart['dirty'] = False
+                chart['canvas'].draw_idle()
 
-        canvas = self._figure_canvas_cls(fig, master=frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        self.charts['growth'] = {
-            'fig': fig,
-            'ax': ax,
-            'canvas': canvas
-        }
-    
-    def _create_average_chart(self, parent):
-        """
-        Создать график средних значений.
-        
-        Показывает средний доход по каждому месяцу за все годы,
-        полезно для выявления сезонных тенденций.
-        """
-        frame = ttk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, padx=PADX_DEFAULT, pady=PADY_DEFAULT)
-        
-        fig = self._figure_cls(figsize=(8, 5), dpi=100)
-        ax = fig.add_subplot(111)
-        
-        ax.set_title(CHART_AVERAGE_TITLE, fontsize=14, fontweight='bold')
-        ax.set_xlabel(AXIS_X_MONTHS)
-        ax.set_ylabel(AXIS_Y_AVERAGE)
-        ax.grid(True, alpha=0.3)
-        
-        fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
-
-        canvas = self._figure_canvas_cls(fig, master=frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        self.charts['average'] = {
-            'fig': fig,
-            'ax': ax,
-            'canvas': canvas
-        }
-    
     def _refresh_charts(self):
         """Обновить все графики на основе выбранного года"""
         # Получаем выбранный год из combobox
@@ -426,7 +354,6 @@ class ReportView(BaseView):
         
         chart = self.charts['monthly']
         ax = chart['ax']
-        canvas = chart['canvas']
         tooltip = chart.get('tooltip')
         tooltip_items = []
         if tooltip is not None:
@@ -522,8 +449,7 @@ class ReportView(BaseView):
         if tooltip is not None:
             tooltip.set_items(tooltip_items)
 
-        # Перерисовка холста
-        canvas.draw()
+        _redraw(chart)
     
     def update_yearly_chart(self, data):
         """
@@ -537,7 +463,6 @@ class ReportView(BaseView):
         
         chart = self.charts['yearly']
         ax = chart['ax']
-        canvas = chart['canvas']
         
         ax.clear()
         
@@ -584,7 +509,7 @@ class ReportView(BaseView):
                    transform=ax.transAxes, fontsize=12)
             ax.set_title(CHART_YEARLY_TITLE, fontsize=14, fontweight='bold')
         
-        canvas.draw()
+        _redraw(chart)
     
     def update_growth_chart(self, data):
         """
@@ -598,7 +523,6 @@ class ReportView(BaseView):
         
         chart = self.charts['growth']
         ax = chart['ax']
-        canvas = chart['canvas']
         
         ax.clear()
         
@@ -655,7 +579,7 @@ class ReportView(BaseView):
                    transform=ax.transAxes, fontsize=12)
             ax.set_title(CHART_GROWTH_TITLE, fontsize=14, fontweight='bold')
         
-        canvas.draw()
+        _redraw(chart)
     
     def update_average_chart(self, data):
         """
@@ -669,7 +593,6 @@ class ReportView(BaseView):
         
         chart = self.charts['average']
         ax = chart['ax']
-        canvas = chart['canvas']
         
         ax.clear()
         
@@ -713,7 +636,7 @@ class ReportView(BaseView):
                    transform=ax.transAxes, fontsize=12)
             ax.set_title(CHART_AVERAGE_TITLE, fontsize=14, fontweight='bold')
         
-        canvas.draw()
+        _redraw(chart)
 
     def update_kpi(
         self,

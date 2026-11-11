@@ -34,6 +34,8 @@ CLOSE_CONFIRM_TEXT = (
     "\u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435?"
 )
 
+CHART_PRELOAD_DELAY_MS = 300
+
 logger = logging.getLogger(__name__)
 
 
@@ -90,6 +92,9 @@ class App(tk.Tk):
 
         # Стандартные окна Windows (сообщения, выбор цвета) — по центру главного окна.
         install_native_dialog_centering(self)
+
+        # После показа окна подгружаем matplotlib в фоне — «Аналитика» откроется без паузы.
+        self.after(CHART_PRELOAD_DELAY_MS, self.report_view.preload_charts)
 
     def _create_styles(self):
         """Создать стили для виджетов ttk."""
