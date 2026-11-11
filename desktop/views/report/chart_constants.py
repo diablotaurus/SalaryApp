@@ -1,4 +1,13 @@
-"""Presentation constants for report chart tooltips."""
+"""Presentation constants for report charts and their tooltips."""
+
+# Поля графика — доли размера фигуры
+CHART_MARGIN_LEFT = 0.06
+CHART_MARGIN_RIGHT = 0.98
+CHART_MARGIN_TOP = 0.90
+CHART_MARGIN_BOTTOM = 0.12
+# Левое поле не уже этого: иначе в нешироком окне подпись оси Y уходит за край.
+# В дюймах, потому что шрифты графика тоже растут с масштабом экрана (DPI).
+CHART_MIN_LEFT_INCH = 1.0
 
 TOOLTIP_FONT_SIZE = 10
 TOOLTIP_OFFSET_PX = 12

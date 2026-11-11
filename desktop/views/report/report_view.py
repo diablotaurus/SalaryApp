@@ -13,6 +13,9 @@ from desktop.views.base_view import BaseView
 from desktop.presenters import ChartPresenter
 from desktop.views.report.bar_chart_tooltip import BarChartTooltip
 from desktop.views.report.chart_backend import ChartBackendLoader
+from desktop.views.report.chart_constants import (
+    CHART_MARGIN_BOTTOM, CHART_MARGIN_LEFT, CHART_MARGIN_RIGHT, CHART_MARGIN_TOP, CHART_MIN_LEFT_INCH,
+)
 from desktop.views.constants import (
     PADX_DEFAULT, PADY_DEFAULT,
     TEXT_CHART_SETTINGS, TEXT_REFRESH_CHARTS, TEXT_ALL_YEARS, TEXT_YEAR,
@@ -50,6 +53,23 @@ CHART_TABS = (
     # Средний доход по месяцам — сезонность
     ChartSpec("average", TAB_AVERAGE_VALUES, CHART_AVERAGE_TITLE, AXIS_X_MONTHS, AXIS_Y_AVERAGE),
 )
+
+
+def left_margin(width_inch: float) -> float:
+    """Левое поле графика (доля ширины): обычная доля, но не уже CHART_MIN_LEFT_INCH дюймов."""
+    if width_inch <= 0:
+        return CHART_MARGIN_LEFT
+    return max(CHART_MARGIN_LEFT, CHART_MIN_LEFT_INCH / width_inch)
+
+
+def _fit_margins(fig):
+    """Выставить поля графика под текущую ширину фигуры."""
+    fig.subplots_adjust(
+        left=left_margin(fig.get_figwidth()),
+        right=CHART_MARGIN_RIGHT,
+        top=CHART_MARGIN_TOP,
+        bottom=CHART_MARGIN_BOTTOM,
+    )
 
 
 def _redraw(chart):
@@ -277,11 +297,12 @@ class ReportView(BaseView):
         if spec.zero_line:
             ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)  # Нулевая линия
 
-        # Уменьшение пустых полей вокруг графика
-        fig.subplots_adjust(left=0.06, right=0.98, top=0.90, bottom=0.12)
-
         # Холст для отображения графика в Tkinter
         canvas = self._figure_canvas_cls(fig, master=frame)
+
+        # Уменьшение пустых полей вокруг графика; левое поле пересчитывается при смене размера
+        _fit_margins(fig)
+        canvas.mpl_connect("resize_event", lambda _event: _fit_margins(fig))
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
         # Сохранение объектов графика для последующего обновления
