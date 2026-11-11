@@ -39,7 +39,8 @@ class ReportTabController:
 
     @staticmethod
     def _response_data(response: Any) -> Any:
-        return response["data"] if response and response.get("success") else None
+        # Успешный ответ без данных приходит без ключа "data" (например, прогноза нет)
+        return response.get("data") if response and response.get("success") else None
 
     def load_chart_data(self):
         selected_year = self.app.report_view.get_selected_year()
